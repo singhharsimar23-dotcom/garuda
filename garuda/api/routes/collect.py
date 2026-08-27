@@ -11,18 +11,15 @@ logger = logging.getLogger("garuda.api.routes.collect")
 router = APIRouter(prefix="/collect", tags=["Collector Trigger"])
 
 
-@router.post("", status_code=status.HTTP_202_ACCEPTED)
-@router.get("", status_code=status.HTTP_202_ACCEPTED)
+@router.post("", status_code=status.HTTP_200_OK)
+@router.get("", status_code=status.HTTP_200_OK)
 async def trigger_background_collection(
     background_tasks: BackgroundTasks,
     request: Request,
     authorization: str = Header(None),
 ) -> Dict[str, Any]:
     """
-    Vercel Cron and multi-feed trigger target.
-
-    Dispatches full intelligence ingestion (crt.sh, OTX, URLhaus, CIRCL PDNS, MalwareBazaar)
-    as an asynchronous background task and immediately responds with 202 Accepted.
+    Vercel Cron target. Returns 200 immediately and dispatches collection run to GitHub Actions.
     """
     if settings.CRON_SECRET:
         expected = f"Bearer {settings.CRON_SECRET}"
@@ -34,16 +31,30 @@ async def trigger_background_collection(
             )
 
     now_iso = datetime.now(timezone.utc).isoformat()
-    logger.info("[api.collect] Enqueueing asynchronous intelligence collection run...")
+    logger.info("[api.collect] Triggering collection run...")
 
-    # Enqueue in background tasks — non-blocking HTTP response
+    if settings.GH_TOKEN and settings.GH_REPO:
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                await client.post(
+                    f"https://api.github.com/repos/{settings.GH_REPO}/dispatches",
+                    headers={
+                        "Authorization": f"Bearer {settings.GH_TOKEN}",
+                        "Accept": "application/vnd.github+json",
+                    },
+                    json={
+                        "event_type": "collect",
+                        "client_payload": {"triggered_by": "vercel_cron"},
+                    },
+                )
+            return {"status": "dispatched", "target": "github_actions", "timestamp": now_iso}
+        except Exception as e:
+            logger.warning(f"[api.collect] Failed dispatching to GitHub Actions: {e}")
+
+    # Fallback to local async background task
     background_tasks.add_task(run_collection)
-
-    return {
-        "status": "collection_started",
-        "timestamp": now_iso,
-        "environment": settings.ENVIRONMENT,
-    }
+    return {"status": "dispatched", "target": "background_task", "timestamp": now_iso}
 
 
 @router.post("/webhook", status_code=status.HTTP_200_OK)

@@ -155,3 +155,52 @@ def assemble_score(signals: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     breakdown["final_score"] = final_score
 
     return final_score, breakdown
+
+
+class GarudaActiveLearner:
+    """
+    Online active learning classifier with convergence guardrails.
+
+    Prevents weight collapse when analysts label benign domains, enforcing
+    a minimum weight floor and resetting if the rolling false positive rate exceeds 50%.
+    """
+    WEIGHT_FLOOR = 0.1
+    RESET_FP_THRESHOLD = 0.5
+
+    def __init__(self):
+        try:
+            from sklearn.linear_model import SGDClassifier
+            self.clf = SGDClassifier(loss="log_loss", warm_start=True)
+            # Initialize with dummy balanced sample
+            import numpy as np
+            X_init = np.array([[1.0, 1.0, 1.0, 1.0], [0.0, 0.0, 0.0, 0.0]])
+            y_init = [1, 0]
+            self.clf.partial_fit(X_init, y_init, classes=[0, 1])
+        except Exception:
+            self.clf = None
+        self._history = []
+
+    def _reset_to_initial_weights(self) -> None:
+        if self.clf is not None:
+            import numpy as np
+            self.clf.coef_ = np.array([[0.25, 0.25, 0.25, 0.25]])
+            self._history.clear()
+
+    def update(self, features, label: int) -> None:
+        if self.clf is None:
+            return
+        import numpy as np
+        feat_arr = np.array(features, dtype=float).reshape(1, -1)
+        self.clf.partial_fit(feat_arr, [label], classes=[0, 1])
+
+        # Guard: enforce minimum weight floor
+        coef = self.clf.coef_[0]
+        coef[coef < self.WEIGHT_FLOOR] = self.WEIGHT_FLOOR
+        self.clf.coef_[0] = coef
+
+        self._history.append(label)
+        if len(self._history) >= 100:
+            fp_rate = self._history[-100:].count(0) / 100.0
+            if fp_rate > self.RESET_FP_THRESHOLD:
+                self._reset_to_initial_weights()
+

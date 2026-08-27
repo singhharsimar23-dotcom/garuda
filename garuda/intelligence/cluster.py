@@ -48,12 +48,14 @@ def _encode_registrar(registrar: Optional[str]) -> int:
 
 
 def _encode_subnet24(ip: Optional[str]) -> int:
+    """MD5-based subnet /24 encoding — prevents integer collisions between different subnets."""
     if not ip or "." not in ip:
         return 0
     parts = ip.strip().split(".")
     if len(parts) >= 3 and all(p.isdigit() for p in parts[:3]):
-        # "185.220.101" -> 185220101
-        return int(f"{int(parts[0]):03d}{int(parts[1]):03d}{int(parts[2]):03d}")
+        subnet_prefix = f"{parts[0]}.{parts[1]}.{parts[2]}"
+        import hashlib
+        return int(hashlib.md5(subnet_prefix.encode()).hexdigest()[:8], 16)
     return 0
 
 

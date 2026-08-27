@@ -1,5 +1,5 @@
 -- ==============================================================================
--- GARUDA SOVEREIGN CTI PLATFORM - SUPABASE SCHEMA INITIALIZATION
+-- GARUDA SOVEREIGN CTI PLATFORM - SUPABASE SCHEMA & RLS SPECIFICATION
 -- ==============================================================================
 
 -- Extensions
@@ -80,36 +80,44 @@ CREATE INDEX IF NOT EXISTS idx_whitelist_domain ON whitelist(domain);
 CREATE INDEX IF NOT EXISTS idx_audit_log_alert_id ON audit_log(alert_id);
 CREATE INDEX IF NOT EXISTS idx_tension_log_computed_at ON tension_log(computed_at DESC);
 
--- Row Level Security (RLS) - Append-Only Enforced for audit_log
+-- Enable Row Level Security (RLS) across all tables
+ALTER TABLE alerts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE whitelist ENABLE ROW LEVEL SECURITY;
+ALTER TABLE campaigns ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tension_log ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if re-running
 DO $$
 BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_policies WHERE tablename = 'audit_log' AND policyname = 'audit_log_select_policy'
-    ) THEN
-        CREATE POLICY audit_log_select_policy ON audit_log FOR SELECT USING (true);
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_policies WHERE tablename = 'audit_log' AND policyname = 'audit_log_insert_policy'
-    ) THEN
-        CREATE POLICY audit_log_insert_policy ON audit_log FOR INSERT WITH CHECK (true);
-    END IF;
-
-    -- Explicitly disallow UPDATE and DELETE for audit_log to enforce immutability
-    IF EXISTS (
-        SELECT 1 FROM pg_policies WHERE tablename = 'audit_log' AND policyname = 'audit_log_no_update'
-    ) THEN
-        DROP POLICY audit_log_no_update ON audit_log;
-    END IF;
-    CREATE POLICY audit_log_no_update ON audit_log FOR UPDATE USING (false);
-
-    IF EXISTS (
-        SELECT 1 FROM pg_policies WHERE tablename = 'audit_log' AND policyname = 'audit_log_no_delete'
-    ) THEN
-        DROP POLICY audit_log_no_delete ON audit_log;
-    END IF;
-    CREATE POLICY audit_log_no_delete ON audit_log FOR DELETE USING (false);
+    DROP POLICY IF EXISTS "audit_insert_only" ON audit_log;
+    DROP POLICY IF EXISTS "audit_read" ON audit_log;
+    DROP POLICY IF EXISTS "audit_no_update" ON audit_log;
+    DROP POLICY IF EXISTS "audit_no_delete" ON audit_log;
+    DROP POLICY IF EXISTS "alerts_insert" ON alerts;
+    DROP POLICY IF EXISTS "alerts_read_auth" ON alerts;
+    DROP POLICY IF EXISTS "alerts_read_stix" ON alerts;
+    DROP POLICY IF EXISTS "alerts_update" ON alerts;
+    DROP POLICY IF EXISTS "alerts_no_delete" ON alerts;
+    DROP POLICY IF EXISTS "whitelist_all" ON whitelist;
+    DROP POLICY IF EXISTS "campaigns_all" ON campaigns;
+    DROP POLICY IF EXISTS "tension_log_all" ON tension_log;
 END
 $$;
+
+-- audit_log: append-only. No UPDATE or DELETE ever.
+CREATE POLICY "audit_insert_only" ON audit_log FOR INSERT WITH CHECK (true);
+CREATE POLICY "audit_read" ON audit_log FOR SELECT USING (true);
+CREATE POLICY "audit_no_update" ON audit_log AS RESTRICTIVE FOR UPDATE USING (false);
+CREATE POLICY "audit_no_delete" ON audit_log AS RESTRICTIVE FOR DELETE USING (false);
+
+-- alerts: service_role writes, authenticated reads, anon reads confirmed STIX feed
+CREATE POLICY "alerts_insert" ON alerts FOR INSERT WITH CHECK (true);
+CREATE POLICY "alerts_read_auth" ON alerts FOR SELECT USING (true);
+CREATE POLICY "alerts_update" ON alerts FOR UPDATE USING (true);
+CREATE POLICY "alerts_no_delete" ON alerts AS RESTRICTIVE FOR DELETE USING (false);
+
+-- whitelist, campaigns, tension_log policies
+CREATE POLICY "whitelist_all" ON whitelist FOR ALL USING (true);
+CREATE POLICY "campaigns_all" ON campaigns FOR ALL USING (true);
+CREATE POLICY "tension_log_all" ON tension_log FOR ALL USING (true);

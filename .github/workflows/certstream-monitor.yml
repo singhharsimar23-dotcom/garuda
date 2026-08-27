@@ -1,0 +1,27 @@
+name: CertStream Monitor (WebSocket)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"   # Restart every 6h (Actions job limit)
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: pip install certstream httpx python-dotenv
+
+      - name: Run CertStream WebSocket Monitor
+        env:
+          GARUDA_API_URL: ${{ secrets.GARUDA_API_URL || 'https://garuda-ochre.vercel.app' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: python scripts/certstream_monitor.py

@@ -262,3 +262,43 @@ async def check_virustotal_reputation(domain: str) -> Dict[str, Any]:
         logger.error(f"[infra_fingerprint] Error querying VirusTotal API for {clean_domain}: {e}")
         return {}
 
+
+async def check_ja3_fingerprint(ja3_hash: str) -> Tuple[bool, str]:
+    """
+    Evaluate TLS client/server JA3 hash against known APT36 signatures and ja3er.com API.
+
+    Args:
+        ja3_hash: Target MD5 JA3 hash string.
+
+    Returns:
+        Tuple[bool, str]: (is_match, malware_family_or_comment)
+    """
+    if not ja3_hash:
+        return False, ""
+
+    ja3_clean = ja3_hash.strip().lower()
+    if ja3_clean in set(settings.APT36_JA3_HASHES):
+        return True, "APT36 / CrimsonRAT / DeskRAT Signature"
+
+    cache_key = f"garuda:ja3:{ja3_clean}"
+    cached = await get_cached_json(cache_key)
+    if cached is not None and isinstance(cached, dict):
+        return cached.get("is_match", False), cached.get("comment", "")
+
+    url = f"https://ja3er.com/search/{ja3_clean}"
+    try:
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+            resp = await client.get(url)
+            if resp.status_code == 200:
+                data = resp.json()
+                comment = data.get("comment", "") or data.get("User-Agent", "")
+                is_threat = any(k in comment.lower() for k in ["crimson", "rat", "apt36", "trojan", "malware"])
+                res = {"is_match": is_threat, "comment": comment}
+                await set_cached_json(cache_key, res, ex=86400)
+                return is_threat, comment
+    except Exception as e:
+        logger.debug(f"[infra_fingerprint] JA3 lookup failed for {ja3_clean}: {e}")
+
+    return False, ""
+
+

@@ -13,6 +13,8 @@ logger = logging.getLogger("garuda.intelligence.tension_index")
 RSS_FEEDS = {
     "ndtv": "https://feeds.feedburner.com/ndtvnews-india-news",
     "mea": "https://mea.gov.in/rss/latest-releases.htm",
+    "pakistan_today": "https://www.pakistantoday.com.pk/category/national/feed/",
+    "geo_tv": "https://www.geo.tv/rss/1/1",
 }
 
 # Geopolitical Conflict & Tension Keywords and Severity Multipliers

@@ -47,10 +47,17 @@ class Settings(BaseSettings):
     CIRCL_API_USER: Optional[str] = None
     CIRCL_API_PASSWORD: Optional[str] = None
     URLHAUS_API_KEY: Optional[str] = None
+    URLHAUS_TOKEN: Optional[str] = None
+    PHISHTANK_KEY: Optional[str] = None
+    ABUSEIPDB_KEY: Optional[str] = None
     VIRUSTOTAL_API_KEY: Optional[str] = "f80317b707c964a757e92fb6188bc509fae57749a14908eff8bc73fb1504ddfd"
     SHODAN_API_KEY: Optional[str] = "ItNBJkUPHLzH6Cmm34QZSHjYVMRz0DnN"
     SECURITYTRAILS_API_KEY: Optional[str] = None
     WHOISXML_API_KEY: Optional[str] = "at_gc7Jzm8An7sC8lLcfGdSs8qk1OUKl"
+
+    # GitHub Actions Integration (Background Dispatch & Playwright Offloading)
+    GH_TOKEN: Optional[str] = None
+    GH_REPO: Optional[str] = "singhharsimar23-dotcom/garuda"
 
     # Geopolitical Tension & Conflict Monitoring
     GDELT_API_KEY: Optional[str] = None
@@ -94,6 +101,13 @@ class Settings(BaseSettings):
     ]
 
     APT36_C2_PORTS: List[int] = [4000, 8443, 9001]
+
+    APT36_JA3_HASHES: List[str] = [
+        "51c64c77e60f3980eea90869b68c58a8",  # CrimsonRAT — CIRCL profile
+        "a0e9f5d64349fb13191bc781f81f42e1",  # DeskRAT C2 — Recorded Future 2024
+        "6734f37431109a4e8b2eca26639d2852",  # StealthMango — Seqrite 2023
+        "c12f54a3f91dc7bafd92cb59fe009a35",  # ObliqueRAT — Morphisec 2021
+    ]
 
     # Tier 1 Priority Keyword Patterns (Exact 85 Target Patterns)
     TIER_1_PATTERNS: List[str] = [

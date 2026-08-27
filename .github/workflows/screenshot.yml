@@ -1,0 +1,86 @@
+name: Playwright Screenshot Capture
+on:
+  repository_dispatch:
+    types: [screenshot]
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: 'Domain to capture'
+        required: true
+      alert_id:
+        description: 'Alert UUID'
+        required: true
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies & Playwright Chromium
+        run: |
+          pip install playwright supabase httpx python-dotenv
+          playwright install chromium --with-deps
+
+      - name: Execute Screenshot Script
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY }}
+          DOMAIN: ${{ github.event.client_payload.domain || inputs.domain }}
+          ALERT_ID: ${{ github.event.client_payload.alert_id || inputs.alert_id }}
+        run: |
+          python - << 'EOF'
+          import os
+          import asyncio
+          from playwright.async_api import async_playwright
+          from supabase import create_client
+
+          domain = os.environ.get("DOMAIN", "").strip()
+          alert_id = os.environ.get("ALERT_ID", "").strip()
+          supabase_url = os.environ.get("SUPABASE_URL")
+          supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+
+          async def run():
+              if not domain or not alert_id:
+                  print("Missing domain or alert_id.")
+                  return
+
+              async with async_playwright() as p:
+                  browser = await p.chromium.launch(headless=True)
+                  context = await browser.new_context(ignore_https_errors=True)
+                  page = await context.new_page()
+                  target = f"https://{domain}" if not domain.startswith("http") else domain
+                  try:
+                      await page.goto(target, timeout=20000, wait_until="load")
+                  except Exception:
+                      try:
+                          target = f"http://{domain}"
+                          await page.goto(target, timeout=10000, wait_until="load")
+                      except Exception as e:
+                          print(f"Navigation failed: {e}")
+                          await browser.close()
+                          return
+                  
+                  screenshot = await page.screenshot(type="png")
+                  await browser.close()
+
+                  if supabase_url and supabase_key:
+                      client = create_client(supabase_url, supabase_key)
+                      file_path = f"{alert_id}.png"
+                      client.storage.from_("screenshots").upload(
+                          path=file_path,
+                          file=screenshot,
+                          file_options={"content-type": "image/png", "upsert": "true"}
+                      )
+                      url = client.storage.from_("screenshots").get_public_url(file_path)
+                      client.table("alerts").update({"screenshot_url": url}).ilike("id", f"{alert_id}%").execute()
+                      print(f"Screenshot uploaded to Supabase: {url}")
+
+          asyncio.run(run())
+          EOF

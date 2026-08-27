@@ -47,6 +47,27 @@ async def handle_telegram_update(update: Dict[str, Any]) -> Dict[str, Any]:
         - /whitelist_{id}: Whitelist target domain.
         - /stats: Aggregated SOC operational statistics.
     """
+    callback_query = update.get("callback_query", {})
+    if callback_query:
+        cb_data = callback_query.get("data", "")
+        chat_id = callback_query.get("message", {}).get("chat", {}).get("id", settings.TELEGRAM_CHAT_ID)
+        user_id = callback_query.get("from", {}).get("username") or callback_query.get("from", {}).get("id")
+        analyst_tag = f"telegram:{user_id}"
+
+        if ":" in cb_data:
+            action, alert_id = cb_data.split(":", 1)
+            if action == "confirm":
+                await confirm_alert(alert_id, analyst_id=analyst_tag)
+                await send_telegram_reply(chat_id, f"✅ *Alert Confirmed Malicious*\nAlert ID: `{escape_markdown_v2(alert_id)}`\nAnalyst: `{escape_markdown_v2(analyst_tag)}`")
+                return {"status": "ok", "action": "confirm"}
+            elif action == "reject":
+                await reject_alert(alert_id, reason="Analyst button rejection", analyst_id=analyst_tag)
+                await send_telegram_reply(chat_id, f"❌ *Alert Rejected as False Positive*\nAlert ID: `{escape_markdown_v2(alert_id)}`")
+                return {"status": "ok", "action": "reject"}
+            elif action == "investigate":
+                await send_telegram_reply(chat_id, f"🔍 *Investigation Initiated for Alert:* `{escape_markdown_v2(alert_id)}`\nCheck Dashboard: https://garuda-ochre.vercel.app/#/alerts/{alert_id}")
+                return {"status": "ok", "action": "investigate"}
+
     message = update.get("message", {})
     text = str(message.get("text", "")).strip()
     chat_id = message.get("chat", {}).get("id", settings.TELEGRAM_CHAT_ID)

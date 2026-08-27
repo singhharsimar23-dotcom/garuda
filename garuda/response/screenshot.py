@@ -2,7 +2,9 @@ import asyncio
 import logging
 from pathlib import Path
 from typing import Optional
+import httpx
 
+from garuda.config import settings
 from garuda.database import get_supabase_client
 
 logger = logging.getLogger("garuda.response.screenshot")
@@ -10,24 +12,38 @@ logger = logging.getLogger("garuda.response.screenshot")
 
 async def capture_screenshot(domain: str, alert_id: str) -> Optional[str]:
     """
-    Safely capture a visual snapshot of a target threat domain using headless Playwright Chromium.
+    Dispatch screenshot capture to GitHub Actions or capture locally if Playwright is present.
 
-    Uploads the captured PNG to the Supabase Storage 'screenshots' bucket and returns
-    its public accessibility URL.
-
-    Args:
-        domain: Domain name or URL to render.
-        alert_id: Associated alert UUID string.
-
-    Returns:
-        Optional[str]: Public URL or storage path of the captured screenshot, or None on failure.
+    Playwright Chromium cannot run inside Vercel Serverless Functions due to size limits.
+    When GH_TOKEN and GH_REPO are configured, a repository_dispatch event is triggered.
     """
     domain_clean = domain.strip().lower().lstrip("*.")
     if not domain_clean:
         return None
 
-    screenshot_bytes: Optional[bytes] = None
+    # Cloud / GitHub Actions dispatch mode
+    if settings.GH_TOKEN and settings.GH_REPO:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.post(
+                    f"https://api.github.com/repos/{settings.GH_REPO}/dispatches",
+                    headers={
+                        "Authorization": f"Bearer {settings.GH_TOKEN}",
+                        "Accept": "application/vnd.github+json",
+                    },
+                    json={
+                        "event_type": "screenshot",
+                        "client_payload": {"domain": domain_clean, "alert_id": alert_id},
+                    },
+                )
+                resp.raise_for_status()
+                logger.info(f"[screenshot] Dispatched screenshot workflow for {domain_clean} to GH Actions.")
+                return None  # URL set later by GH Actions callback
+        except Exception as e:
+            logger.warning(f"[screenshot] Failed dispatching screenshot event to GitHub: {e}")
 
+    # Local development mode with Playwright
+    screenshot_bytes: Optional[bytes] = None
     try:
         from playwright.async_api import async_playwright
 
@@ -42,9 +58,7 @@ async def capture_screenshot(domain: str, alert_id: str) -> Optional[str]:
                 target_url = f"https://{domain_clean}" if not domain_clean.startswith("http") else domain_clean
                 await page.goto(target_url, timeout=15000, wait_until="load")
                 screenshot_bytes = await page.screenshot(type="png", full_page=False)
-            except Exception as nav_err:
-                logger.warning(f"[screenshot] Navigation failed for {domain_clean}: {nav_err}")
-                # Try HTTP fallback
+            except Exception:
                 try:
                     target_url = f"http://{domain_clean}"
                     await page.goto(target_url, timeout=10000, wait_until="load")
@@ -53,11 +67,11 @@ async def capture_screenshot(domain: str, alert_id: str) -> Optional[str]:
                     screenshot_bytes = None
             finally:
                 await browser.close()
-    except ImportError:
-        logger.warning("[screenshot] Playwright is not installed or available.")
+    except (ImportError, ModuleNotFoundError):
+        logger.info("[screenshot] Playwright not installed locally. Offloading to GitHub Actions.")
         return None
     except Exception as e:
-        logger.error(f"[screenshot] Error capturing screenshot for {domain_clean}: {e}")
+        logger.error(f"[screenshot] Local screenshot capture error: {e}")
         return None
 
     if not screenshot_bytes:
@@ -66,25 +80,21 @@ async def capture_screenshot(domain: str, alert_id: str) -> Optional[str]:
     # Upload to Supabase Storage bucket 'screenshots'
     file_path = f"{alert_id}.png"
     client = get_supabase_client()
-
     if client is not None:
         try:
-            # TODO: verify Supabase storage bucket upload API
             client.storage.from_("screenshots").upload(
                 path=file_path,
                 file=screenshot_bytes,
                 file_options={"content-type": "image/png", "upsert": "true"},
             )
-            public_url = client.storage.from_("screenshots").get_public_url(file_path)
-            return public_url
+            return client.storage.from_("screenshots").get_public_url(file_path)
         except Exception as upload_err:
             logger.warning(f"[screenshot] Supabase storage upload failed: {upload_err}")
 
-    # Local storage fallback
+    # Local fallback
     local_dir = Path(__file__).resolve().parent.parent / "data" / "screenshots"
     local_dir.mkdir(parents=True, exist_ok=True)
     local_file = local_dir / file_path
     with open(local_file, "wb") as f:
         f.write(screenshot_bytes)
-
     return str(local_file)
