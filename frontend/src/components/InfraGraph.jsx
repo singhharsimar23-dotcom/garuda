@@ -35,8 +35,20 @@ function InfraGraphInner({ graphData, onNodeClick }) {
   const svgRef = useRef(null)
   const [selectedNode, setSelectedNode] = useState(null)
 
-  const nodes = graphData?.nodes ?? []
-  const edges = graphData?.edges ?? graphData?.links ?? []
+  // Normalize backend edge format {s, t} → D3 format {source, target}
+  const rawNodes = graphData?.nodes ?? []
+  const rawEdges = graphData?.edges ?? graphData?.links ?? []
+
+  const nodes = rawNodes.map((n) => ({
+    ...n,
+    label: n.label || n.domain || n.id,
+  }))
+
+  const edges = rawEdges.map((e) => ({
+    source: e.source ?? e.s,
+    target: e.target ?? e.t,
+    type: e.type,
+  }))
 
   useEffect(() => {
     if (!svgRef.current || !nodes || nodes.length === 0) return

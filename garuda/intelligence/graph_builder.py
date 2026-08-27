@@ -192,18 +192,20 @@ async def build_ioc_graph(domain: str, alert: Dict[str, Any]) -> Dict[str, Any]:
     # Serialize NetworkX Graph to standard GARUDA JSON format
     nodes_payload = []
     for n, data in g.nodes(data=True):
+        label = data.get("domain", str(n))
         nodes_payload.append({
             "id": str(n),
             "type": data.get("type", "unknown"),
-            "domain": data.get("domain", str(n)),
+            "label": label,
+            "domain": label,
             "score": data.get("score", 0),
         })
 
     edges_payload = []
     for u, v, data in g.edges(data=True):
         edges_payload.append({
-            "s": str(u),
-            "t": str(v),
+            "source": str(u),
+            "target": str(v),
             "type": data.get("type", "connected"),
         })
 
