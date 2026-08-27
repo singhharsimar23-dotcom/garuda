@@ -1,0 +1,52 @@
+[
+  {
+    "domain": "army-updates-secure.space",
+    "registered_at": "2024-03-01T04:12:00Z",
+    "attack_launched_at": "2024-03-21T10:00:00Z",
+    "source_report": "TransparentTribe-CapraHing-MoD-2024",
+    "ioc_type": "c2_domain",
+    "registrar": "Namecheap, Inc.",
+    "hosting_asn": 16276,
+    "target_sector": "Ministry of Defence (MoD)"
+  },
+  {
+    "domain": "modgov-portal.site",
+    "registered_at": "2024-05-10T12:00:00Z",
+    "attack_launched_at": "2024-05-29T15:30:00Z",
+    "source_report": "SideWinder-Operation-Trident-2024",
+    "ioc_type": "phishing_domain",
+    "registrar": "Namecheap, Inc.",
+    "hosting_asn": 24940,
+    "target_sector": "Ministry of Defence (MoD)"
+  },
+  {
+    "domain": "nicwebmail-login.online",
+    "registered_at": "2024-07-02T08:20:00Z",
+    "attack_launched_at": "2024-07-22T09:15:00Z",
+    "source_report": "APT36-Crimson-Rat-Campaign-2024",
+    "ioc_type": "credential_harvesting",
+    "registrar": "PDR Ltd",
+    "hosting_asn": 63949,
+    "target_sector": "National Informatics Centre (NIC)"
+  },
+  {
+    "domain": "drdo-defence-procurement.xyz",
+    "registered_at": "2024-09-15T06:45:00Z",
+    "attack_launched_at": "2024-10-04T11:00:00Z",
+    "source_report": "TransparentTribe-DRDO-Targeting-2024",
+    "ioc_type": "malware_distribution",
+    "registrar": "Namecheap, Inc.",
+    "hosting_asn": 14061,
+    "target_sector": "Defence R&D (DRDO)"
+  },
+  {
+    "domain": "iaf-recruitment-portal.space",
+    "registered_at": "2024-11-01T03:30:00Z",
+    "attack_launched_at": "2024-11-20T14:00:00Z",
+    "source_report": "APT36-Poseidon-BOSS-Targeting-2024",
+    "ioc_type": "c2_domain",
+    "registrar": "eNom, Inc.",
+    "hosting_asn": 20473,
+    "target_sector": "Air Force / IAF"
+  }
+]

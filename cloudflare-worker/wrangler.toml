@@ -1,0 +1,7 @@
+name = "garuda-ct-worker"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+TIER1_PATTERNS = "mod,gov,nic,army,drdo,isro,mil,defence,hal,bel,barc,ntro,dae,pmindia,meity,cert-in,bhel,sail,iit,aiims,uidai,incometax"
+GARUDA_API_URL = "https://garuda.vercel.app"

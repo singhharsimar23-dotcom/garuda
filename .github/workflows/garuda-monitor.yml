@@ -1,0 +1,55 @@
+name: GARUDA Monitor
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # Backup scheduler to Vercel Cron
+  workflow_dispatch:
+
+jobs:
+  collect:
+    name: Threat Ingestion Matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        source: [crtsh, otx, urlhaus, circl_pdns, malwarebazaar]
+      fail-fast: false
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Execute Source Feed Ingest (${{ matrix.source }})
+        run: |
+          python -m garuda.sources.${{ matrix.source }}
+        env:
+          SOURCE: ${{ matrix.source }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SHODAN_API_KEY: ${{ secrets.SHODAN_API_KEY }}
+          VIRUSTOTAL_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
+          URLHAUS_API_KEY: ${{ secrets.URLHAUS_API_KEY }}
+          OTX_API_KEY: ${{ secrets.OTX_API_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          ENVIRONMENT: production

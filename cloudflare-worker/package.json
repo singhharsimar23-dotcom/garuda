@@ -1,0 +1,13 @@
+{
+  "name": "garuda-ct-worker",
+  "version": "0.1.0",
+  "description": "GARUDA CT Log Edge Filter Worker",
+  "main": "index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3.114.0"
+  }
+}
