@@ -40,8 +40,8 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: Optional[str] = None
     CELERY_RESULT_BACKEND: Optional[str] = None
 
-    # AI & Threat Narrative Engine
-    ANTHROPIC_API_KEY: Optional[str] = None
+    # AI & Threat Narrative Engine (Google Gemini)
+    GEMINI_API_KEY: Optional[str] = None
 
     # Threat Intelligence Feeds & OSINT APIs
     OTX_API_KEY: Optional[str] = None
