@@ -37,6 +37,8 @@ export default function AlertDetail() {
   const { data: alert, isLoading, isError } = useQuery({
     queryKey: ["alert", id],
     queryFn: () => getAlert(id),
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   })
 
   // Query: Graph data
@@ -44,6 +46,8 @@ export default function AlertDetail() {
     queryKey: ["alertGraph", id],
     queryFn: () => getAlertGraph(id),
     enabled: !!alert,
+    staleTime: 10 * 60 * 1000,
+    retry: false,
   })
 
   // Query: YARA rule text
@@ -51,6 +55,8 @@ export default function AlertDetail() {
     queryKey: ["alertYara", id],
     queryFn: () => getAlertYara(id),
     enabled: !!alert,
+    staleTime: 10 * 60 * 1000,
+    retry: false,
   })
 
   // Query: Audit log
@@ -58,6 +64,8 @@ export default function AlertDetail() {
     queryKey: ["alertAudit", id],
     queryFn: () => getAlertAudit(id),
     enabled: !!alert,
+    staleTime: 60 * 1000,
+    retry: false,
   })
 
   // Mutation: Confirm

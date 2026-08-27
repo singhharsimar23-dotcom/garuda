@@ -2,27 +2,49 @@ import React, { useEffect, useRef, useState } from "react"
 import * as d3 from "d3"
 
 const NODE_COLORS = {
-  domain: "#3b82f6",    // Blue
-  ip: "#ef4444",        // Red
-  certificate: "#10b981", // Green
+  domain: "#3b82f6",
+  ip: "#ef4444",
+  certificate: "#10b981",
   cert: "#10b981",
-  nameserver: "#eab308", // Yellow
+  nameserver: "#eab308",
   ns: "#eab308",
-  registrar: "#a855f7", // Purple
+  registrar: "#a855f7",
 }
 
-export default function InfraGraph({ graphData, onNodeClick }) {
+class InfraGraphErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex items-center justify-center h-full text-xs text-gray-500 italic p-4 text-center">
+          Infrastructure graph unavailable for this alert.
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
+function InfraGraphInner({ graphData, onNodeClick }) {
   const svgRef = useRef(null)
   const [selectedNode, setSelectedNode] = useState(null)
 
+  const nodes = graphData?.nodes ?? []
+  const edges = graphData?.edges ?? graphData?.links ?? []
+
   useEffect(() => {
-    if (!svgRef.current || !graphData || !graphData.nodes || graphData.nodes.length === 0) return
+    if (!svgRef.current || !nodes || nodes.length === 0) return
 
     const container = svgRef.current
     const width = container.clientWidth || 800
     const height = container.clientHeight || 450
 
-    // Clear previous elements
     d3.select(container).selectAll("*").remove()
 
     const svg = d3
@@ -31,7 +53,6 @@ export default function InfraGraph({ graphData, onNodeClick }) {
       .attr("width", "100%")
       .attr("height", "100%")
 
-    // Add zoom & pan container
     const g = svg.append("g")
 
     const zoom = d3
@@ -43,70 +64,32 @@ export default function InfraGraph({ graphData, onNodeClick }) {
 
     svg.call(zoom)
 
-    // Deep copy data to prevent in-place D3 mutation bugs
-    const nodes = graphData.nodes.map((d) => ({ ...d }))
-    const edges = (graphData.edges || []).map((d) => ({ ...d }))
-
-    // Arrow markers for directed relationships
-    svg
-      .append("defs")
-      .append("marker")
-      .attr("id", "arrow")
-      .attr("viewBox", "0 -5 10 10")
-      .attr("refX", 22)
-      .attr("refY", 0)
-      .attr("markerWidth", 6)
-      .attr("markerHeight", 6)
-      .attr("orient", "auto")
-      .append("path")
-      .attr("d", "M0,-5L10,0L0,5")
-      .attr("fill", "#475569")
-
-    // Force simulation setup
     const simulation = d3
       .forceSimulation(nodes)
-      .force(
-        "link",
-        d3
-          .forceLink(edges)
-          .id((d) => d.id)
-          .distance(90)
-      )
-      .force("charge", d3.forceManyBody().strength(-240))
+      .force("link", d3.forceLink(edges).id((d) => d.id).distance(100))
+      .force("charge", d3.forceManyBody().strength(-300))
       .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide().radius(32))
+      .force("collision", d3.forceCollide().radius(30))
 
-    // Draw edge links
     const link = g
       .append("g")
-      .attr("stroke", "#334155")
-      .attr("stroke-opacity", 0.7)
       .selectAll("line")
       .data(edges)
-      .join("line")
-      .attr("stroke-width", (d) => Math.sqrt(d.weight || 1) * 1.5)
-      .attr("marker-end", "url(#arrow)")
+      .enter()
+      .append("line")
+      .attr("stroke", "#334155")
+      .attr("stroke-width", 1.5)
+      .attr("stroke-dasharray", "4,2")
 
-    // Draw edge labels
-    const edgeLabels = g
-      .append("g")
-      .selectAll("text")
-      .data(edges)
-      .join("text")
-      .attr("font-size", 9)
-      .attr("fill", "#94a3b8")
-      .attr("text-anchor", "middle")
-      .text((d) => d.label || d.relation || "")
-
-    // Draw node circles
     const node = g
       .append("g")
       .selectAll("g")
       .data(nodes)
-      .join("g")
+      .enter()
+      .append("g")
+      .attr("cursor", "pointer")
       .call(
-        d3
-          .drag()
+        d3.drag()
           .on("start", (event, d) => {
             if (!event.active) simulation.alphaTarget(0.3).restart()
             d.fx = d.x
@@ -127,30 +110,32 @@ export default function InfraGraph({ graphData, onNodeClick }) {
         if (onNodeClick) onNodeClick(d)
       })
 
-    // Node circular shape
     node
       .append("circle")
-      .attr("r", (d) => (d.type === "domain" ? 18 : 13))
-      .attr("fill", (d) => NODE_COLORS[d.type?.toLowerCase()] || "#64748b")
+      .attr("r", (d) => (d.type === "domain" ? 14 : 9))
+      .attr("fill", (d) => NODE_COLORS[d.type] || "#64748b")
       .attr("stroke", "#0f172a")
       .attr("stroke-width", 2)
-      .attr("cursor", "pointer")
-      .attr("class", "transition-all hover:opacity-80")
+      .attr("filter", (d) => (d.type === "domain" ? "url(#glow)" : null))
 
-    // Node labels
+    const defs = svg.append("defs")
+    const filter = defs.append("filter").attr("id", "glow")
+    filter.append("feGaussianBlur").attr("stdDeviation", "3").attr("result", "coloredBlur")
+    const feMerge = filter.append("feMerge")
+    feMerge.append("feMergeNode").attr("in", "coloredBlur")
+    feMerge.append("feMergeNode").attr("in", "SourceGraphic")
+
     node
       .append("text")
-      .attr("y", (d) => (d.type === "domain" ? 28 : 22))
+      .attr("dy", 24)
       .attr("text-anchor", "middle")
-      .attr("fill", "#e2e8f0")
-      .attr("font-size", 10)
-      .attr("font-weight", 600)
+      .attr("font-size", "9px")
+      .attr("fill", "#94a3b8")
       .text((d) => {
-        const name = d.label || d.domain || d.ip || d.id || ""
-        return name.length > 20 ? name.slice(0, 17) + "..." : name
+        const label = d.label || d.id || ""
+        return label.length > 20 ? label.slice(0, 18) + "…" : label
       })
 
-    // Simulation tick callback
     simulation.on("tick", () => {
       link
         .attr("x1", (d) => d.source.x)
@@ -158,64 +143,41 @@ export default function InfraGraph({ graphData, onNodeClick }) {
         .attr("x2", (d) => d.target.x)
         .attr("y2", (d) => d.target.y)
 
-      edgeLabels
-        .attr("x", (d) => (d.source.x + d.target.x) / 2)
-        .attr("y", (d) => (d.source.y + d.target.y) / 2 - 3)
-
       node.attr("transform", (d) => `translate(${d.x},${d.y})`)
     })
 
-    // Cleanup simulation on unmount
     return () => {
       simulation.stop()
     }
-  }, [graphData, onNodeClick])
+  }, [nodes, edges])
+
+  if (!nodes || nodes.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-xs text-gray-500 italic p-4 text-center">
+        No infrastructure graph data available. Graph builds after PDNS enrichment.
+      </div>
+    )
+  }
 
   return (
-    <div className="relative w-full h-full min-h-[420px] bg-navy-950 rounded-xl border border-navy-700/70 overflow-hidden shadow-2xl flex flex-col">
-      {/* Legend */}
-      <div className="absolute top-3 left-3 z-10 bg-navy-900/80 backdrop-blur-md px-3 py-2 rounded-lg border border-navy-700 text-xs text-gray-300 flex flex-wrap gap-3">
-        <div className="flex items-center space-x-1.5">
-          <span className="w-3 h-3 rounded-full bg-blue-500" />
-          <span>Domain</span>
-        </div>
-        <div className="flex items-center space-x-1.5">
-          <span className="w-3 h-3 rounded-full bg-red-500" />
-          <span>IP Host</span>
-        </div>
-        <div className="flex items-center space-x-1.5">
-          <span className="w-3 h-3 rounded-full bg-green-500" />
-          <span>SSL Cert</span>
-        </div>
-        <div className="flex items-center space-x-1.5">
-          <span className="w-3 h-3 rounded-full bg-yellow-500" />
-          <span>Nameserver</span>
-        </div>
-      </div>
-
-      {/* SVG Canvas */}
-      <svg ref={svgRef} className="w-full h-full min-h-[420px]" />
-
-      {/* Node inspect drawer */}
+    <div className="relative w-full h-full">
       {selectedNode && (
-        <div className="absolute bottom-3 right-3 z-10 bg-navy-900/90 backdrop-blur-md p-3 rounded-xl border border-navy-600 text-xs text-gray-200 max-w-xs shadow-2xl animate-fade-in">
-          <div className="flex justify-between items-center mb-1">
-            <span className="font-bold text-sm text-cyan-400 capitalize">{selectedNode.type} Node</span>
-            <button
-              onClick={() => setSelectedNode(null)}
-              className="text-gray-400 hover:text-white font-bold ml-2"
-            >
-              &times;
-            </button>
-          </div>
-          <div className="space-y-1 text-[11px] text-gray-300">
-            <div><b className="text-gray-400">Value:</b> <span className="font-mono">{selectedNode.label || selectedNode.domain || selectedNode.id}</span></div>
-            {selectedNode.score !== undefined && <div><b className="text-gray-400">Score:</b> <span className="text-red-400 font-bold">{selectedNode.score}/100</span></div>}
-            {selectedNode.asn && <div><b className="text-gray-400">ASN:</b> AS{selectedNode.asn}</div>}
-            {selectedNode.country && <div><b className="text-gray-400">Country:</b> {selectedNode.country}</div>}
-          </div>
+        <div className="absolute top-2 left-2 z-10 bg-navy-950/90 border border-navy-700 rounded-lg px-3 py-2 text-[11px] text-gray-200 shadow-xl max-w-xs">
+          <p className="font-bold text-cyan-400 uppercase text-[10px]">{selectedNode.type}</p>
+          <p className="font-mono break-all">{selectedNode.label || selectedNode.id}</p>
+          {selectedNode.asn && <p className="text-gray-400">ASN: {selectedNode.asn}</p>}
+          {selectedNode.country && <p className="text-gray-400">Country: {selectedNode.country}</p>}
         </div>
       )}
+      <svg ref={svgRef} className="w-full h-full" />
     </div>
+  )
+}
+
+export default function InfraGraph(props) {
+  return (
+    <InfraGraphErrorBoundary>
+      <InfraGraphInner {...props} />
+    </InfraGraphErrorBoundary>
   )
 }
