@@ -68,6 +68,16 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    @application.middleware("http")
+    async def vercel_path_rewrite_middleware(request: Request, call_next):
+        """Restore original client request path if Vercel rewritten to /api/index.py."""
+        matched_path = request.headers.get("x-matched-path")
+        if matched_path and request.scope.get("path") == "/api/index.py":
+            # Strip query params from matched path if present
+            path_only = matched_path.split("?")[0]
+            request.scope["path"] = path_only
+        return await call_next(request)
+
     # Global Exception Handlers
     @application.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):
