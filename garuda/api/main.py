@@ -136,4 +136,4 @@ def create_app() -> FastAPI:
 app = create_app()
 
 # Mangum serverless handler for Vercel / AWS Lambda
-handler = Mangum(app) if Mangum is not None else None
+handler = Mangum(app, lifespan="off") if Mangum is not None else None

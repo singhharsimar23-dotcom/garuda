@@ -1,0 +1,10 @@
+.git
+.github
+tests
+.pytest_cache
+*.pyc
+__pycache__
+garuda/data/screenshots
+venv
+.venv
+*.log
