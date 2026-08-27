@@ -1,8 +1,9 @@
 import asyncio
 from datetime import datetime, timezone, timedelta
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 import feedparser
+import httpx
 
 from garuda.cache import get_cached_json, set_cached_json
 from garuda.config import settings
@@ -16,6 +17,8 @@ RSS_FEEDS = {
     "pakistan_today": "https://www.pakistantoday.com.pk/category/national/feed/",
     "geo_tv": "https://www.geo.tv/rss/1/1",
 }
+
+GDELT_DOC_API_URL = "https://api.gdeltproject.org/api/v2/doc/doc?query=(pakistan+OR+kashmir+OR+loc+OR+drdo+OR+iaf)&mode=artlist&format=json&maxrecords=100"
 
 # Geopolitical Conflict & Tension Keywords and Severity Multipliers
 TENSION_KEYWORDS: Dict[str, float] = {
@@ -52,21 +55,22 @@ def _parse_entry_datetime(entry: Any) -> datetime:
     return datetime.now(timezone.utc)
 
 
+async def _fetch_gdelt_articles() -> List[Dict[str, Any]]:
+    """Fetch recent Indo-Pak military/geopolitical articles from GDELT 2.0 Doc API (No auth required)."""
+    try:
+        async with httpx.AsyncClient(timeout=8.0, follow_redirects=True) as client:
+            res = await client.get(GDELT_DOC_API_URL)
+            if res.status_code == 200:
+                data = res.json()
+                return data.get("articles", [])
+    except Exception as e:
+        logger.debug(f"[tension_index] GDELT Doc API note: {e}")
+    return []
+
+
 async def compute_tension_index(window_days: int = 7) -> float:
     """
-    Compute real-time Indo-Pak geopolitical tension score using multi-feed RSS keyword velocity.
-
-    Parses national and diplomatic news releases (MEA, NDTV) using feedparser in an async thread pool.
-    Applies exponential recency decay weights and severity multipliers across military, territorial,
-    and cyber escalation keywords.
-
-    Persists result to the 'tension_log' Supabase table and dynamically updates CONFLICT_MODE.
-
-    Args:
-        window_days: Lookback window in days (default: 7).
-
-    Returns:
-        float: Normalized tension index score between 0.0 and 1.0.
+    Compute real-time Indo-Pak geopolitical tension score using GDELT 2.0 and multi-feed RSS keyword velocity.
     """
     cache_key = f"garuda:intelligence:tension_index_{window_days}d"
     cached = await get_cached_json(cache_key)
@@ -76,7 +80,7 @@ async def compute_tension_index(window_days: int = 7) -> float:
     loop = asyncio.get_running_loop()
     all_entries: list[Any] = []
 
-    # Fetch and parse RSS feeds concurrently in executor
+    # 1. Fetch RSS feeds
     for source_name, feed_url in RSS_FEEDS.items():
         try:
             feed_obj = await loop.run_in_executor(None, feedparser.parse, feed_url)
@@ -85,12 +89,16 @@ async def compute_tension_index(window_days: int = 7) -> float:
         except Exception as e:
             logger.warning(f"[tension_index] Failed parsing RSS feed '{source_name}': {e}")
 
+    # 2. Fetch GDELT 2.0 articles
+    gdelt_articles = await _fetch_gdelt_articles()
+
     now = datetime.now(timezone.utc)
     cutoff = now - timedelta(days=window_days)
 
     total_weighted_score = 0.0
     matching_articles_count = 0
 
+    # Process RSS
     for entry in all_entries:
         published_dt = _parse_entry_datetime(entry)
         if published_dt < cutoff:
@@ -100,7 +108,6 @@ async def compute_tension_index(window_days: int = 7) -> float:
         summary = str(getattr(entry, "summary", "")).lower()
         combined_text = f"{title} {summary}"
 
-        # Calculate time-decay weight (1.0 for today -> 0.2 for window_days ago)
         age_days = max(0.0, (now - published_dt).total_seconds() / 86400.0)
         age_weight = max(0.2, 1.0 - (age_days / float(window_days)) * 0.8)
 
@@ -114,11 +121,18 @@ async def compute_tension_index(window_days: int = 7) -> float:
             total_weighted_score += article_max_score * age_weight
             matching_articles_count += 1
 
-    # Base baseline is 0.40; escalation pushes towards 1.0
+    # Process GDELT articles
+    for g_art in gdelt_articles:
+        title = str(g_art.get("title", "")).lower()
+        for kw, weight in TENSION_KEYWORDS.items():
+            if kw in title:
+                total_weighted_score += weight * 0.8
+                matching_articles_count += 1
+                break
+
     if matching_articles_count == 0:
         tension_index = 0.45
     else:
-        # Logistic / asymptotic scaling
         scaled = 0.45 + (total_weighted_score / (total_weighted_score + 5.0)) * 0.55
         tension_index = round(min(1.0, max(0.0, scaled)), 3)
 
@@ -137,7 +151,6 @@ async def compute_tension_index(window_days: int = 7) -> float:
         except Exception as e:
             logger.warning(f"[tension_index] Failed logging tension score to Supabase: {e}")
 
-    # Cache for 15 minutes
     await set_cached_json(cache_key, tension_index, ex=900)
     logger.info(f"[tension_index] Computed tension index: {tension_index} (Conflict Mode: {conflict_mode})")
     return tension_index
