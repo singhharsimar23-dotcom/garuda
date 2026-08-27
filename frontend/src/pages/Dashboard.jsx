@@ -53,7 +53,8 @@ export default function Dashboard() {
     onSuccess: (data, variables) => {
       updateAlert(variables.id, { status: "confirmed" })
       toast.success(`Alert confirmed! CERT-In advisory & STIX bundle generated for ${variables.domain}`)
-      queryClient.invalidateQueries(["stats"])
+      queryClient.invalidateQueries({ queryKey: ["stats"] })
+      queryClient.invalidateQueries({ queryKey: ["alerts"] })
     },
     onError: (err) => {
       toast.error(`Confirmation failed: ${err.message}`)
@@ -72,7 +73,8 @@ export default function Dashboard() {
     onSuccess: (data, variables) => {
       updateAlert(variables.id, { status: "false_positive" })
       toast.success(`Alert marked as false positive: ${variables.domain}`)
-      queryClient.invalidateQueries(["stats"])
+      queryClient.invalidateQueries({ queryKey: ["stats"] })
+      queryClient.invalidateQueries({ queryKey: ["alerts"] })
     },
     onError: (err) => {
       toast.error(`Rejection failed: ${err.message}`)
@@ -84,9 +86,9 @@ export default function Dashboard() {
     mutationFn: triggerCollection,
     onSuccess: () => {
       toast.success("Live intelligence feeds ingested successfully!")
-      queryClient.invalidateQueries(["stats"])
-      queryClient.invalidateQueries(["alerts"])
-      queryClient.invalidateQueries(["campaigns"])
+      queryClient.invalidateQueries({ queryKey: ["stats"] })
+      queryClient.invalidateQueries({ queryKey: ["alerts"] })
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] })
       setTimeout(() => {
         refetchAlerts()
       }, 1200)

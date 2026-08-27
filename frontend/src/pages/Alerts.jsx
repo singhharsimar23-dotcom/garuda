@@ -28,8 +28,9 @@ export default function Alerts() {
     onSuccess: (resData, variables) => {
       updateAlert(variables.id, { status: "confirmed" })
       toast.success(`Alert confirmed! Advisory generated for ${variables.domain}`)
-      queryClient.invalidateQueries(["alertsList"])
-      queryClient.invalidateQueries(["stats"])
+      queryClient.invalidateQueries({ queryKey: ["alertsList"] })
+      queryClient.invalidateQueries({ queryKey: ["alerts"] })
+      queryClient.invalidateQueries({ queryKey: ["stats"] })
     },
     onError: (err) => {
       toast.error(`Confirmation failed: ${err.message}`)
@@ -48,8 +49,9 @@ export default function Alerts() {
     onSuccess: (resData, variables) => {
       updateAlert(variables.id, { status: "false_positive" })
       toast.success(`Alert marked as false positive: ${variables.domain}`)
-      queryClient.invalidateQueries(["alertsList"])
-      queryClient.invalidateQueries(["stats"])
+      queryClient.invalidateQueries({ queryKey: ["alertsList"] })
+      queryClient.invalidateQueries({ queryKey: ["alerts"] })
+      queryClient.invalidateQueries({ queryKey: ["stats"] })
     },
     onError: (err) => {
       toast.error(`Rejection failed: ${err.message}`)

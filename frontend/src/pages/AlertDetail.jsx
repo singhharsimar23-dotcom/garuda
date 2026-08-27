@@ -78,8 +78,12 @@ export default function AlertDetail() {
       }),
     onSuccess: () => {
       toast.success("Alert confirmed malicious! Dispatched to CERT-In, URLhaus, and STIX.")
-      queryClient.invalidateQueries(["alert", id])
-      queryClient.invalidateQueries(["alertAudit", id])
+      queryClient.setQueryData(["alert", id], (old) => old ? { ...old, status: "confirmed" } : old)
+      queryClient.invalidateQueries({ queryKey: ["alert", id] })
+      queryClient.invalidateQueries({ queryKey: ["alertAudit", id] })
+      queryClient.invalidateQueries({ queryKey: ["alerts"] })
+      queryClient.invalidateQueries({ queryKey: ["alertsList"] })
+      queryClient.invalidateQueries({ queryKey: ["stats"] })
     },
     onError: (err) => toast.error(`Confirmation failed: ${err.message}`),
   })
@@ -95,8 +99,12 @@ export default function AlertDetail() {
       }),
     onSuccess: () => {
       toast.success("Alert marked as false positive.")
-      queryClient.invalidateQueries(["alert", id])
-      queryClient.invalidateQueries(["alertAudit", id])
+      queryClient.setQueryData(["alert", id], (old) => old ? { ...old, status: "false_positive" } : old)
+      queryClient.invalidateQueries({ queryKey: ["alert", id] })
+      queryClient.invalidateQueries({ queryKey: ["alertAudit", id] })
+      queryClient.invalidateQueries({ queryKey: ["alerts"] })
+      queryClient.invalidateQueries({ queryKey: ["alertsList"] })
+      queryClient.invalidateQueries({ queryKey: ["stats"] })
     },
     onError: (err) => toast.error(`Rejection failed: ${err.message}`),
   })
