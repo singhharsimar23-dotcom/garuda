@@ -29,7 +29,7 @@ async def confirm_alert(alert_id: str, analyst_id: str = "telegram_analyst") -> 
             "status": "confirmed",
             "analyst_id": analyst_id,
             "analyst_note": "Confirmed malicious threat infrastructure.",
-        }).ilike("id", f"{alert_id}%").execute()
+        }).eq("id", alert_id).execute()
 
         # Append to audit_log (enforcing RLS immutability)
         client.table("audit_log").insert({
@@ -66,7 +66,7 @@ async def reject_alert(alert_id: str, reason: str = "False positive", analyst_id
             "status": "false_positive",
             "analyst_id": analyst_id,
             "analyst_note": reason,
-        }).ilike("id", f"{alert_id}%").execute()
+        }).eq("id", alert_id).execute()
 
         client.table("audit_log").insert({
             "action": "reject_alert",

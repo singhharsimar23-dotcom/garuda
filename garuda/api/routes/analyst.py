@@ -78,7 +78,7 @@ async def confirm_threat_alert(
 
     if client:
         try:
-            res = client.table("alerts").select("*").ilike("id", f"{payload.alert_id}%").limit(1).execute()
+            res = client.table("alerts").select("*").eq("id", payload.alert_id).limit(1).execute()
             if res.data:
                 alert_record = res.data[0]
                 alert_record["status"] = "confirmed"
@@ -102,7 +102,7 @@ async def confirm_threat_alert(
             client.table("alerts").update({
                 "stix_id": stix_id,
                 "yara_rule": yara_rule,
-            }).ilike("id", f"{payload.alert_id}%").execute()
+            }).eq("id", payload.alert_id).execute()
         except Exception as e:
             logger.warning(f"[api.analyst] Error saving STIX/YARA IDs: {e}")
 
