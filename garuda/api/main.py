@@ -108,7 +108,6 @@ def create_app() -> FastAPI:
         )
 
     # Health & Posture Check Endpoint
-    @application.get("/", tags=["System"])
     @application.get("/health", tags=["System"])
     @application.get("/api/health", tags=["System"])
     async def health_check() -> Dict[str, Any]:

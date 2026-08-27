@@ -14,6 +14,7 @@ router = APIRouter(prefix="/stix", tags=["STIX 2.1 Threat Sharing"])
 STIX_FEED_CACHE_KEY = "garuda:stix:feed_bundle"
 
 
+@router.get("")
 @router.get("/feed")
 async def get_stix_threat_feed() -> Response:
     """
