@@ -62,10 +62,10 @@ async def dispatch_alert(alert: Dict[str, Any], level: Optional[str] = None) -> 
     # --------------------------------------------------------------------------
     if settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_CHAT_ID:
         telegram_text = (
-            f"🚨 *GARUDA ALERT* — {escape_md2(level)}\n"
+            f"🚨 *GARUDA ALERT* \\- {escape_md2(level)}\n"
             f"Domain: `{escape_md2(domain)}`\n"
-            f"Score: {escape_md2(score)}/100 | Sector: {escape_md2(sector)}\n"
-            f"Registrar: {escape_md2(registrar)} | Age: {escape_md2(age_str)}d\n"
+            f"Score: {escape_md2(score)}/100 \\| Sector: {escape_md2(sector)}\n"
+            f"Registrar: {escape_md2(registrar)} \\| Age: {escape_md2(age_str)}d\n"
             f"Similarity to: {escape_md2(nic_match)} \\({escape_md2(similarity_pct_str)}\\)"
         )
 
