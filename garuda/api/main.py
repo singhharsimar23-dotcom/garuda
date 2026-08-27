@@ -129,6 +129,39 @@ def create_app() -> FastAPI:
         application.include_router(r, prefix="/api")
         application.include_router(r)
 
+    # Mount frontend static assets and SPA fallback
+    from pathlib import Path
+    dist_dir = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
+    if dist_dir.exists():
+        from fastapi.staticfiles import StaticFiles
+        from fastapi.responses import FileResponse
+
+        assets_dir = dist_dir / "assets"
+        if assets_dir.exists():
+            application.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+        @application.get("/favicon.ico", include_in_schema=False)
+        async def favicon():
+            fav = dist_dir / "favicon.ico"
+            if fav.exists():
+                return FileResponse(fav)
+            return JSONResponse(status_code=204, content={})
+
+        @application.get("/index.html", include_in_schema=False)
+        @application.get("/", include_in_schema=False)
+        async def serve_root_index():
+            return FileResponse(dist_dir / "index.html")
+
+        @application.get("/{full_path:path}", include_in_schema=False)
+        async def serve_spa_fallback(full_path: str):
+            # If requesting an api path that was not found, return 404
+            if full_path.startswith("api/"):
+                raise HTTPException(status_code=404, detail="API endpoint not found")
+            target = dist_dir / full_path
+            if target.exists() and target.is_file():
+                return FileResponse(target)
+            return FileResponse(dist_dir / "index.html")
+
     return application
 
 
