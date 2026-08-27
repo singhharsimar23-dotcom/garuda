@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/api/index.py"
+      "destination": "/api/index.py?__url__=/$1"
     }
   ],
   "crons": [
