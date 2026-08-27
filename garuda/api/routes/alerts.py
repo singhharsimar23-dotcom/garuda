@@ -97,7 +97,7 @@ async def get_alert_detail(alert_id: str) -> AlertResponse:
         raise HTTPException(status_code=503, detail="Database connection unavailable.")
 
     try:
-        res = client.table("alerts").select("*").ilike("id", f"{alert_id}%").limit(1).execute()
+        res = client.table("alerts").select("*").eq("id", alert_id).limit(1).execute()
         if not res.data:
             raise HTTPException(status_code=404, detail=f"Threat alert '{alert_id}' not found in database.")
         return _format_alert_dict(res.data[0])
@@ -118,7 +118,7 @@ async def get_alert_graph(alert_id: str) -> Dict[str, Any]:
         raise HTTPException(status_code=503, detail="Database connection unavailable.")
 
     try:
-        res = client.table("alerts").select("*").ilike("id", f"{alert_id}%").limit(1).execute()
+        res = client.table("alerts").select("*").eq("id", alert_id).limit(1).execute()
         if not res.data:
             raise HTTPException(status_code=404, detail=f"Threat alert '{alert_id}' not found.")
         row = res.data[0]
@@ -140,7 +140,7 @@ async def get_alert_yara_rule(alert_id: str) -> PlainTextResponse:
         raise HTTPException(status_code=503, detail="Database connection unavailable.")
 
     try:
-        res = client.table("alerts").select("*").ilike("id", f"{alert_id}%").limit(1).execute()
+        res = client.table("alerts").select("*").eq("id", alert_id).limit(1).execute()
         if not res.data:
             raise HTTPException(status_code=404, detail=f"Threat alert '{alert_id}' not found.")
         yara_text = generate_yara_rule(res.data[0])
