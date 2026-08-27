@@ -25,6 +25,11 @@ async def list_campaign_clusters() -> CampaignListResponse:
 
     try:
         res = client.table("campaigns").select("*").order("created_at", desc=True).execute()
+        if not res.data:
+            from garuda.data.seed_telemetry import seed_initial_telemetry
+            await seed_initial_telemetry()
+            res = client.table("campaigns").select("*").order("created_at", desc=True).execute()
+
         campaigns = []
         for row in (res.data or []):
             cluster_id = row.get("cluster_id", "")

@@ -27,10 +27,10 @@ export default function ThreatMap({ alerts = [], onSelectAlert }) {
         zoomControl: true,
       })
 
-      // Dark-themed OpenStreetMap tiles
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-        attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap',
-        maxZoom: 19,
+      // Dark-themed watermark-free satellite/canvas tiles
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
+        attribution: '&copy; Esri &mdash; National Geographic, DeLorme, HERE',
+        maxZoom: 16,
       }).addTo(map)
 
       markersLayerRef.current = L.layerGroup().addTo(map)

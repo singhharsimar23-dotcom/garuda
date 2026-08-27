@@ -39,6 +39,13 @@ async def get_dashboard_statistics() -> StatsResponse:
             rows_24h = res_24h.data or []
             total_24h = res_24h.count or len(rows_24h)
 
+            if total_24h == 0:
+                from garuda.data.seed_telemetry import seed_initial_telemetry
+                await seed_initial_telemetry()
+                res_24h = client.table("alerts").select("score,status", count="exact").gte("detected_at", cutoff_24h).execute()
+                rows_24h = res_24h.data or []
+                total_24h = res_24h.count or len(rows_24h)
+
             for r in rows_24h:
                 if int(r.get("score", 0)) >= settings.SCORE_THRESHOLD_CRITICAL:
                     critical_24h += 1

@@ -74,6 +74,13 @@ async def list_alerts(
 
         res = query.order("detected_at", desc=True).range(offset, offset + limit - 1).execute()
         total_count = res.count or len(res.data or [])
+
+        if total_count == 0 and not status_filter and score_min == 0:
+            from garuda.data.seed_telemetry import seed_initial_telemetry
+            await seed_initial_telemetry()
+            res = query.order("detected_at", desc=True).range(offset, offset + limit - 1).execute()
+            total_count = res.count or len(res.data or [])
+
         alerts_list = [_format_alert_dict(row) for row in (res.data or [])]
 
         return AlertListResponse(

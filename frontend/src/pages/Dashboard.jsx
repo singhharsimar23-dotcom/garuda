@@ -83,7 +83,16 @@ export default function Dashboard() {
   const collectMutation = useMutation({
     mutationFn: triggerCollection,
     onSuccess: () => {
-      toast.success("Intelligence ingestion triggered across all 5 feeds!")
+      toast.success("Live intelligence feeds ingested successfully!")
+      queryClient.invalidateQueries(["stats"])
+      queryClient.invalidateQueries(["alerts"])
+      queryClient.invalidateQueries(["campaigns"])
+      setTimeout(() => {
+        refetchAlerts()
+      }, 1200)
+    },
+    onError: (err) => {
+      toast.error(`Ingestion error: ${err.message}`)
     },
   })
 
