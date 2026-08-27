@@ -1,12 +1,11 @@
 {
   "version": 2,
-  "framework": null,
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/garuda/api/main.py"
+      "destination": "/api/index.py"
     },
     {
       "source": "/(.*)",
@@ -14,7 +13,7 @@
     }
   ],
   "functions": {
-    "garuda/api/main.py": {
+    "api/index.py": {
       "maxDuration": 60,
       "memory": 1024
     }
