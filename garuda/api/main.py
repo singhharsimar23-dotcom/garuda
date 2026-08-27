@@ -97,6 +97,7 @@ def create_app() -> FastAPI:
         )
 
     # Health & Posture Check Endpoint
+    @application.get("/", tags=["System"])
     @application.get("/health", tags=["System"])
     @application.get("/api/health", tags=["System"])
     async def health_check() -> Dict[str, Any]:
@@ -109,19 +110,25 @@ def create_app() -> FastAPI:
             "version": settings.APP_VERSION,
         }
 
+    @application.post("/retrohunt", tags=["Retrohunt"])
     @application.post("/api/retrohunt", tags=["Retrohunt"])
     async def run_retrohunt_endpoint() -> Dict[str, Any]:
         from garuda.intelligence.retrohunt import run_retrohunt
         return await run_retrohunt()
 
-    # Mount all subrouters under /api
-    application.include_router(alerts_router, prefix="/api")
-    application.include_router(analyst_router, prefix="/api")
-    application.include_router(campaigns_router, prefix="/api")
-    application.include_router(stix_router, prefix="/api")
-    application.include_router(collect_router, prefix="/api")
-    application.include_router(stats_router, prefix="/api")
-    application.include_router(telegram_router, prefix="/api")
+    # Mount all subrouters under both /api and root for Vercel rewrite resilience
+    routers = [
+        alerts_router,
+        analyst_router,
+        campaigns_router,
+        stix_router,
+        collect_router,
+        stats_router,
+        telegram_router,
+    ]
+    for r in routers:
+        application.include_router(r, prefix="/api")
+        application.include_router(r)
 
     return application
 
