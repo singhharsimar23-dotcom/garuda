@@ -30,21 +30,20 @@ logger = logging.getLogger("garuda.api")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager for startup telemetry loading and shutdown hooks."""
-    logger.info("[lifespan] Initializing GARUDA threat intelligence subsystems...")
+    logger.info("[lifespan] Initializing GARUDA threat intelligence subsystems in background...")
 
-    # 1. Initialize database tables / verify connections
-    await init_database_tables()
+    async def _bg_init():
+        try:
+            await init_database_tables()
+            await load_nic_domains()
+            await init_known_actor_ips()
+            await fetch_tension_index()
+            logger.info("[lifespan] Background initialization complete.")
+        except Exception as e:
+            logger.warning(f"[lifespan] Non-fatal background startup error: {e}")
 
-    # 2. Pre-load ground truth NIC/Gov domains into memory
-    await load_nic_domains()
-
-    # 3. Pre-load known APT36 threat actor IPs for honeypot correlation
-    await init_known_actor_ips()
-
-    # 4. Compute initial tension score
-    await fetch_tension_index()
-
-    logger.info("[lifespan] Subsystems initialized successfully. Platform ready.")
+    import asyncio
+    asyncio.create_task(_bg_init())
     yield
     logger.info("[lifespan] Shutting down GARUDA API services.")
 
