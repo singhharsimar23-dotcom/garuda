@@ -1,0 +1,56 @@
+name: GARUDA 24/7 Threat Collection
+
+on:
+  schedule:
+    # Run every 4 hours — 6x daily threat sweep
+    - cron: "0 */4 * * *"
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Manual trigger reason"
+        required: false
+        default: "manual"
+
+jobs:
+  collect:
+    name: Trigger Garuda Collection
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Trigger /api/collect on production
+        run: |
+          echo "Triggering GARUDA production collection sweep..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            https://garuda-ochre.vercel.app/api/collect)
+          echo "Response status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "Warning: Unexpected status $STATUS"
+          else
+            echo "Collection sweep dispatched successfully."
+          fi
+
+  certstream:
+    name: CertStream CT Log Monitor
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install certstream
+        run: pip install certstream httpx
+
+      - name: Run CT Log Monitor (5 min window)
+        env:
+          GARUDA_API_URL: https://garuda-ochre.vercel.app
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: python scripts/certstream_monitor.py
