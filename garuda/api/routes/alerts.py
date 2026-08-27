@@ -4,7 +4,6 @@ from fastapi import APIRouter, HTTPException, Query, Response, status
 from fastapi.responses import PlainTextResponse
 
 from garuda.api.models import AlertListResponse, AlertResponse
-from garuda.data.seed_telemetry import DEFAULT_SEED_ALERTS, seed_initial_telemetry
 from garuda.database import get_supabase_client
 from garuda.intelligence.graph_builder import build_ioc_graph
 from garuda.response.yara_generator import generate_yara_rule
@@ -47,13 +46,13 @@ def _format_alert_dict(row: Dict[str, Any]) -> AlertResponse:
 async def list_alerts(
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(50, ge=1, le=200, description="Items per page"),
-    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status (e.g. 'pending', 'confirmed', 'false_positive')"),
-    score_min: int = Query(0, ge=0, le=100, description="Minimum threat score threshold"),
-    sector: Optional[str] = Query(None, description="Filter by target sector substring"),
+    status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
+    score_min: int = Query(0, ge=0, le=100, description="Minimum threat score"),
+    sector: Optional[str] = Query(None, description="Filter by sector"),
     cluster_id: Optional[str] = Query(None, description="Filter by campaign cluster ID"),
 ) -> AlertListResponse:
     """
-    Retrieve a paginated list of threat intelligence alerts with multi-criteria filtering.
+    Retrieve paginated real-time threat intelligence alerts directly from Supabase database.
     """
     client = get_supabase_client()
     alerts_list: List[AlertResponse] = []
@@ -78,22 +77,7 @@ async def list_alerts(
             if res.data:
                 alerts_list = [_format_alert_dict(row) for row in res.data]
         except Exception as e:
-            logger.warning(f"[api.alerts] Database query warning: {e}")
-
-    # Fallback to seeded high-fidelity threat telemetry if database is empty
-    if not alerts_list:
-        filtered = DEFAULT_SEED_ALERTS
-        if status_filter:
-            filtered = [a for a in filtered if a.get("status") == status_filter]
-        if score_min > 0:
-            filtered = [a for a in filtered if a.get("score", 0) >= score_min]
-        if sector:
-            filtered = [a for a in filtered if sector.lower() in (a.get("sector") or "").lower()]
-        if cluster_id:
-            filtered = [a for a in filtered if a.get("cluster_id") == cluster_id]
-
-        total_count = len(filtered)
-        alerts_list = [_format_alert_dict(row) for row in filtered[(page - 1) * limit: page * limit]]
+            logger.error(f"[api.alerts] Database query error: {e}")
 
     return AlertListResponse(
         alerts=alerts_list,
@@ -106,107 +90,63 @@ async def list_alerts(
 @router.get("/{alert_id}", response_model=AlertResponse)
 async def get_alert_detail(alert_id: str) -> AlertResponse:
     """
-    Retrieve complete dossier and signals breakdown for a single threat alert.
+    Retrieve complete dossier for an individual alert directly from database.
     """
     client = get_supabase_client()
-    if client:
-        try:
-            res = client.table("alerts").select("*").ilike("id", f"{alert_id}%").limit(1).execute()
-            if res.data:
-                return _format_alert_dict(res.data[0])
-        except Exception:
-            pass
+    if not client:
+        raise HTTPException(status_code=503, detail="Database connection unavailable.")
 
-    # Check seed dataset
-    for a in DEFAULT_SEED_ALERTS:
-        if a["id"].startswith(alert_id) or alert_id in a["id"]:
-            return _format_alert_dict(a)
-
-    # Return structured generic seed alert if ID is dynamic
-    return _format_alert_dict({
-        "id": alert_id,
-        "domain": f"modgov-threat-{alert_id[:6]}.space",
-        "score": 88,
-        "sector": "Ministry of Defence (MoD)",
-        "registrar": "Namecheap, Inc.",
-        "hosting_ip": "185.220.101.45",
-        "hosting_asn": 16276,
-        "status": "pending",
-        "signals": {
-            "keyword_tier": "tier1",
-            "nic_similarity": 0.89,
-            "nic_match": "mod.gov.in",
-            "c2_ports": [4000, 8443],
-            "asn_match": True,
-            "registrar_match": True,
-            "domain_age_days": 3,
-        },
-        "llm_narrative": "Critical threat: Target domain impersonates official defense infrastructure. Active C2 ports 4000/8443 indicate operational command listener on OVH SAS (AS16276).",
-    })
+    try:
+        res = client.table("alerts").select("*").ilike("id", f"{alert_id}%").limit(1).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail=f"Threat alert '{alert_id}' not found in database.")
+        return _format_alert_dict(res.data[0])
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[api.alerts] Error querying alert {alert_id}: {e}")
+        raise HTTPException(status_code=500, detail="Database query failure.")
 
 
 @router.get("/{alert_id}/graph")
 async def get_alert_graph(alert_id: str) -> Dict[str, Any]:
     """
-    Generate or retrieve the 4-pivot interactive infrastructure graph for D3/Cytoscape visualization.
+    Generate 4-pivot interactive infrastructure graph for D3 visualization from real alert.
     """
     client = get_supabase_client()
-    row = None
-    if client:
-        try:
-            res = client.table("alerts").select("*").ilike("id", f"{alert_id}%").limit(1).execute()
-            if res.data:
-                row = res.data[0]
-        except Exception:
-            pass
+    if not client:
+        raise HTTPException(status_code=503, detail="Database connection unavailable.")
 
-    if not row:
-        for a in DEFAULT_SEED_ALERTS:
-            if a["id"].startswith(alert_id) or alert_id in a["id"]:
-                row = a
-                break
-
-    if not row:
-        row = {
-            "id": alert_id,
-            "domain": "modgov-secure-portal.space",
-            "hosting_ip": "185.220.101.45",
-            "hosting_asn": 16276,
-            "registrar": "Namecheap, Inc.",
-            "sector": "Ministry of Defence (MoD)",
-            "score": 92,
-        }
-
-    return await build_ioc_graph(row.get("domain", ""), row)
+    try:
+        res = client.table("alerts").select("*").ilike("id", f"{alert_id}%").limit(1).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail=f"Threat alert '{alert_id}' not found.")
+        row = res.data[0]
+        return await build_ioc_graph(row.get("domain", ""), row)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[api.alerts] Error generating graph for alert {alert_id}: {e}")
+        raise HTTPException(status_code=500, detail="Graph generation failure.")
 
 
 @router.get("/{alert_id}/yara", response_class=PlainTextResponse)
 async def get_alert_yara_rule(alert_id: str) -> PlainTextResponse:
     """
-    Download a pure, syntactically valid YARA detection rule tailored for the alert's IOCs.
+    Generate YARA detection rule tailored for the real alert's IOCs.
     """
-    alert_dict = {
-        "id": alert_id,
-        "domain": "modgov-secure-portal.space",
-        "hosting_ip": "185.220.101.45",
-        "score": 92,
-        "sector": "Ministry of Defence (MoD)",
-    }
-
     client = get_supabase_client()
-    if client:
-        try:
-            res = client.table("alerts").select("*").ilike("id", f"{alert_id}%").limit(1).execute()
-            if res.data:
-                alert_dict = res.data[0]
-        except Exception:
-            pass
+    if not client:
+        raise HTTPException(status_code=503, detail="Database connection unavailable.")
 
-    if alert_dict["domain"] == "modgov-secure-portal.space":
-        for a in DEFAULT_SEED_ALERTS:
-            if a["id"].startswith(alert_id) or alert_id in a["id"]:
-                alert_dict = a
-                break
-
-    yara_rule_text = generate_yara_rule(alert_dict)
-    return PlainTextResponse(content=yara_rule_text, media_type="text/plain")
+    try:
+        res = client.table("alerts").select("*").ilike("id", f"{alert_id}%").limit(1).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail=f"Threat alert '{alert_id}' not found.")
+        yara_text = generate_yara_rule(res.data[0])
+        return PlainTextResponse(content=yara_text, media_type="text/plain")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[api.alerts] Error exporting YARA for alert {alert_id}: {e}")
+        raise HTTPException(status_code=500, detail="YARA export failure.")

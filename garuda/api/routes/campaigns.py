@@ -3,9 +3,7 @@ from typing import Any, Dict, List
 from fastapi import APIRouter, HTTPException
 
 from garuda.api.models import AlertResponse, CampaignListResponse, CampaignResponse
-from garuda.data.seed_telemetry import DEFAULT_SEED_CAMPAIGNS, DEFAULT_SEED_ALERTS
 from garuda.database import get_supabase_client
-from garuda.intelligence.cluster import detect_campaigns
 
 logger = logging.getLogger("garuda.api.routes.campaigns")
 
@@ -15,7 +13,7 @@ router = APIRouter(prefix="/campaigns", tags=["Campaigns"])
 @router.get("", response_model=CampaignListResponse)
 async def list_campaign_clusters() -> CampaignListResponse:
     """
-    Retrieve all correlated APT36 / Transparent Tribe campaign clusters and attack window estimates.
+    Retrieve all correlated APT36 campaign clusters directly from database.
     """
     client = get_supabase_client()
     campaigns: List[CampaignResponse] = []
@@ -43,27 +41,7 @@ async def list_campaign_clusters() -> CampaignListResponse:
                     )
                 )
         except Exception as e:
-            logger.warning(f"[api.campaigns] Database query warning: {e}")
-
-    # Fallback to rich pre-seeded campaign clusters
-    if not campaigns:
-        for row in DEFAULT_SEED_CAMPAIGNS:
-            cluster_id = row.get("cluster_id", "")
-            member_domains = [a["domain"] for a in DEFAULT_SEED_ALERTS if a.get("cluster_id") == cluster_id]
-            campaigns.append(
-                CampaignResponse(
-                    id=str(row.get("id", "")),
-                    cluster_id=cluster_id,
-                    domain_count=int(row.get("domain_count", len(member_domains) or 1)),
-                    registrar=row.get("registrar"),
-                    hosting_asn=row.get("hosting_asn"),
-                    sectors=row.get("sectors") or [],
-                    estimated_attack_window_days=row.get("estimated_attack_window_days"),
-                    confidence=row.get("confidence", "high"),
-                    created_at=str(row.get("created_at", "")),
-                    domains=member_domains or ["modgov-secure-portal.space", "indianarmy-pension-verify.online"],
-                )
-            )
+            logger.error(f"[api.campaigns] Error listing campaigns: {e}")
 
     return CampaignListResponse(campaigns=campaigns)
 
@@ -71,31 +49,27 @@ async def list_campaign_clusters() -> CampaignListResponse:
 @router.get("/{cluster_id}")
 async def get_campaign_detail(cluster_id: str) -> Dict[str, Any]:
     """
-    Retrieve detailed campaign profile including all correlated member threat alert records.
+    Retrieve detailed campaign profile and member threat alerts from database.
     """
     client = get_supabase_client()
-    if client:
-        try:
-            camp_res = client.table("campaigns").select("*").eq("cluster_id", cluster_id).limit(1).execute()
-            if camp_res.data:
-                campaign_data = camp_res.data[0]
-                alerts_res = client.table("alerts").select("*").eq("cluster_id", cluster_id).execute()
-                return {
-                    "campaign": campaign_data,
-                    "member_alerts": alerts_res.data or [],
-                    "total_domains": len(alerts_res.data or []),
-                }
-        except Exception:
-            pass
+    if not client:
+        raise HTTPException(status_code=503, detail="Database connection unavailable.")
 
-    # Check seed dataset
-    for camp in DEFAULT_SEED_CAMPAIGNS:
-        if camp["cluster_id"] == cluster_id:
-            members = [a for a in DEFAULT_SEED_ALERTS if a.get("cluster_id") == cluster_id]
-            return {
-                "campaign": camp,
-                "member_alerts": members,
-                "total_domains": len(members),
-            }
+    try:
+        camp_res = client.table("campaigns").select("*").eq("cluster_id", cluster_id).limit(1).execute()
+        if not camp_res.data:
+            raise HTTPException(status_code=404, detail=f"Campaign cluster '{cluster_id}' not found.")
 
-    raise HTTPException(status_code=404, detail=f"Campaign cluster '{cluster_id}' not found.")
+        campaign_data = camp_res.data[0]
+        alerts_res = client.table("alerts").select("*").eq("cluster_id", cluster_id).execute()
+
+        return {
+            "campaign": campaign_data,
+            "member_alerts": alerts_res.data or [],
+            "total_domains": len(alerts_res.data or []),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[api.campaigns] Error retrieving campaign {cluster_id}: {e}")
+        raise HTTPException(status_code=500, detail="Database query failure.")
