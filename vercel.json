@@ -22,7 +22,7 @@
   "crons": [
     {
       "path": "/api/collect",
-      "schedule": "*/30 * * * *"
+      "schedule": "0 6 * * *"
     }
   ],
   "headers": [
