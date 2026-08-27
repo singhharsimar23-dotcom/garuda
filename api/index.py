@@ -5,7 +5,6 @@ import os
 # Add root project directory to sys.path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from garuda.api.main import app, handler
+from garuda.api.main import app
 
-# Export app for Vercel Python runtime
-__all__ = ["app", "handler"]
+__all__ = ["app"]
