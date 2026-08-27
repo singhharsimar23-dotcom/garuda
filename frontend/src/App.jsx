@@ -5,11 +5,11 @@ import { Toaster, toast } from "react-hot-toast"
 import Sidebar from "./components/Sidebar"
 import Dashboard from "./pages/Dashboard"
 import AlertDetail from "./pages/AlertDetail"
+import Alerts from "./pages/Alerts"
 import Campaigns from "./pages/Campaigns"
 import Retrohunt from "./pages/Retrohunt"
 import StixFeed from "./pages/StixFeed"
 import AuditLog from "./pages/AuditLog"
-import AlertTable from "./components/AlertTable"
 import { supabase } from "./lib/supabase"
 import { useGarudaStore } from "./store/useGarudaStore"
 
@@ -65,7 +65,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/alerts" element={<div className="space-y-6 pb-12"><h2 className="text-xl font-black text-white">Threat Indicators Stream</h2><AlertTable alerts={alerts} /></div>} />
+            <Route path="/alerts" element={<Alerts />} />
             <Route path="/alerts/:id" element={<AlertDetail />} />
             <Route path="/campaigns" element={<Campaigns />} />
             <Route path="/retrohunt" element={<Retrohunt />} />
