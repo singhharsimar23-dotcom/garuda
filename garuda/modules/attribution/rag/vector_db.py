@@ -8,7 +8,10 @@ import logging
 from typing import Any
 
 from qdrant_client import QdrantClient, models
-from sentence_transformers import SentenceTransformer
+try:
+    from sentence_transformers import SentenceTransformer
+except ImportError:
+    SentenceTransformer = Any  # type: ignore
 
 logger = logging.getLogger("garuda.attribution.rag.vector_db")
 
