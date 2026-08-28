@@ -22,6 +22,6 @@ jobs:
 
       - name: Run CertStream WebSocket Monitor
         env:
-          GARUDA_API_URL: ${{ secrets.GARUDA_API_URL || 'https://garuda-ochre.vercel.app' }}
+          GARUDA_API_URL: ${{ secrets.GARUDA_API_URL || 'https://garuda-intel.vercel.app' }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: python scripts/certstream_monitor.py

@@ -25,7 +25,7 @@ jobs:
             -X POST \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
-            https://garuda-ochre.vercel.app/api/collect)
+            https://garuda-intel.vercel.app/api/collect)
           echo "Response status: $STATUS"
           if [ "$STATUS" != "200" ]; then
             echo "Warning: Unexpected status $STATUS"
@@ -51,6 +51,6 @@ jobs:
 
       - name: Run CT Log Monitor (5 min window)
         env:
-          GARUDA_API_URL: https://garuda-ochre.vercel.app
+          GARUDA_API_URL: https://garuda-intel.vercel.app
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: python scripts/certstream_monitor.py
