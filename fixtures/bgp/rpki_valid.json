@@ -1,0 +1,15 @@
+{
+  "status": "ok",
+  "status_code": 200,
+  "data": {
+    "validating_roas": [
+      {
+        "origin": 18209,
+        "prefix": "59.160.0.0/16",
+        "max_length": 24,
+        "source": "apnic"
+      }
+    ],
+    "status": "valid"
+  }
+}

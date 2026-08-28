@@ -7,6 +7,10 @@ import {
   Network,
   Fingerprint,
   Activity,
+  Globe,
+  Bug,
+  Target,
+  RefreshCw,
 } from "lucide-react"
 import { useGarudaStore } from "../store/useGarudaStore"
 import TensionGauge from "./TensionGauge"
@@ -44,11 +48,39 @@ const RAIL = [
     context: "network",
   },
   {
+    to: "/orb",
+    icon: Globe,
+    label: "ORB Tracker",
+    matchPaths: ["/orb"],
+    context: "orb",
+  },
+  {
+    to: "/malware",
+    icon: Bug,
+    label: "Malware Hunt",
+    matchPaths: ["/malware"],
+    context: "malware",
+  },
+  {
     to: "/attribution",
     icon: Fingerprint,
     label: "Attribution",
     matchPaths: ["/attribution"],
     context: "attribution",
+  },
+  {
+    to: "/predictive",
+    icon: Target,
+    label: "Predictive",
+    matchPaths: ["/predictive"],
+    context: "predictive",
+  },
+  {
+    to: "/lifecycle",
+    icon: RefreshCw,
+    label: "Lifecycle",
+    matchPaths: ["/lifecycle"],
+    context: "lifecycle",
   },
   {
     to: "/system",
@@ -156,7 +188,11 @@ const PANELS = {
   intelligence: IntelligencePanel,
   surface:      SurfacePanel,
   network:      NetworkPanel,
+  orb:          NetworkPanel,
+  malware:      SurfacePanel,
   attribution:  AttributionPanel,
+  predictive:   OperationsPanel,
+  lifecycle:    OperationsPanel,
   system:       SystemPanel,
 }
 

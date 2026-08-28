@@ -20,6 +20,11 @@ import Intelligence from "./pages/Intelligence"
 import Surface from "./pages/Surface"
 import Network from "./pages/Network"
 import Attribution from "./pages/Attribution"
+import AttributionDashboard from "./pages/AttributionDashboard"
+import OrbTracker from "./pages/OrbTracker"
+import MalwareHunt from "./pages/MalwareHunt"
+import PredictiveDashboard from "./pages/PredictiveDashboard"
+import LifecycleDashboard from "./pages/LifecycleDashboard"
 import System from "./pages/System"
 
 import { supabase } from "./lib/supabase"
@@ -96,7 +101,12 @@ export default function App() {
             <Route path="/intelligence" element={<Intelligence />} />
             <Route path="/surface"      element={<Surface />} />
             <Route path="/network"      element={<Network />} />
-            <Route path="/attribution"  element={<Attribution />} />
+            <Route path="/orb"          element={<OrbTracker />} />
+            <Route path="/malware"      element={<MalwareHunt />} />
+            <Route path="/attribution"  element={<AttributionDashboard />} />
+            <Route path="/attribution/review" element={<Attribution />} />
+            <Route path="/predictive"   element={<PredictiveDashboard />} />
+            <Route path="/lifecycle"    element={<LifecycleDashboard />} />
             <Route path="/system"       element={<System />} />
 
             {/* Legacy redirect */}

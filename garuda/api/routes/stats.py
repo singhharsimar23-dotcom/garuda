@@ -8,6 +8,7 @@ from garuda.api.models import StatsResponse
 from garuda.config import settings
 from garuda.database import get_supabase_client
 from garuda.intelligence.tension_index import fetch_tension_index
+from garuda.modules.lifecycle.effectiveness import get_cached_effectiveness_metrics
 
 logger = logging.getLogger("garuda.api.routes.stats")
 
@@ -79,6 +80,7 @@ async def get_dashboard_statistics() -> StatsResponse:
             logger.error(f"[api.stats] Error aggregating statistics from database: {e}")
 
     domains_monitored = len(settings.TIER_1_PATTERNS) + len(settings.TIER_2_PATTERNS)
+    lifecycle_metrics = await get_cached_effectiveness_metrics()
 
     return StatsResponse(
         total_alerts_24h=total_24h,
@@ -92,6 +94,7 @@ async def get_dashboard_statistics() -> StatsResponse:
         conflict_mode=settings.CONFLICT_MODE,
         domains_monitored=domains_monitored,
         last_collection_at=last_collection_at or now.isoformat(),
+        lifecycle_metrics=lifecycle_metrics,
     )
 
 

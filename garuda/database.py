@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 import json
 import logging
 import threading
@@ -63,6 +63,11 @@ class AlertBase(BaseModel):
     screenshot_url: Optional[str] = None
     stix_id: Optional[str] = None
     llm_narrative: Optional[str] = None
+    lifecycle_state: str = Field(default="active")
+    lifecycle_updated_at: Optional[datetime] = None
+    lifecycle_ip: Optional[str] = None
+    lifecycle_asn: Optional[int] = None
+    public_disclosure_date: Optional[date] = None
 
 
 class AlertCreate(AlertBase):
@@ -297,6 +302,16 @@ _IN_MEMORY_PDNS_OBSERVATIONS: List[Dict[str, Any]] = []
 _IN_MEMORY_OPERATOR_CLUSTERS: List[Dict[str, Any]] = []
 _IN_MEMORY_CAMPAIGN_FINGERPRINTS: List[Dict[str, Any]] = []
 _IN_MEMORY_CLUSTER_REVIEW_QUEUE: List[Dict[str, Any]] = []
+_IN_MEMORY_BGP_INCIDENTS: List[Dict[str, Any]] = []
+_IN_MEMORY_BGP_WATCHLIST: List[Dict[str, Any]] = []
+_IN_MEMORY_ORB_NODES: List[Dict[str, Any]] = []
+_IN_MEMORY_SANDBOX_ANALYSES: List[Dict[str, Any]] = []
+_IN_MEMORY_COMPILER_FINGERPRINTS: List[Dict[str, Any]] = []
+_IN_MEMORY_CANARY_TOKENS: List[Dict[str, Any]] = []
+_IN_MEMORY_CANARY_FIRES: List[Dict[str, Any]] = []
+_IN_MEMORY_PERSONA_NODES: List[Dict[str, Any]] = []
+_IN_MEMORY_PREDICTIVE_DOMAINS: List[Dict[str, Any]] = []
+_IN_MEMORY_LIFECYCLE_ALERTS: List[Dict[str, Any]] = []
 
 
 # ==============================================================================
@@ -419,10 +434,8 @@ async def query_stix_objects(
                     query = query.in_("type", types)
             if match_id:
                 ids = [i.strip() for i in match_id.split(",") if i.strip()]
-                if len(ids) == 1:
-                    query = query.eq("id", ids[0])
-                else:
-                    query = query.in_("id", ids)
+                composite_ids = [f"{i}:{collection_id}" for i in ids] + ids
+                query = query.in_("id", composite_ids)
             if added_after:
                 query = query.gt("modified", added_after.isoformat())
 
@@ -453,7 +466,9 @@ async def query_stix_objects(
                     continue
             if match_id:
                 ids = [i.strip() for i in match_id.split(",") if i.strip()]
-                if obj.get("id") not in ids:
+                obj_id = str(obj.get("id", ""))
+                raw_id = str(obj.get("raw", {}).get("id", ""))
+                if obj_id not in ids and obj_id.split(":")[0] not in ids and raw_id not in ids:
                     continue
             if added_after:
                 mod_dt = _parse_ts(obj.get("modified"))
@@ -1305,3 +1320,522 @@ async def update_cluster_review_decision(
             await update_fingerprint_cluster(fp_id, cluster_id)
 
     return review_item
+
+
+# ==============================================================================
+# Predictive Domain Pre-Registration Operations (Session 12)
+# ==============================================================================
+
+async def upsert_predictive_domain(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Insert or update a predictive domain candidate/registration record."""
+    domain = data["domain"].strip().lower()
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    record = {
+        "id": str(uuid4()),
+        "domain": domain,
+        "prediction_score": data.get("prediction_score"),
+        "narrative_keywords": data.get("narrative_keywords") or [],
+        "cluster_context": data.get("cluster_context"),
+        "predicted_at": data.get("predicted_at", now_iso),
+        "status": data.get("status", "candidate"),
+        "registered_at": data.get("registered_at"),
+        "registration_cost_usd": data.get("registration_cost_usd", 4.99),
+        "analyst_approved_by": data.get("analyst_approved_by"),
+        "analyst_justification": data.get("analyst_justification"),
+        "first_queried_at": data.get("first_queried_at"),
+        "fire_count": data.get("fire_count", 0),
+    }
+
+    client = get_supabase_client()
+    if client:
+        try:
+            res = client.table("predictive_domains").upsert(
+                {k: v for k, v in record.items() if k != "id"},
+                on_conflict="domain",
+            ).execute()
+            if res.data:
+                return res.data[0]
+        except Exception as e:
+            logger.warning("[database] Supabase upsert_predictive_domain error: %s", e)
+
+    with _db_lock:
+        existing_idx = next(
+            (i for i, r in enumerate(_IN_MEMORY_PREDICTIVE_DOMAINS) if r["domain"] == domain),
+            None,
+        )
+        if existing_idx is not None:
+            merged = dict(_IN_MEMORY_PREDICTIVE_DOMAINS[existing_idx])
+            merged.update({k: v for k, v in record.items() if v is not None})
+            _IN_MEMORY_PREDICTIVE_DOMAINS[existing_idx] = merged
+            return dict(merged)
+        _IN_MEMORY_PREDICTIVE_DOMAINS.append(dict(record))
+        return dict(record)
+
+
+async def get_predictive_domains(status: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Retrieve predictive domain records, optionally filtered by status."""
+    client = get_supabase_client()
+    if client:
+        try:
+            q = client.table("predictive_domains").select("*")
+            if status:
+                q = q.eq("status", status)
+            res = q.order("predicted_at", desc=True).execute()
+            if res.data is not None:
+                return res.data
+        except Exception as e:
+            logger.warning("[database] Supabase get_predictive_domains error: %s", e)
+
+    with _db_lock:
+        if status:
+            return [dict(r) for r in _IN_MEMORY_PREDICTIVE_DOMAINS if r.get("status") == status]
+        return [dict(r) for r in _IN_MEMORY_PREDICTIVE_DOMAINS]
+
+
+async def count_predictive_registrations_this_month() -> int:
+    """Count domains registered in the current calendar month."""
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    client = get_supabase_client()
+    if client:
+        try:
+            res = (
+                client.table("predictive_domains")
+                .select("id")
+                .eq("status", "registered")
+                .gte("registered_at", month_start.isoformat())
+                .execute()
+            )
+            if res.data is not None:
+                return len(res.data)
+        except Exception as e:
+            logger.warning("[database] Supabase count_predictive_registrations error: %s", e)
+
+    with _db_lock:
+        count = 0
+        for row in _IN_MEMORY_PREDICTIVE_DOMAINS:
+            if row.get("status") != "registered":
+                continue
+            reg_ts = _parse_ts(row.get("registered_at"))
+            if reg_ts and reg_ts >= month_start:
+                count += 1
+        return count
+
+
+async def get_monthly_registration_spend_usd() -> float:
+    """Sum registration_cost_usd for domains registered this calendar month."""
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    total = 0.0
+
+    client = get_supabase_client()
+    if client:
+        try:
+            res = (
+                client.table("predictive_domains")
+                .select("registration_cost_usd, registered_at")
+                .eq("status", "registered")
+                .gte("registered_at", month_start.isoformat())
+                .execute()
+            )
+            if res.data is not None:
+                return sum(float(r.get("registration_cost_usd") or 0) for r in res.data)
+        except Exception as e:
+            logger.warning("[database] Supabase get_monthly_registration_spend error: %s", e)
+
+    with _db_lock:
+        for row in _IN_MEMORY_PREDICTIVE_DOMAINS:
+            if row.get("status") != "registered":
+                continue
+            reg_ts = _parse_ts(row.get("registered_at"))
+            if reg_ts and reg_ts >= month_start:
+                total += float(row.get("registration_cost_usd") or 0)
+        return total
+
+
+async def insert_predictive_domain_audit(
+    action: str,
+    analyst_id: str,
+    justification: str,
+    metadata: Optional[Dict[str, Any]] = None,
+) -> None:
+    """Append audit log entry for predictive domain registration."""
+    full_justification = justification
+    if metadata:
+        full_justification = f"{justification} | {json.dumps(metadata)}"
+
+    record = {
+        "action": action,
+        "analyst_id": analyst_id,
+        "justification": full_justification[:2000],
+    }
+
+    client = get_supabase_client()
+    if client:
+        try:
+            client.table("audit_log").insert(record).execute()
+            return
+        except Exception as e:
+            logger.warning("[database] Supabase insert_predictive_domain_audit error: %s", e)
+
+
+# ==============================================================================
+# Sandbox Analysis Operations (Session 13)
+# ==============================================================================
+
+async def upsert_sandbox_analysis(client: Any, data: Dict[str, Any]) -> Dict[str, Any]:
+    """Insert or update a sandbox_analyses row keyed by task_id."""
+    task_id = data.get("task_id")
+    record = {
+        "id": str(uuid4()),
+        "alert_id": data.get("alert_id"),
+        "domain": data.get("domain"),
+        "task_id": task_id,
+        "submitted_at": data.get("submitted_at"),
+        "completed_at": data.get("completed_at"),
+        "verdict": data.get("verdict"),
+        "c2_domains": data.get("c2_domains"),
+        "c2_ips": data.get("c2_ips"),
+        "mitre_techniques": data.get("mitre_techniques"),
+        "dropped_hashes": data.get("dropped_hashes"),
+        "report_url": data.get("report_url"),
+        "is_boss_linux": data.get("is_boss_linux", False),
+        "raw_result_url": data.get("raw_result_url"),
+    }
+
+    sb_client = client or get_supabase_client()
+    if sb_client and task_id:
+        try:
+            res = sb_client.table("sandbox_analyses").upsert(
+                {k: v for k, v in record.items() if v is not None and k != "id"},
+                on_conflict="task_id",
+            ).execute()
+            if res.data:
+                return res.data[0]
+        except Exception as e:
+            logger.warning("[database] Supabase upsert_sandbox_analysis error: %s", e)
+
+    with _db_lock:
+        existing_idx = next(
+            (i for i, r in enumerate(_IN_MEMORY_SANDBOX_ANALYSES) if r.get("task_id") == task_id),
+            None,
+        )
+        if existing_idx is not None:
+            merged = dict(_IN_MEMORY_SANDBOX_ANALYSES[existing_idx])
+            merged.update({k: v for k, v in record.items() if v is not None})
+            _IN_MEMORY_SANDBOX_ANALYSES[existing_idx] = merged
+            return dict(merged)
+        _IN_MEMORY_SANDBOX_ANALYSES.append(dict(record))
+        return dict(record)
+
+
+async def insert_compiler_fingerprint(
+    sample_hash: str,
+    *,
+    filename: Optional[str] = None,
+    alert_id: Optional[str] = None,
+    source: str = "anyrun_sandbox",
+) -> Dict[str, Any]:
+    """Insert dropped file hash into compiler_fingerprints."""
+    record = {
+        "id": str(uuid4()),
+        "sample_hash": sample_hash,
+        "source": source,
+        "pdb_path": filename,
+        "first_seen": datetime.now(timezone.utc).isoformat(),
+    }
+
+    client = get_supabase_client()
+    if client:
+        try:
+            res = client.table("compiler_fingerprints").upsert(
+                {
+                    "sample_hash": sample_hash,
+                    "source": source,
+                    "pdb_path": filename,
+                },
+                on_conflict="sample_hash",
+            ).execute()
+            if res.data:
+                return res.data[0]
+        except Exception as e:
+            logger.warning("[database] Supabase insert_compiler_fingerprint error: %s", e)
+
+    with _db_lock:
+        existing = next(
+            (r for r in _IN_MEMORY_COMPILER_FINGERPRINTS if r.get("sample_hash") == sample_hash),
+            None,
+        )
+        if existing:
+            return dict(existing)
+        _IN_MEMORY_COMPILER_FINGERPRINTS.append(dict(record))
+        return dict(record)
+
+
+async def seed_sandbox_ioc_alert(
+    domain: str,
+    score: int = 70,
+    parent_alert_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Seed a C2 domain from sandbox results into the alerts table."""
+    clean_domain = domain.strip().lower().lstrip("*.")
+    now_iso = datetime.now(timezone.utc).isoformat()
+    signals = {
+        "source": "anyrun_sandbox",
+        "seeded": True,
+        "parent_alert_id": parent_alert_id,
+    }
+    record = {
+        "id": str(uuid4()),
+        "domain": clean_domain,
+        "score": score,
+        "signals": signals,
+        "detected_at": now_iso,
+        "status": "pending",
+    }
+
+    client = get_supabase_client()
+    if client:
+        try:
+            existing = client.table("alerts").select("id").eq("domain", clean_domain).limit(1).execute()
+            if existing.data:
+                return existing.data[0]
+            res = client.table("alerts").insert({
+                "domain": clean_domain,
+                "score": score,
+                "signals": signals,
+                "detected_at": now_iso,
+                "status": "pending",
+            }).execute()
+            if res.data:
+                return res.data[0]
+        except Exception as e:
+            logger.warning("[database] Supabase seed_sandbox_ioc_alert error: %s", e)
+
+    with _db_lock:
+        pass
+    return record
+
+
+# ==============================================================================
+# Canary Document Factory Operations (Session 14)
+# ==============================================================================
+
+async def upsert_canary_token(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Store a canary token record."""
+    token = str(data["token"])
+    record = {
+        "id": str(uuid4()),
+        "token": token,
+        "token_type": data.get("token_type"),
+        "memo": data.get("memo"),
+        "document_theme": data.get("document_theme"),
+        "sector": data.get("sector"),
+        "webhook_url": data.get("webhook_url"),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "fire_count": 0,
+        "is_active": True,
+    }
+
+    client = get_supabase_client()
+    if client:
+        try:
+            res = client.table("canary_tokens").upsert(
+                {k: v for k, v in record.items() if k != "id"},
+                on_conflict="token",
+            ).execute()
+            if res.data:
+                return res.data[0]
+        except Exception as e:
+            logger.warning("[database] Supabase upsert_canary_token error: %s", e)
+
+    with _db_lock:
+        existing_idx = next(
+            (i for i, r in enumerate(_IN_MEMORY_CANARY_TOKENS) if r.get("token") == token),
+            None,
+        )
+        if existing_idx is not None:
+            merged = dict(_IN_MEMORY_CANARY_TOKENS[existing_idx])
+            merged.update({k: v for k, v in record.items() if v is not None})
+            _IN_MEMORY_CANARY_TOKENS[existing_idx] = merged
+            return dict(merged)
+        _IN_MEMORY_CANARY_TOKENS.append(dict(record))
+        return dict(record)
+
+
+async def get_canary_token_by_value(token: str, client: Any = None) -> Optional[Dict[str, Any]]:
+    """Look up canary token by token string."""
+    sb_client = client or get_supabase_client()
+    if sb_client:
+        try:
+            res = sb_client.table("canary_tokens").select("*").eq("token", token).limit(1).execute()
+            if res.data:
+                return res.data[0]
+        except Exception as e:
+            logger.warning("[database] Supabase get_canary_token_by_value error: %s", e)
+
+    with _db_lock:
+        for row in _IN_MEMORY_CANARY_TOKENS:
+            if row.get("token") == token:
+                return dict(row)
+    return None
+
+
+async def insert_canary_fire(client: Any, data: Dict[str, Any]) -> Dict[str, Any]:
+    """Record a canary token fire event."""
+    record = {
+        "id": str(uuid4()),
+        "token_id": data.get("token_id"),
+        "fired_at": datetime.now(timezone.utc).isoformat(),
+        "src_ip": data.get("src_ip"),
+        "src_asn": data.get("src_asn"),
+        "src_org": data.get("src_org"),
+        "useragent": data.get("useragent"),
+        "score": data.get("score", 0),
+        "alert_dispatched": data.get("alert_dispatched", False),
+    }
+
+    sb_client = client or get_supabase_client()
+    if sb_client:
+        try:
+            res = sb_client.table("canary_fires").insert(record).execute()
+            if res.data:
+                return res.data[0]
+        except Exception as e:
+            logger.warning("[database] Supabase insert_canary_fire error: %s", e)
+
+    with _db_lock:
+        _IN_MEMORY_CANARY_FIRES.append(dict(record))
+        return dict(record)
+
+
+async def increment_canary_fire_count(token_id: str, client: Any = None) -> None:
+    """Increment fire_count and update last_fired_at on canary_tokens."""
+    now_iso = datetime.now(timezone.utc).isoformat()
+    sb_client = client or get_supabase_client()
+    if sb_client:
+        try:
+            res = sb_client.table("canary_tokens").select("fire_count").eq("id", token_id).limit(1).execute()
+            count = (res.data[0].get("fire_count") or 0) + 1 if res.data else 1
+            sb_client.table("canary_tokens").update({
+                "fire_count": count,
+                "last_fired_at": now_iso,
+            }).eq("id", token_id).execute()
+            return
+        except Exception as e:
+            logger.warning("[database] Supabase increment_canary_fire_count error: %s", e)
+
+    with _db_lock:
+        for row in _IN_MEMORY_CANARY_TOKENS:
+            if str(row.get("id")) == str(token_id):
+                row["fire_count"] = (row.get("fire_count") or 0) + 1
+                row["last_fired_at"] = now_iso
+                break
+
+
+async def upsert_persona_node(
+    node_type: str,
+    value: str,
+    confidence: float,
+    source: str,
+    metadata: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Add or update a persona graph node."""
+    record = {
+        "id": str(uuid4()),
+        "node_type": node_type,
+        "value": value,
+        "confidence": confidence,
+        "source": source,
+        "metadata": metadata or {},
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    client = get_supabase_client()
+    if client:
+        try:
+            res = client.table("persona_nodes").upsert(
+                {
+                    "node_type": node_type,
+                    "value": value,
+                    "confidence": confidence,
+                    "source": source,
+                    "metadata": metadata or {},
+                },
+                on_conflict="node_type,value,source",
+            ).execute()
+            if res.data:
+                return res.data[0]
+        except Exception as e:
+            logger.warning("[database] Supabase upsert_persona_node error: %s", e)
+
+    with _db_lock:
+        existing_idx = next(
+            (
+                i for i, r in enumerate(_IN_MEMORY_PERSONA_NODES)
+                if r.get("node_type") == node_type and r.get("value") == value and r.get("source") == source
+            ),
+            None,
+        )
+        if existing_idx is not None:
+            _IN_MEMORY_PERSONA_NODES[existing_idx].update(record)
+            return dict(_IN_MEMORY_PERSONA_NODES[existing_idx])
+        _IN_MEMORY_PERSONA_NODES.append(dict(record))
+        return dict(record)
+
+
+async def ip_matches_confirmed_alert(src_ip: str, client: Any = None) -> bool:
+    """True if src_ip matches hosting_ip on a confirmed GARUDA alert."""
+    sb_client = client or get_supabase_client()
+    if sb_client:
+        try:
+            res = (
+                sb_client.table("alerts")
+                .select("id")
+                .eq("hosting_ip", src_ip)
+                .in_("status", ["confirmed", "malicious"])
+                .limit(1)
+                .execute()
+            )
+            if res.data:
+                return True
+            res2 = (
+                sb_client.table("alerts")
+                .select("id")
+                .eq("hosting_ip", src_ip)
+                .gte("score", 70)
+                .limit(1)
+                .execute()
+            )
+            return bool(res2.data)
+        except Exception as e:
+            logger.warning("[database] Supabase ip_matches_confirmed_alert error: %s", e)
+    return False
+
+
+async def ip_in_passive_dns(src_ip: str, client: Any = None) -> bool:
+    """True if src_ip appears in passive DNS observation raw responses."""
+    sb_client = client or get_supabase_client()
+    if sb_client:
+        try:
+            res = (
+                sb_client.table("passive_dns_observations")
+                .select("id, raw_response")
+                .limit(500)
+                .execute()
+            )
+            for row in res.data or []:
+                raw = row.get("raw_response") or {}
+                if src_ip in json.dumps(raw):
+                    return True
+        except Exception as e:
+            logger.warning("[database] Supabase ip_in_passive_dns error: %s", e)
+
+    with _db_lock:
+        for obs in _IN_MEMORY_PDNS_OBSERVATIONS:
+            if src_ip in json.dumps(obs.get("raw_response") or {}):
+                return True
+    return False
+

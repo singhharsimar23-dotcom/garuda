@@ -88,6 +88,7 @@ class StatsResponse(BaseModel):
     conflict_mode: bool = False
     domains_monitored: int = 0
     last_collection_at: Optional[str] = None
+    lifecycle_metrics: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ConfirmAlertRequest(BaseModel):

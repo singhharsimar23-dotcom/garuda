@@ -40,8 +40,20 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: Optional[str] = None
     CELERY_RESULT_BACKEND: Optional[str] = None
 
-    # AI & Threat Narrative Engine (Google Gemini)
+    # AI & Threat Narrative Engine (Google Gemini / Anthropic)
     GEMINI_API_KEY: Optional[str] = None
+    ANTHROPIC_API_KEY: Optional[str] = None
+
+    # Predictive Domain Pre-Registration (Session 12 — Porkbun)
+    PORKBUN_API_KEY: Optional[str] = None
+    PORKBUN_API_SECRET: Optional[str] = None
+    TAXII_ADMIN_TOKEN: Optional[str] = None  # Admin auth for predictive + malware_hunt endpoints
+    DOMAIN_REGISTRATION_BUDGET_USD_MONTHLY: float = 50.0
+    DEFAULT_DOMAIN_REGISTRATION_COST_USD: float = 4.99
+
+    # RAG Attribution (Qdrant vector store — cloud.qdrant.io free tier)
+    QDRANT_URL: Optional[str] = None
+    QDRANT_API_KEY: Optional[str] = None
 
     # Threat Intelligence Feeds & OSINT APIs
     OTX_API_KEY: Optional[str] = None
@@ -85,6 +97,19 @@ class Settings(BaseSettings):
     TEAMS_WEBHOOK_URL: Optional[str] = None
     TELEGRAM_BOT_TOKEN: Optional[str] = "8306024525:AAEiEjrkqsv3UzQD-f7l9MRn41dsBpwjCE8"
     TELEGRAM_CHAT_ID: Optional[str] = "6433246026"
+
+    # Module feature flags (RULE 2 — stub behind flag when uncertain)
+    ENABLE_BGP_MONITOR: bool = True
+    ENABLE_ORB_TRACKER: bool = True
+    ENABLE_SANDBOX: bool = True
+    ENABLE_LIFECYCLE_TRACKER: bool = True
+
+    # ANY.RUN Sandbox Analysis (Session 13)
+    ANYRUN_API_KEY: Optional[str] = None
+
+    # Canary Document Factory (Session 14)
+    CANARYTOKENS_WEBHOOK_URL: Optional[str] = None
+    GREYNOISE_API_KEY: Optional[str] = None
 
     # Threat Scoring Thresholds
     SCORE_THRESHOLD_LOG: int = 40

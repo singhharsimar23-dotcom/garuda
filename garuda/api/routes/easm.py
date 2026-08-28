@@ -204,6 +204,32 @@ async def run_easm_scan(
         }
 
     ranges = await _fetch_monitored_ranges()
+
+    # Session 8: supplement DB ranges with live BGP-announced prefixes
+    try:
+        from garuda.modules.easm.collector import get_live_defence_prefixes
+        live_prefixes = await get_live_defence_prefixes()
+        for lp in live_prefixes:
+            ranges.append({
+                "id": None,
+                "cidr": lp["cidr"],
+                "org_name": lp["org_label"],
+                "asn": f"AS{lp['asn']}",
+                "source": lp["source"],
+            })
+    except Exception as exc:
+        logger.warning("[easm/scan] Live BGP prefix fetch failed: %s", exc)
+
+    # Deduplicate by CIDR
+    seen_cidrs: set[str] = set()
+    unique_ranges: list[dict] = []
+    for r in ranges:
+        cidr = r.get("cidr", "")
+        if cidr and cidr not in seen_cidrs:
+            seen_cidrs.add(cidr)
+            unique_ranges.append(r)
+    ranges = unique_ranges
+
     if not ranges:
         logger.info("[easm/scan] monitored_asn_ranges is empty — nothing to scan.")
         return {

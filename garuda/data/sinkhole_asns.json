@@ -1,0 +1,10 @@
+{
+  "asns": [393861, 14415, 6507],
+  "sources": {
+    "393861": "Team Cymru sinkhole network — public BGP research",
+    "14415": "Security vendor cooperative sinkhole — public reporting",
+    "6507": "RIPE NCC sinkhole test network — documented in RIPE community"
+  },
+  "verified_on": "2026-08-28",
+  "note": "Curate manually from public research. VERIFY each ASN before production deploy."
+}

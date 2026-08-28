@@ -382,3 +382,56 @@ $$;
 CREATE POLICY "operator_clusters_all" ON operator_clusters FOR ALL USING (true);
 CREATE POLICY "campaign_infrastructure_fingerprints_all" ON campaign_infrastructure_fingerprints FOR ALL USING (true);
 CREATE POLICY "cluster_review_queue_all" ON cluster_review_queue FOR ALL USING (true);
+
+-- ==============================================================================
+-- SESSION 10: MALWARE HUNT ENGINE
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS compiler_fingerprints (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    sample_hash text UNIQUE NOT NULL,
+    threat_actor text,
+    campaign text,
+    compile_timestamp int,
+    compile_hour_utc int,
+    compile_tz_hypothesis text,
+    compile_weekday int,
+    linker_major int,
+    linker_minor int,
+    pdb_path text,
+    section_entropy jsonb,
+    rich_header_hash text,
+    import_hash text,
+    source text,
+    first_seen timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS ssh_key_observations (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    fingerprint text NOT NULL,
+    ip text NOT NULL,
+    asn int,
+    org text,
+    key_type text,
+    first_seen timestamptz DEFAULT now(),
+    last_seen timestamptz DEFAULT now(),
+    UNIQUE(fingerprint, ip)
+);
+
+CREATE INDEX IF NOT EXISTS idx_compiler_fingerprints_threat_actor ON compiler_fingerprints(threat_actor);
+CREATE INDEX IF NOT EXISTS idx_compiler_fingerprints_import_hash ON compiler_fingerprints(import_hash);
+CREATE INDEX IF NOT EXISTS idx_ssh_key_observations_fingerprint ON ssh_key_observations(fingerprint);
+CREATE INDEX IF NOT EXISTS idx_ssh_key_observations_ip ON ssh_key_observations(ip);
+
+ALTER TABLE compiler_fingerprints ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ssh_key_observations ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "compiler_fingerprints_all" ON compiler_fingerprints;
+    DROP POLICY IF EXISTS "ssh_key_observations_all" ON ssh_key_observations;
+END
+$$;
+
+CREATE POLICY "compiler_fingerprints_all" ON compiler_fingerprints FOR ALL USING (true);
+CREATE POLICY "ssh_key_observations_all" ON ssh_key_observations FOR ALL USING (true);

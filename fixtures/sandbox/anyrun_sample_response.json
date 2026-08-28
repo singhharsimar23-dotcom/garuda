@@ -1,0 +1,32 @@
+{
+  "data": {
+    "status": "done",
+    "analysis": {
+      "verdict": "malicious",
+      "network": {
+        "dns": [
+          {"domain": "c2.evil-campaign.space"},
+          {"domain": "update.modgov-fake.online"}
+        ],
+        "connections": [
+          {"remoteIP": "185.220.101.45"},
+          {"remoteIP": "103.21.244.0"}
+        ]
+      },
+      "behaviors": [
+        {"name": "T1055 - Process Injection"},
+        {"name": "T1071.001 - Application Layer Protocol: Web Protocols"}
+      ],
+      "files": [
+        {
+          "sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+          "filename": "payload.desktop"
+        },
+        {
+          "sha256": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+          "filename": "setup.exe"
+        }
+      ]
+    }
+  }
+}

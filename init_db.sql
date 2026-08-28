@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS alerts (
     screenshot_url TEXT,
     stix_id TEXT,
     llm_narrative TEXT,
+    rag_attribution JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -451,3 +452,281 @@ $$;
 CREATE POLICY "operator_clusters_all" ON operator_clusters FOR ALL USING (true);
 CREATE POLICY "campaign_infrastructure_fingerprints_all" ON campaign_infrastructure_fingerprints FOR ALL USING (true);
 CREATE POLICY "cluster_review_queue_all" ON cluster_review_queue FOR ALL USING (true);
+
+-- ==============================================================================
+-- SESSION 8: BGP RPKI REST MONITOR
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS bgp_watchlist (
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    prefix       TEXT NOT NULL UNIQUE,
+    expected_asn INT NOT NULL,
+    org_label    TEXT,
+    active       BOOLEAN NOT NULL DEFAULT true,
+    seeded_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS bgp_incidents (
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    prefix       TEXT NOT NULL,
+    expected_asn INT,
+    observed_asn INT,
+    rpki_status  TEXT,
+    signal_count INT DEFAULT 1,
+    detected_at  TIMESTAMPTZ DEFAULT NOW(),
+    resolved_at  TIMESTAMPTZ,
+    analyst_note TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_bgp_incidents_detected ON bgp_incidents(detected_at DESC);
+CREATE INDEX IF NOT EXISTS idx_bgp_incidents_prefix ON bgp_incidents(prefix);
+CREATE INDEX IF NOT EXISTS idx_bgp_watchlist_active ON bgp_watchlist(active);
+
+ALTER TABLE bgp_incidents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bgp_watchlist ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "bgp_incidents_all" ON bgp_incidents;
+    DROP POLICY IF EXISTS "bgp_watchlist_all" ON bgp_watchlist;
+END
+$$;
+
+CREATE POLICY "bgp_incidents_all" ON bgp_incidents FOR ALL USING (true);
+CREATE POLICY "bgp_watchlist_all" ON bgp_watchlist FOR ALL USING (true);
+
+-- ==============================================================================
+-- SESSION 9: ORB NETWORK TRACKER
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS orb_nodes (
+    id                        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ip                        TEXT UNIQUE NOT NULL,
+    asn                       INT,
+    country                   TEXT,
+    product                   TEXT,
+    firmware_version          TEXT,
+    open_ports                INT[],
+    known_cves                TEXT[],
+    orb_score                 INT DEFAULT 0,
+    triggered_signals         TEXT[],
+    targeting_indian_defence  BOOLEAN DEFAULT false,
+    confidence_label          TEXT,
+    anchor_asns_found         INT[],
+    first_seen                TIMESTAMPTZ DEFAULT NOW(),
+    last_confirmed            TIMESTAMPTZ DEFAULT NOW(),
+    analyst_note              TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_orb_nodes_score ON orb_nodes(orb_score DESC);
+CREATE INDEX IF NOT EXISTS idx_orb_nodes_targeting ON orb_nodes(targeting_indian_defence);
+CREATE INDEX IF NOT EXISTS idx_orb_nodes_last_confirmed ON orb_nodes(last_confirmed DESC);
+
+ALTER TABLE orb_nodes ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "orb_nodes_all" ON orb_nodes;
+END
+$$;
+
+CREATE POLICY "orb_nodes_all" ON orb_nodes FOR ALL USING (true);
+
+-- ==============================================================================
+-- SESSION 12: PREDICTIVE DOMAIN PRE-REGISTRATION (APT36 HONEYPOT DISRUPTION)
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS predictive_domains (
+    id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    domain                  TEXT UNIQUE NOT NULL,
+    prediction_score        FLOAT,
+    narrative_keywords      TEXT[],
+    cluster_context         TEXT,
+    predicted_at            TIMESTAMPTZ DEFAULT NOW(),
+    status                  TEXT DEFAULT 'candidate',
+        -- candidate / registered / abandoned / taken_by_apt / expired
+    registered_at           TIMESTAMPTZ,
+    registration_cost_usd   FLOAT DEFAULT 4.99,
+    analyst_approved_by     TEXT,
+    analyst_justification   TEXT,
+    first_queried_at        TIMESTAMPTZ,
+    fire_count              INT DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_predictive_domains_status ON predictive_domains(status);
+CREATE INDEX IF NOT EXISTS idx_predictive_domains_score ON predictive_domains(prediction_score DESC);
+CREATE INDEX IF NOT EXISTS idx_predictive_domains_registered ON predictive_domains(registered_at DESC);
+
+ALTER TABLE predictive_domains ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "predictive_domains_all" ON predictive_domains;
+END
+$$;
+
+CREATE POLICY "predictive_domains_all" ON predictive_domains FOR ALL USING (true);
+
+-- ==============================================================================
+-- SESSION 10: MALWARE HUNT ENGINE
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS compiler_fingerprints (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    sample_hash text UNIQUE NOT NULL,
+    threat_actor text,
+    campaign text,
+    compile_timestamp int,
+    compile_hour_utc int,
+    compile_tz_hypothesis text,
+    compile_weekday int,
+    linker_major int,
+    linker_minor int,
+    pdb_path text,
+    section_entropy jsonb,
+    rich_header_hash text,
+    import_hash text,
+    source text,
+    first_seen timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS ssh_key_observations (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    fingerprint text NOT NULL,
+    ip text NOT NULL,
+    asn int,
+    org text,
+    key_type text,
+    first_seen timestamptz DEFAULT now(),
+    last_seen timestamptz DEFAULT now(),
+    UNIQUE(fingerprint, ip)
+);
+
+CREATE INDEX IF NOT EXISTS idx_compiler_fingerprints_threat_actor ON compiler_fingerprints(threat_actor);
+CREATE INDEX IF NOT EXISTS idx_compiler_fingerprints_import_hash ON compiler_fingerprints(import_hash);
+CREATE INDEX IF NOT EXISTS idx_ssh_key_observations_fingerprint ON ssh_key_observations(fingerprint);
+CREATE INDEX IF NOT EXISTS idx_ssh_key_observations_ip ON ssh_key_observations(ip);
+
+ALTER TABLE compiler_fingerprints ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ssh_key_observations ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "compiler_fingerprints_all" ON compiler_fingerprints;
+    DROP POLICY IF EXISTS "ssh_key_observations_all" ON ssh_key_observations;
+END
+$$;
+
+CREATE POLICY "compiler_fingerprints_all" ON compiler_fingerprints FOR ALL USING (true);
+CREATE POLICY "ssh_key_observations_all" ON ssh_key_observations FOR ALL USING (true);
+
+-- ==============================================================================
+-- SESSION 13: ANY.RUN SANDBOX ANALYSIS
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS sandbox_analyses (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    alert_id        UUID REFERENCES alerts(id),
+    domain          TEXT NOT NULL,
+    task_id         TEXT UNIQUE,
+    submitted_at    TIMESTAMPTZ DEFAULT NOW(),
+    completed_at    TIMESTAMPTZ,
+    verdict         TEXT,
+    c2_domains      TEXT[],
+    c2_ips          TEXT[],
+    mitre_techniques TEXT[],
+    dropped_hashes  TEXT[],
+    report_url      TEXT,
+    is_boss_linux   BOOLEAN DEFAULT false,
+    raw_result_url  TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_sandbox_analyses_domain ON sandbox_analyses(domain);
+CREATE INDEX IF NOT EXISTS idx_sandbox_analyses_task_id ON sandbox_analyses(task_id);
+CREATE INDEX IF NOT EXISTS idx_sandbox_analyses_alert_id ON sandbox_analyses(alert_id);
+
+ALTER TABLE sandbox_analyses ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "sandbox_analyses_all" ON sandbox_analyses;
+END
+$$;
+
+CREATE POLICY "sandbox_analyses_all" ON sandbox_analyses FOR ALL USING (true);
+
+-- ==============================================================================
+-- SESSION 14: CANARY DOCUMENT FACTORY
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS canary_tokens (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    token           TEXT UNIQUE NOT NULL,
+    token_type      TEXT NOT NULL,
+    memo            TEXT,
+    document_theme  TEXT,
+    sector          TEXT,
+    webhook_url     TEXT,
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    fire_count      INT DEFAULT 0,
+    last_fired_at   TIMESTAMPTZ,
+    is_active       BOOLEAN DEFAULT true
+);
+
+CREATE TABLE IF NOT EXISTS canary_fires (
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    token_id            UUID REFERENCES canary_tokens(id),
+    fired_at            TIMESTAMPTZ DEFAULT NOW(),
+    src_ip              TEXT,
+    src_asn             INT,
+    src_org             TEXT,
+    useragent           TEXT,
+    score               INT DEFAULT 0,
+    alert_dispatched    BOOLEAN DEFAULT false,
+    analyst_note        TEXT
+);
+
+CREATE TABLE IF NOT EXISTS persona_nodes (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    node_type   TEXT NOT NULL,
+    value       TEXT NOT NULL,
+    confidence  FLOAT,
+    source      TEXT,
+    metadata    JSONB DEFAULT '{}'::jsonb,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(node_type, value, source)
+);
+
+CREATE INDEX IF NOT EXISTS idx_canary_tokens_token ON canary_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_canary_fires_token_id ON canary_fires(token_id);
+CREATE INDEX IF NOT EXISTS idx_canary_fires_src_ip ON canary_fires(src_ip);
+CREATE INDEX IF NOT EXISTS idx_persona_nodes_value ON persona_nodes(value);
+
+ALTER TABLE canary_tokens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE canary_fires ENABLE ROW LEVEL SECURITY;
+ALTER TABLE persona_nodes ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "canary_tokens_all" ON canary_tokens;
+    DROP POLICY IF EXISTS "canary_fires_all" ON canary_fires;
+    DROP POLICY IF EXISTS "persona_nodes_all" ON persona_nodes;
+END
+$$;
+
+CREATE POLICY "canary_tokens_all" ON canary_tokens FOR ALL USING (true);
+CREATE POLICY "canary_fires_all" ON canary_fires FOR ALL USING (true);
+CREATE POLICY "persona_nodes_all" ON persona_nodes FOR ALL USING (true);
+
+-- ==============================================================================
+-- SESSION 15: CAMPAIGN LIFECYCLE TRACKER
+-- ==============================================================================
+
+ALTER TABLE alerts ADD COLUMN IF NOT EXISTS lifecycle_state text DEFAULT 'active';
+ALTER TABLE alerts ADD COLUMN IF NOT EXISTS lifecycle_updated_at timestamptz;
+ALTER TABLE alerts ADD COLUMN IF NOT EXISTS lifecycle_ip text;
+ALTER TABLE alerts ADD COLUMN IF NOT EXISTS lifecycle_asn int;
+ALTER TABLE alerts ADD COLUMN IF NOT EXISTS public_disclosure_date date;
+
+CREATE INDEX IF NOT EXISTS idx_alerts_lifecycle_state ON alerts(lifecycle_state);
+CREATE INDEX IF NOT EXISTS idx_alerts_lifecycle_updated ON alerts(lifecycle_updated_at DESC);

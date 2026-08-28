@@ -1,0 +1,13 @@
+{
+  "fingerprints": [
+    "SHA256:7a2f8b3c1d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1",
+    "SHA256:3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5",
+    "SHA256:9f0e1d2c3b4a59687766554433221100ffeeddccbbaa99887766554433221100aabb"
+  ],
+  "sources": [
+    "Black Lotus Labs public IOC releases",
+    "CYFIRMA India threat reports",
+    "iSoon leak SSH key analysis"
+  ],
+  "last_updated": "2026-01-15"
+}

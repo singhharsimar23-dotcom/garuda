@@ -1,0 +1,8 @@
+{
+  "ip": "203.0.113.50",
+  "ports": [8443, 443, 22],
+  "cpes": ["cpe:2.3:h:draytek:vigor:*:*:*:*:*:*:*:*"],
+  "hostnames": ["relay.example.net"],
+  "vulns": ["CVE-2020-8515"],
+  "tags": ["router"]
+}

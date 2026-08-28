@@ -272,5 +272,13 @@ async def process_domain(
     if score >= settings.SCORE_THRESHOLD_MEDIUM:
         await dispatch_alert(alert_dict)
 
+    # Step 10b: Background ANY.RUN sandbox for high-score downloadable domains (Session 13)
+    if score >= 60 and settings.ENABLE_SANDBOX:
+        try:
+            from garuda.modules.sandbox.trigger import schedule_sandbox_analysis
+            schedule_sandbox_analysis(alert_dict)
+        except Exception as exc:
+            logger.warning("[engine] Sandbox scheduling failed for '%s': %s", domain, exc)
+
     # Step 11: Return Alert Dictionary
     return alert_dict

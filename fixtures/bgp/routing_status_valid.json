@@ -1,0 +1,22 @@
+{
+  "status": "ok",
+  "status_code": 200,
+  "data": {
+    "routing_status": {
+      "visibility": {
+        "v4": {
+          "ris_peers_seeing": 45,
+          "total_ris_peers": 120
+        }
+      },
+      "first_seen": {
+        "time": "2020-03-15T08:22:11",
+        "origin": 18209
+      },
+      "last_seen": {
+        "time": "2026-08-28T06:00:00",
+        "origin": 18209
+      }
+    }
+  }
+}

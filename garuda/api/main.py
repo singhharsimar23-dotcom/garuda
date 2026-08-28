@@ -13,16 +13,21 @@ except ImportError:
 from garuda.api.routes import (
     alerts_router,
     analyst_router,
+    bgp_router,
+    canary_router,
     campaigns_router,
     clusters_router,
     collect_router,
+    dashboard_router,
     easm_router,
     pdns_router,
+    predictive_router,
     rpz_router,
     stats_router,
     stix_router,
     taxii_router,
     telegram_router,
+    malware_hunt_router,
 )
 from garuda.config import settings
 from garuda.database import init_database_tables
@@ -162,15 +167,20 @@ def create_app() -> FastAPI:
         taxii_router,
         rpz_router,
         pdns_router,
+        predictive_router,
         clusters_router,
+        bgp_router,
+        canary_router,
         alerts_router,
         analyst_router,
         campaigns_router,
         easm_router,
         stix_router,
-        collect_router,
-        stats_router,
+    collect_router,
+    dashboard_router,
+    stats_router,
         telegram_router,
+        malware_hunt_router,
     ]
     for r in routers:
         application.include_router(r)

@@ -95,7 +95,15 @@ def compute_ioc_confidence(signals: Dict[str, Any]) -> Tuple[int, str]:
         base_score += 15.0
         contributing_detectors.append(f"AbuseIPDB Reputation Corroboration ({abuse_reports} reports)")
 
-    # 9. Geopolitical tension multiplier
+    # 9. Compiler fingerprint corpus match (Session 10 — Malware Hunt)
+    compiler_weight = float(signals.get("compiler_match_weight", 0.0))
+    compiler_fields = signals.get("compiler_matched_fields", [])
+    if compiler_weight > 0:
+        base_score += min(45.0, round(compiler_weight * 50.0, 2))
+        field_str = ",".join(compiler_fields) if isinstance(compiler_fields, list) else str(compiler_fields)
+        contributing_detectors.append(f"Compiler Fingerprint Corpus Match ({field_str})")
+
+    # 10. Geopolitical tension multiplier
     tension_idx = float(signals.get("tension_index", 0.50))
     tension_mod = 0.0
     if base_score > 0 and tension_idx > 0.5:

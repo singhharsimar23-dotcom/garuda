@@ -1,0 +1,26 @@
+{
+  "status": "ok",
+  "status_code": 200,
+  "data": {
+    "prefixes": [
+      {
+        "prefix": "59.160.0.0/16",
+        "timelines": [
+          {
+            "starttime": "2024-01-01T00:00:00",
+            "endtime": "2030-12-31T23:59:59"
+          }
+        ]
+      },
+      {
+        "prefix": "59.160.128.0/17",
+        "timelines": [
+          {
+            "starttime": "2024-06-01T00:00:00",
+            "endtime": "2030-12-31T23:59:59"
+          }
+        ]
+      }
+    ]
+  }
+}
