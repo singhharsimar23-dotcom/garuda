@@ -157,28 +157,38 @@ export default function PredictiveDashboard() {
         subtitle="APT36 honeypot disruption — pre-register predicted phishing domains before adversary registration."
       />
 
-      {/* Budget tracker */}
-      <div className="bg-surface border border-border p-4 flex items-center gap-6">
-        <DollarSign className="w-6 h-6 text-gold shrink-0" />
-        <div className="flex-1">
-          <div className="flex justify-between text-2xs text-secondary uppercase tracking-widest mb-1">
-            <span>Monthly Registration Budget</span>
-            <span className="font-data text-primary">
-              ${budget.spent_usd?.toFixed(2)} / ${budget.monthly_limit_usd?.toFixed(2)} USD
-            </span>
+      {/* Sovereign Deceptive Defense Radar */}
+      <div className="bg-surface border border-border p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-void border border-border text-saffron">
+            <Target className="w-5 h-5" />
           </div>
-          <div className="h-2 bg-void border border-border">
-            <div
-              className="h-full transition-all duration-150"
-              style={{
-                width: `${budgetPct}%`,
-                background: budgetPct > 80 ? "#FF3B30" : "#C9922A",
-              }}
-            />
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
+              <span>Autonomous Pre-Emptive Sinkhole Grid</span>
+              <span className="px-1.5 py-0.5 text-3xs font-data bg-low/20 text-low border border-low/40 uppercase">Active</span>
+            </div>
+            <p className="text-2xs text-secondary mt-0.5">
+              Zero-cost proactive domain disruption — predicts and sinkholes adversary phishing candidates before weaponization.
+            </p>
           </div>
-          <p className="text-2xs text-ghost font-data mt-1">
-            ${budget.remaining_usd?.toFixed(2)} remaining this month
-          </p>
+        </div>
+
+        <div className="flex items-center gap-6 text-2xs font-data border-t md:border-t-0 md:border-l border-border pt-3 md:pt-0 md:pl-6 shrink-0">
+          <div>
+            <div className="text-ghost uppercase text-3xs">Active Candidates</div>
+            <div className="text-sm font-bold text-primary">{candidates.length}</div>
+          </div>
+          <div>
+            <div className="text-ghost uppercase text-3xs">Armed Honeypots</div>
+            <div className="text-sm font-bold text-saffron">{registered.length}</div>
+          </div>
+          <div>
+            <div className="text-ghost uppercase text-3xs">Interceptions</div>
+            <div className="text-sm font-bold text-critical">
+              {registered.reduce((acc, r) => acc + (r.fire_count || 0), 0)}
+            </div>
+          </div>
         </div>
       </div>
 
