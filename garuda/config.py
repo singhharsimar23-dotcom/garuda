@@ -81,6 +81,11 @@ class Settings(BaseSettings):
     RPZ_SOA_MNAME: str = "rpz.garuda.gov.in."
     RPZ_SOA_RNAME: str = "hostmaster.garuda.gov.in."
 
+    # Cloudflare Integration (DNS Analytics, Honeypot Subdomains & Edge Worker)
+    CLOUDFLARE_API_TOKEN: Optional[str] = None
+    CLOUDFLARE_ZONE_ID: Optional[str] = None
+    CLOUDFLARE_ACCOUNT_ID: Optional[str] = None
+
     # GitHub Actions Integration (Background Dispatch & Playwright Offloading)
     GH_TOKEN: Optional[str] = None
     GH_REPO: Optional[str] = "singhharsimar23-dotcom/garuda"
