@@ -32,6 +32,7 @@ export default function AlertDetail() {
   const { id } = useParams()
   const queryClient = useQueryClient()
   const [justification, setJustification] = useState("")
+  const [activeTab, setActiveTab] = useState("overview")
 
   // Query: Alert details
   const { data: alert, isLoading, isError } = useQuery({
@@ -66,6 +67,18 @@ export default function AlertDetail() {
     enabled: !!alert,
     staleTime: 60 * 1000,
     retry: false,
+  })
+
+  // Query: pDNS matches for this alert
+  const { data: pdnsData } = useQuery({
+    queryKey: ["alertPdnsMatches", id],
+    queryFn: async () => {
+      const res = await fetch(`/api/pdns/matches/${id}`)
+      if (!res.ok) return { observations: [] }
+      return res.json()
+    },
+    enabled: !!alert,
+    staleTime: 5 * 60 * 1000,
   })
 
   // Mutation: Confirm
@@ -136,31 +149,16 @@ export default function AlertDetail() {
 
   if (isError || !alert) {
     return (
-      <div className="p-8 text-center bg-navy-900 border border-navy-700 rounded-xl space-y-4">
-        <p className="text-red-400 font-bold">Threat alert record '{id}' could not be retrieved.</p>
-        <Link to="/alerts" className="text-xs text-cyan-400 underline">
+      <div className="p-8 text-center bg-surface border border-border space-y-4">
+        <p className="text-critical font-bold">Threat alert record '{id}' could not be retrieved.</p>
+        <Link to="/alerts" className="text-xs text-info underline">
           &larr; Return to Alerts Stream
         </Link>
       </div>
     )
   }
 
-  const [activeTab, setActiveTab] = useState("overview")
-
-  // Query: pDNS matches for this alert
-  const { data: pdnsData, isLoading: pdnsLoading } = useQuery({
-    queryKey: ["alertPdnsMatches", id],
-    queryFn: async () => {
-      const res = await fetch(`/api/pdns/matches/${id}`)
-      if (!res.ok) return { observations: [] }
-      return res.json()
-    },
-    enabled: activeTab === "network_overlap" || !!alert,
-    staleTime: 5 * 60 * 1000,
-  })
-
   const pdnsObservations = Array.isArray(pdnsData?.observations) ? pdnsData.observations : []
-
   const signals = alert.signals || {}
   const advisoryDraft =
     alert.advisory_draft ||
