@@ -1,57 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-navy-950 text-gray-100 antialiased selection:bg-blue-600 selection:text-white;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    @apply antialiased selection:bg-info selection:text-white;
+    background-color: #060B14;
+    color: #E8F0FE;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
 
-/* Custom Scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+@layer utilities {
+  .font-data {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+  }
+  .text-2xs {
+    font-size: 10px;
+    line-height: 14px;
+    letter-spacing: 0.08em;
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: #070b19;
-}
+/* Scrollbars */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #060B14; }
+::-webkit-scrollbar-thumb { background: #1E3349; }
+::-webkit-scrollbar-thumb:hover { background: #1A3560; }
 
-::-webkit-scrollbar-thumb {
-  background: #1c2541;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #3a506b;
-}
-
-/* Leaflet Map overrides for dark mode */
+/* Leaflet — dark mode */
 .leaflet-container {
-  background: #070b19 !important;
+  background: #060B14 !important;
   font-family: inherit;
 }
-
 .leaflet-popup-content-wrapper {
-  background: #0f172a !important;
-  color: #f8fafc !important;
-  border: 1px solid #334155 !important;
-  border-radius: 10px !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  background: #0D1521 !important;
+  color: #E8F0FE !important;
+  border: 1px solid #1E3349 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important;
 }
-
-.leaflet-popup-tip {
-  background: #0f172a !important;
-}
-
+.leaflet-popup-tip { background: #0D1521 !important; }
 .leaflet-control-zoom a {
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
-  border-color: #334155 !important;
+  background-color: #0D1521 !important;
+  color: #E8F0FE !important;
+  border-color: #1E3349 !important;
 }
-
-.leaflet-control-zoom a:hover {
-  background-color: #1e293b !important;
-}
+.leaflet-control-zoom a:hover { background-color: #142030 !important; }

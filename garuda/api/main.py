@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
+import json
 import logging
 from typing import Any, Dict
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 try:
@@ -13,9 +14,14 @@ from garuda.api.routes import (
     alerts_router,
     analyst_router,
     campaigns_router,
+    clusters_router,
     collect_router,
+    easm_router,
+    pdns_router,
+    rpz_router,
     stats_router,
     stix_router,
+    taxii_router,
     telegram_router,
 )
 from garuda.config import settings
@@ -83,6 +89,19 @@ def create_app() -> FastAPI:
     # Global Exception Handlers
     @application.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):
+        # Format as TAXII Error if requesting TAXII endpoint
+        if "/taxii2" in request.url.path:
+            return Response(
+                content=json.dumps({
+                    "title": "TAXII Error",
+                    "description": str(exc.detail),
+                    "error_id": f"TAXII-HTTP-{exc.status_code}",
+                    "http_status": str(exc.status_code),
+                }),
+                status_code=exc.status_code,
+                media_type="application/taxii+json;version=2.1",
+                headers={"Content-Type": "application/taxii+json;version=2.1"},
+            )
         return JSONResponse(
             status_code=exc.status_code,
             content={
@@ -96,6 +115,18 @@ def create_app() -> FastAPI:
     @application.exception_handler(Exception)
     async def unhandled_exception_handler(request: Request, exc: Exception):
         logger.error(f"[api.unhandled] Error on {request.url.path}: {exc}")
+        if "/taxii2" in request.url.path:
+            return Response(
+                content=json.dumps({
+                    "title": "Internal Server Error",
+                    "description": str(exc) if settings.DEBUG else "An internal server error occurred.",
+                    "error_id": "TAXII-ERR-500",
+                    "http_status": "500",
+                }),
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                media_type="application/taxii+json;version=2.1",
+                headers={"Content-Type": "application/taxii+json;version=2.1"},
+            )
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
@@ -128,17 +159,23 @@ def create_app() -> FastAPI:
 
     # Mount all subrouters under both /api and root for Vercel rewrite resilience
     routers = [
+        taxii_router,
+        rpz_router,
+        pdns_router,
+        clusters_router,
         alerts_router,
         analyst_router,
         campaigns_router,
+        easm_router,
         stix_router,
         collect_router,
         stats_router,
         telegram_router,
     ]
     for r in routers:
-        application.include_router(r, prefix="/api")
         application.include_router(r)
+        application.include_router(r, prefix="/api")
+
 
     # Mount frontend static assets and SPA fallback
     from pathlib import Path
@@ -165,8 +202,8 @@ def create_app() -> FastAPI:
 
         @application.get("/{full_path:path}", include_in_schema=False)
         async def serve_spa_fallback(full_path: str):
-            # If requesting an api path that was not found, return 404
-            if full_path.startswith("api/"):
+            # If requesting an api/taxii path that was not found, return 404
+            if full_path.startswith("api/") or full_path.startswith("taxii2"):
                 raise HTTPException(status_code=404, detail="API endpoint not found")
             target = dist_dir / full_path
             if target.exists() and target.is_file():

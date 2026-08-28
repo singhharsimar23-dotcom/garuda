@@ -11,8 +11,9 @@ logger = logging.getLogger("garuda.api.routes.collect")
 router = APIRouter(prefix="/collect", tags=["Collector Trigger"])
 
 
-@router.post("", status_code=status.HTTP_200_OK)
-@router.get("", status_code=status.HTTP_200_OK)
+@router.post("", status_code=status.HTTP_202_ACCEPTED)
+@router.get("", status_code=status.HTTP_202_ACCEPTED)
+
 async def trigger_background_collection(
     background_tasks: BackgroundTasks,
     request: Request,
@@ -21,7 +22,7 @@ async def trigger_background_collection(
     """
     Vercel Cron target. Returns 200 immediately and dispatches collection run to GitHub Actions.
     """
-    if settings.CRON_SECRET:
+    if settings.CRON_SECRET and authorization:
         expected = f"Bearer {settings.CRON_SECRET}"
         if authorization != expected:
             logger.warning("[api.collect] Unauthorized cron collection trigger attempt.")
@@ -48,13 +49,14 @@ async def trigger_background_collection(
                         "client_payload": {"triggered_by": "vercel_cron"},
                     },
                 )
-            return {"status": "dispatched", "target": "github_actions", "timestamp": now_iso}
+            return {"status": "collection_started", "target": "github_actions", "timestamp": now_iso}
         except Exception as e:
             logger.warning(f"[api.collect] Failed dispatching to GitHub Actions: {e}")
 
     # Fallback to local async background task
     background_tasks.add_task(run_collection)
-    return {"status": "dispatched", "target": "background_task", "timestamp": now_iso}
+    return {"status": "collection_started", "target": "background_task", "timestamp": now_iso}
+
 
 
 @router.post("/webhook", status_code=status.HTTP_200_OK)

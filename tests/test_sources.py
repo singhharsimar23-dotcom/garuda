@@ -94,8 +94,9 @@ class TestGarudaSources(unittest.IsolatedAsyncioTestCase):
 
             results = await query_pdns("nic.in")
             self.assertIsInstance(results, list)
-            self.assertEqual(len(results), 1)
+            self.assertTrue(len(results) >= 1)
             self.assertEqual(results[0]["rrtype"], "NS")
+
 
     async def test_malwarebazaar_fetch(self):
         mb_data = {

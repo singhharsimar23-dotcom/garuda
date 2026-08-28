@@ -1,8 +1,12 @@
 import React, { useEffect } from "react"
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom"
 import { Toaster, toast } from "react-hot-toast"
 
+import StatusBar from "./components/StatusBar"
 import Sidebar from "./components/Sidebar"
+import GlobalSearch from "./components/GlobalSearch"
+
+// Existing pages
 import Dashboard from "./pages/Dashboard"
 import AlertDetail from "./pages/AlertDetail"
 import Alerts from "./pages/Alerts"
@@ -10,6 +14,14 @@ import Campaigns from "./pages/Campaigns"
 import Retrohunt from "./pages/Retrohunt"
 import StixFeed from "./pages/StixFeed"
 import AuditLog from "./pages/AuditLog"
+
+// New pages
+import Intelligence from "./pages/Intelligence"
+import Surface from "./pages/Surface"
+import Network from "./pages/Network"
+import Attribution from "./pages/Attribution"
+import System from "./pages/System"
+
 import { supabase } from "./lib/supabase"
 import { useGarudaStore } from "./store/useGarudaStore"
 
@@ -28,15 +40,15 @@ export default function App() {
             if (payload?.new) {
               addAlert(payload.new)
               toast(
-                `🚨 New Threat Ingested: ${payload.new.domain} (${payload.new.score || 70}/100)`,
+                `New Threat: ${payload.new.domain} (${payload.new.score || 70}/100)`,
                 {
-                  icon: "🚨",
                   style: {
-                    background: "#0b132b",
-                    color: "#f8fafc",
-                    border: "1px solid #ef4444",
+                    background: "#0D1521",
+                    color: "#E8F0FE",
+                    border: "1px solid #FF3B30",
                     fontSize: "12px",
-                    fontWeight: "600",
+                    fontFamily: "'JetBrains Mono', monospace",
+                    borderRadius: 0,
                   },
                 }
               )
@@ -56,24 +68,45 @@ export default function App() {
   }, [addAlert, setRealtimeConnected])
 
   return (
-    <div className="flex h-screen bg-navy-950 text-gray-100 font-sans overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden" style={{ background: "#060B14" }}>
       <Toaster position="top-right" />
-      <Sidebar />
+      <GlobalSearch />
 
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-gradient-to-b from-navy-950 via-navy-900 to-navy-950">
-        <div className="max-w-7xl mx-auto">
+      {/* Fixed 32px status bar */}
+      <StatusBar />
+
+
+      {/* Body below status bar */}
+      <div className="flex flex-1 overflow-hidden pt-8">
+        <Sidebar />
+
+        {/* Main content */}
+        <main className="flex-1 overflow-y-auto" style={{ background: "#060B14" }}>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/alerts/:id" element={<AlertDetail />} />
-            <Route path="/campaigns" element={<Campaigns />} />
-            <Route path="/retrohunt" element={<Retrohunt />} />
-            <Route path="/stix" element={<StixFeed />} />
-            <Route path="/audit" element={<AuditLog />} />
+            {/* Operations section — existing pages */}
+            <Route path="/"            element={<Navigate to="/operations" replace />} />
+            <Route path="/operations"  element={<Dashboard />} />
+            <Route path="/alerts"      element={<Alerts />} />
+            <Route path="/alerts/:id"  element={<AlertDetail />} />
+            <Route path="/campaigns"   element={<Campaigns />} />
+            <Route path="/retrohunt"   element={<Retrohunt />} />
+            <Route path="/audit"       element={<AuditLog />} />
+
+            {/* New sections */}
+            <Route path="/intelligence" element={<Intelligence />} />
+            <Route path="/surface"      element={<Surface />} />
+            <Route path="/network"      element={<Network />} />
+            <Route path="/attribution"  element={<Attribution />} />
+            <Route path="/system"       element={<System />} />
+
+            {/* Legacy redirect */}
+            <Route path="/stix" element={<Navigate to="/intelligence" replace />} />
+
+            {/* Catch-all */}
+            <Route path="*" element={<Navigate to="/operations" replace />} />
           </Routes>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   )
 }

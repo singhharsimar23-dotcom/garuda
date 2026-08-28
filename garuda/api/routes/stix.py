@@ -45,7 +45,8 @@ async def get_stix_threat_feed() -> Response:
         except Exception as e:
             logger.warning(f"[api.stix] Error creating STIX object for {alert.get('domain')}: {e}")
 
-    final_bundle = Bundle(objects=stix_objects)
+    final_bundle = Bundle(objects=stix_objects, allow_custom=True)
+
     serialized_json = export_to_json(final_bundle)
 
     # Cache feed for 5 minutes

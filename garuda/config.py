@@ -55,6 +55,21 @@ class Settings(BaseSettings):
     ROBTEX_API_URL: str = "https://freeapi.robtex.com"
     HACKERTARGET_API_URL: str = "https://api.hackertarget.com"
 
+    # EASM & CVE Correlation (Session 3)
+    CISA_KEV_URL: str = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+    NVD_API_KEY: Optional[str] = None          # Free — raises rate limit to 50 req/30s vs 5 unauthenticated
+    SHODAN_API_URL: str = "https://api.shodan.io"
+    EASM_API_LIMITS_PATH: str = "config/api_limits.json"  # Quota guard — jobs read before consuming credits
+
+    # Response Policy Zone (RPZ) DNS Defense (Session 4)
+    # Strict publish threshold: only confidence >= 80 to avoid false positives breaking legitimate .gov.in resolution.
+    RPZ_MIN_CONFIDENCE: int = 80
+    RPZ_EXPIRY_DAYS: int = 90                   # Automatic review/roll-off threshold for old detections
+    RPZ_ZONE_ORIGIN: str = "rpz.garuda.gov.in"
+    RPZ_ZONE_TTL: int = 300
+    RPZ_SOA_MNAME: str = "rpz.garuda.gov.in."
+    RPZ_SOA_RNAME: str = "hostmaster.garuda.gov.in."
+
     # GitHub Actions Integration (Background Dispatch & Playwright Offloading)
     GH_TOKEN: Optional[str] = None
     GH_REPO: Optional[str] = "singhharsimar23-dotcom/garuda"

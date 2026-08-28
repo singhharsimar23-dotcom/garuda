@@ -164,3 +164,80 @@ async def process_honeypot_logs(log_entries: List[Dict[str, Any]]) -> List[Dict[
             triggered_alerts.append(alert_payload)
 
     return triggered_alerts
+
+
+def generate_canary_alert_copy(
+    token_id: str,
+    source_ip: str,
+    timestamp: str,
+) -> str:
+    """
+    Generate calibrated alert copy for canary token triggers.
+
+    CRITICAL ATTRIBUTION POLICY:
+    Canary token access data confirms TIMING ('campaign is in active preparation').
+    It NEVER justifies a geographic location claim (e.g. 'operator in City X')
+    because proxy, VPN, and commercial VPS egress make single-hit IP geolocation
+    wholly unreliable.
+    """
+    clean_date = timestamp.split("T")[0] if "T" in str(timestamp) else str(timestamp)
+    return (
+        f"Canary token '{token_id}' accessed on {clean_date} from IP {source_ip}. "
+        "Access timestamp indicates adversary campaign is in active preparation. "
+        "Note: Egress infrastructure (VPN/VPS) prevents geographic location attribution from token access alone."
+    )
+
+
+async def handle_canary_token_trigger(
+    token_id: str,
+    source_ip: str,
+    user_agent: Optional[str] = None,
+    timestamp: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Process an activated canary token decoy.
+    Dispatches timing alert without geographic overclaiming.
+    """
+    obs_time = timestamp or datetime.now(timezone.utc).isoformat()
+    alert_text = generate_canary_alert_copy(
+        token_id=token_id,
+        source_ip=source_ip,
+        timestamp=obs_time,
+    )
+
+    alert_payload = {
+        "domain": f"canary-token-{token_id}",
+        "score": 95,
+        "sector": "Deception / Active Preparation Warning",
+        "status": "pending",
+        "detected_at": obs_time,
+        "hosting_ip": source_ip,
+        "signals": {
+            "canary_token_triggered": True,
+            "token_id": token_id,
+            "timing_signal": "active_campaign_preparation",
+            "geographic_attribution": "unverified_egress_infrastructure",
+            "user_agent": user_agent,
+            "source_ip": source_ip,
+            "alert_copy": alert_text,
+        },
+        "source": "canary_token",
+    }
+
+    client = get_supabase_client()
+    if client:
+        try:
+            client.table("alerts").insert({
+                "domain": alert_payload["domain"],
+                "score": 95,
+                "signals": alert_payload["signals"],
+                "detected_at": obs_time,
+                "hosting_ip": source_ip,
+                "sector": alert_payload["sector"],
+                "status": "pending",
+            }).execute()
+        except Exception as e:
+            logger.error(f"[honeypot] Error persisting canary token alert: {e}")
+
+    await dispatch_alert(alert_payload)
+    return alert_payload

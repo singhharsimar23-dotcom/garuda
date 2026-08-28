@@ -6,6 +6,7 @@ from garuda.response.blocklist_submit import submit_to_phishtank, submit_to_urlh
 from garuda.response.certin_advisory import generate_advisory_draft
 from garuda.response.pdf_bulletin import generate_daily_bulletin_pdf, run_daily_bulletin_task
 from garuda.response.screenshot import capture_screenshot
+from garuda.response.rpz_generator import generate_active_rpz_zone, publish_domain_to_rpz, render_rpz_zone_file
 from garuda.response.stix_export import create_stix_bundle, export_to_json
 from garuda.response.telegram_bot import handle_telegram_update, router as telegram_router
 from garuda.response.yara_generator import generate_yara_rule
@@ -27,4 +28,7 @@ __all__ = [
     "capture_screenshot",
     "generate_daily_bulletin_pdf",
     "run_daily_bulletin_task",
+    "generate_active_rpz_zone",
+    "render_rpz_zone_file",
+    "publish_domain_to_rpz",
 ]

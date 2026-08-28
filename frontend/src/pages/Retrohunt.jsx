@@ -65,9 +65,9 @@ export default function Retrohunt() {
     },
   ]
 
-  const recall = results?.recall !== undefined ? results.recall : 0.94
-  const precision = results?.precision !== undefined ? results.precision : 0.96
-  const meanDaysSaved = results?.mean_days_saved || 13.8
+  const detectedCount = results?.detected_count
+  const totalEvaluated = results?.total_evaluated
+  const meanDaysSaved = results?.mean_days_saved || (results?.mean_hours_saved ? (results.mean_hours_saved / 24).toFixed(1) : null)
 
   return (
     <div className="space-y-6 pb-12">
@@ -97,27 +97,29 @@ export default function Retrohunt() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-navy-900 border border-navy-700/80 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
           <div className="flex justify-between items-center text-xs text-gray-400 font-bold uppercase tracking-wider">
-            <span>Historical Recall</span>
+            <span>Replay Detection Rate</span>
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="mt-3">
             <span className="text-3xl font-black font-mono text-emerald-400">
-              {(recall * 100).toFixed(1)}%
+              {detectedCount !== undefined && totalEvaluated ? `${detectedCount}/${totalEvaluated}` : "Ready"}
             </span>
-            <p className="text-xs text-gray-500 mt-1">Detected across 50 verified ground truth campaigns</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {totalEvaluated ? `Verified ground truth campaigns detected in replay` : `Run historical replay simulation to benchmark`}
+            </p>
           </div>
         </div>
 
         <div className="bg-navy-900 border border-navy-700/80 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
           <div className="flex justify-between items-center text-xs text-gray-400 font-bold uppercase tracking-wider">
-            <span>Precision Rate</span>
+            <span>Proactive Discovery</span>
             <CheckCircle2 className="w-4 h-4 text-cyan-400" />
           </div>
           <div className="mt-3">
             <span className="text-3xl font-black font-mono text-cyan-400">
-              {(precision * 100).toFixed(1)}%
+              {detectedCount !== undefined ? `${detectedCount} Hits` : "On Demand"}
             </span>
-            <p className="text-xs text-gray-500 mt-1">Low false alarm profile on national namespace</p>
+            <p className="text-xs text-gray-500 mt-1">Simulated against sovereign telemetry feeds</p>
           </div>
         </div>
 
@@ -128,9 +130,9 @@ export default function Retrohunt() {
           </div>
           <div className="mt-3">
             <span className="text-3xl font-black font-mono text-amber-400">
-              +{meanDaysSaved} Days
+              {meanDaysSaved ? `+${meanDaysSaved} Days` : "Calculated on Run"}
             </span>
-            <p className="text-xs text-gray-500 mt-1">Early warning lead time before public IOC disclosure</p>
+            <p className="text-xs text-gray-500 mt-1">Proactive warning lead time before public disclosure</p>
           </div>
         </div>
       </div>

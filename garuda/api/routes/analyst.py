@@ -90,11 +90,15 @@ async def confirm_threat_alert(
     if res_confirm.get("status") == "error":
         raise HTTPException(status_code=500, detail="Failed to confirm alert in database.")
 
-    # Generate response artifacts
+    # Generate response artifacts & persist STIX 2.1 objects
     advisory_draft = generate_advisory_draft(alert_record)
     stix_bundle = create_stix_bundle(alert_record)
     stix_id = str(stix_bundle.id) if hasattr(stix_bundle, "id") else f"bundle--{payload.alert_id[:8]}"
     yara_rule = generate_yara_rule(alert_record)
+
+    # Persist STIX 2.1 objects into stix_objects across TAXII collections
+    from garuda.response.stix_export import persist_stix_bundle
+    await persist_stix_bundle(alert_record)
 
     # Persist stix_id & yara_rule in alert record
     if client:

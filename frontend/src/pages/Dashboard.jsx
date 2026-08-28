@@ -126,36 +126,36 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* 4 Stat Cards Row */}
+      {/* Live Quality Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Threat Alerts (24h)"
           value={stats.total_alerts_24h || 0}
-          subtitle="Processed through 11-step pipeline"
+          subtitle="Real-time multi-source pipeline"
           icon={ShieldAlert}
           color="blue"
         />
         <StatCard
-          title="Critical Threats (Score ≥85)"
+          title="Critical Threats (24h)"
           value={stats.critical_24h || 0}
-          subtitle="Direct APT36 infrastructure matches"
+          subtitle="Score ≥85 direct adversary match"
           icon={AlertTriangle}
           color="red"
           pulse={stats.critical_24h > 0}
         />
         <StatCard
-          title="Analyst Confirmed (24h)"
-          value={stats.confirmed_24h || 0}
-          subtitle="Advisories & Blocklists Pushed"
+          title="Confirmed Indicators (30d)"
+          value={stats.confirmed_indicators_30d || stats.confirmed_24h || 0}
+          subtitle={`${stats.corroborated_2plus_sources_30d || 0} corroborated by ≥2 sources`}
           icon={CheckCircle2}
-          color="orange"
+          color="emerald"
         />
         <StatCard
-          title="False Positive Rate (7d)"
-          value={`${((stats.false_positive_rate_7d || 0) * 100).toFixed(1)}%`}
-          subtitle="Active feedback learning target <5%"
+          title="Active Feedback Triage"
+          value={`${((stats.false_positive_rate_7d || 0) * 100).toFixed(1)}% FP`}
+          subtitle="7-day analyst triage feedback"
           icon={Percent}
-          color="emerald"
+          color="orange"
         />
       </div>
 

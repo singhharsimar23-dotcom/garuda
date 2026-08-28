@@ -80,6 +80,8 @@ class StatsResponse(BaseModel):
     total_alerts_24h: int = 0
     critical_24h: int = 0
     confirmed_24h: int = 0
+    confirmed_indicators_30d: int = 0
+    corroborated_2plus_sources_30d: int = 0
     false_positive_rate_7d: float = 0.0
     active_campaigns: int = 0
     tension_index: float = 0.50

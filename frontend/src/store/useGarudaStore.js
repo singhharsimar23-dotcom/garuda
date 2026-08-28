@@ -14,7 +14,9 @@ export const useGarudaStore = create((set) => ({
     domains_monitored: 110,
     last_collection_at: null,
   },
+  systemHealth: {},
   activeAlert: null,
+
   filters: {
     status: "all",
     scoreMin: 0,
@@ -66,6 +68,8 @@ export const useGarudaStore = create((set) => ({
       tensionIndex: stats.tension_index !== undefined ? stats.tension_index : state.tensionIndex,
       conflictMode: stats.conflict_mode !== undefined ? stats.conflict_mode : state.conflictMode,
     })),
+
+  setSystemHealth: (systemHealth) => set({ systemHealth }),
 
   setActiveAlert: (activeAlert) => set({ activeAlert }),
 
