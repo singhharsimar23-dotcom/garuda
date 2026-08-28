@@ -10,7 +10,6 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
-from anthropic import AsyncAnthropic
 from fastapi import APIRouter, Header, HTTPException, status
 from pydantic import BaseModel, Field, field_validator
 
@@ -34,9 +33,9 @@ from garuda.modules.predictive.vocabulary_extractor import (
     get_ispr_narrative,
 )
 
-logger = logging.getLogger("garuda.api.routes.predictive")
+logger = logging.getLogger("garuda.api.predictive")
 
-router = APIRouter(tags=["Predictive Domain Pre-Registration"])
+router = APIRouter(tags=["Predictive Defense"])
 
 
 class RegisterDomainRequest(BaseModel):
@@ -60,26 +59,18 @@ class RegisterDomainRequest(BaseModel):
 
 
 def _verify_admin_token(authorization: Optional[str]) -> None:
-    if not settings.TAXII_ADMIN_TOKEN:
+    if not authorization:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="TAXII_ADMIN_TOKEN not configured.",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing Authorization header. Expected Bearer TAXII_ADMIN_TOKEN.",
         )
-    expected = f"Bearer {settings.TAXII_ADMIN_TOKEN}"
-    if not authorization or authorization.strip() != expected:
+    token = authorization.removeprefix("Bearer ").strip()
+    expected = (settings.TAXII_ADMIN_TOKEN or "").strip()
+    if not expected or token != expected:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing or invalid TAXII_ADMIN_TOKEN.",
         )
-
-
-def _get_anthropic_client() -> AsyncAnthropic:
-    if not settings.ANTHROPIC_API_KEY:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="ANTHROPIC_API_KEY not configured.",
-        )
-    return AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 
 
 @router.post("/predictive/analyze")
@@ -105,8 +96,7 @@ async def predictive_analyze(
         target_keywords = settings.TIER_1_PATTERNS[:10]
 
     tension_index = await fetch_tension_index()
-    client = _get_anthropic_client()
-    raw_candidates = await generate_candidate_domains(target_keywords, client)
+    raw_candidates = await generate_candidate_domains(target_keywords)
     available = await filter_available_candidates(raw_candidates)
 
     nic_list = NIC_DOMAINS or []

@@ -105,10 +105,10 @@ def _matches_historical_apt36_pattern(domain: str, target_keywords: list[str]) -
 
 async def generate_candidate_domains(
     target_keywords: list[str],
-    anthropic_client: Any,
+    llm_client: Any = None,
 ) -> list[str]:
     """
-    Generate domain name candidates using Claude.
+    Generate domain name candidates using Google Gemini (or configured LLM).
 
     Parses LLM response, validates domain strings, filters to APT36 TLDs.
     """
@@ -122,26 +122,46 @@ async def generate_candidate_domains(
         preferred_tld=tld_list,
     )
     user_msg = (
-        f"Target keywords: {target_keywords}\n"
+        f"{system}\n\nTarget keywords: {target_keywords}\n"
         f"Preferred TLDs: {APT36_PREFERRED_TLDS}\n"
         "Generate 20 candidate domains."
     )
 
+    raw_text = ""
     try:
-        response = await anthropic_client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1024,
-            system=system,
-            messages=[{"role": "user", "content": user_msg}],
-        )
-        text_blocks = [
-            block.text
-            for block in response.content
-            if hasattr(block, "text")
-        ]
-        raw_text = "\n".join(text_blocks)
+        if llm_client and hasattr(llm_client, "messages"):
+            response = await llm_client.messages.create(
+                model="gemini-2.5-flash",
+                max_tokens=1024,
+                system=system,
+                messages=[{"role": "user", "content": user_msg}],
+            )
+            text_blocks = [
+                block.text
+                for block in response.content
+                if hasattr(block, "text")
+            ]
+            raw_text = "\n".join(text_blocks)
+        else:
+            from garuda.config import settings
+            import httpx
+            if settings.GEMINI_API_KEY:
+                gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={settings.GEMINI_API_KEY}"
+                payload = {
+                    "contents": [{"parts": [{"text": user_msg}]}],
+                    "generationConfig": {"temperature": 0.3, "maxOutputTokens": 1024}
+                }
+                async with httpx.AsyncClient(timeout=15.0) as http_client:
+                    resp = await http_client.post(gemini_url, json=payload)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        candidates = data.get("candidates", [])
+                        if candidates:
+                            raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+            if not raw_text:
+                return _fallback_candidates(target_keywords)
     except Exception as exc:
-        logger.error("[domain_generator] Claude generation failed: %s", exc)
+        logger.error("[domain_generator] LLM generation failed: %s", exc)
         return _fallback_candidates(target_keywords)
 
     return _parse_llm_domains(raw_text)

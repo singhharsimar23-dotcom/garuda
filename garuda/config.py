@@ -40,9 +40,8 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: Optional[str] = None
     CELERY_RESULT_BACKEND: Optional[str] = None
 
-    # AI & Threat Narrative Engine (Google Gemini / Anthropic)
+    # AI Threat Intelligence Engine (Google Gemini 2.5 Flash)
     GEMINI_API_KEY: Optional[str] = None
-    ANTHROPIC_API_KEY: Optional[str] = None
 
     # Predictive Domain Pre-Registration (Session 12 — Porkbun)
     PORKBUN_API_KEY: Optional[str] = None
