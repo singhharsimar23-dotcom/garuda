@@ -1,25 +1,41 @@
-name: Keepalive
+name: Keepalive — 24/7 Warm Pinger
 
 on:
   schedule:
-    - cron: "0 9 * * 1"   # Every Monday 09:00 UTC (prevents GitHub Actions dormancy)
+    - cron: "*/5 * * * *"   # Every 5 minutes — keeps Vercel serverless warm
   workflow_dispatch:
 
 jobs:
-  keepalive:
-    name: Touch Keepalive Timestamp
+  ping:
+    name: Ping Production Endpoints
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update Timestamp
+      - name: Ping health + critical endpoints
         run: |
-          echo $(date -u +"%Y-%m-%dT%H:%M:%SZ") > .keepalive
-          git config user.email "garuda-bot@garuda.in"
-          git config user.name "GARUDA Bot"
-          git add .keepalive
-          git commit -m "keepalive: $(date -u +%Y-%m-%d)" || exit 0
-          git push
+          BASE="https://garuda-intel.vercel.app"
+          fail=0
+
+          ping_endpoint() {
+            local url="$1"
+            local label="$2"
+            local extra="$3"
+            status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 $extra "$url")
+            if [ "$status" -ge 200 ] && [ "$status" -lt 500 ]; then
+              echo "✅ $label → $status"
+            else
+              echo "❌ $label → $status"
+              fail=1
+            fi
+          }
+
+          ping_endpoint "$BASE/api/health" "Health"
+          ping_endpoint "$BASE/api/taxii2/" "TAXII" '-H "Accept: application/taxii+json;version=2.1"'
+          ping_endpoint "$BASE/api/alerts" "Alerts"
+          ping_endpoint "$BASE/api/easm/findings" "EASM"
+          ping_endpoint "$BASE/api/rpz/entries" "RPZ"
+          ping_endpoint "$BASE/api/attribution/clusters" "Attribution"
+          ping_endpoint "$BASE/api/pdns/matches" "PDNS"
+
+          exit $fail
+
