@@ -188,7 +188,7 @@ async def persist_stix_bundle(
             modified_ts = raw_dict.get("modified") or raw_dict.get("created") or now_iso
 
             row = {
-                "id": str(obj.id),
+                "id": f"{obj.id}:{coll_id}",
                 "type": str(obj.type),
                 "spec_version": "2.1",
                 "created": created_ts,
