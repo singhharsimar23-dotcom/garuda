@@ -2,7 +2,7 @@ name: Keepalive — 24/7 Warm Pinger
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # Every 5 minutes — keeps Vercel serverless warm
+    - cron: "*/15 * * * *"   # Every 15 minutes — keeps Vercel serverless warm
   workflow_dispatch:
 
 jobs:

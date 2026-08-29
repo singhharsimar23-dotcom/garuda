@@ -2,17 +2,14 @@ name: GARUDA Monitor
 
 on:
   schedule:
-    - cron: "*/30 * * * *"   # Backup scheduler to Vercel Cron
+    - cron: "0 */4 * * *"   # Every 4 hours — backup to Vercel Cron
   workflow_dispatch:
 
 jobs:
   collect:
     name: Threat Ingestion Matrix
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        source: [crtsh, otx, urlhaus, circl_pdns, malwarebazaar]
-      fail-fast: false
+    timeout-minutes: 20
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -35,18 +32,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Execute Source Feed Ingest (${{ matrix.source }})
+      - name: Execute Full Collection Cycle
         run: |
-          python -m garuda.sources.${{ matrix.source }}
+          python -c "
+          import asyncio
+          import logging
+          logging.basicConfig(level=logging.INFO)
+          from garuda.collector import run_collection
+          result = asyncio.run(run_collection())
+          print('Collection result:', result)
+          "
         env:
-          SOURCE: ${{ matrix.source }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
           UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SHODAN_API_KEY: ${{ secrets.SHODAN_API_KEY }}
           VIRUSTOTAL_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
           URLHAUS_API_KEY: ${{ secrets.URLHAUS_API_KEY }}
