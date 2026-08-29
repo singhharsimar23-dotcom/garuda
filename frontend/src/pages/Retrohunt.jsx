@@ -17,53 +17,8 @@ export default function Retrohunt() {
     onError: (err) => toast.error(`Retrohunt simulation failed: ${err.message}`),
   })
 
-  const sampleHistoricalHits = results?.historical_hits || [
-    {
-      domain: "drdo-defence.online",
-      reg_date: "2024-03-01",
-      garuda_date: "2024-03-01 (+2h)",
-      real_detection_date: "2024-03-18",
-      days_saved: 17,
-      score: 92,
-      lead_beat: true,
-    },
-    {
-      domain: "indianarmy-portal.space",
-      reg_date: "2024-04-10",
-      garuda_date: "2024-04-10 (+4h)",
-      real_detection_date: "2024-04-24",
-      days_saved: 14,
-      score: 88,
-      lead_beat: true,
-    },
-    {
-      domain: "nicwebmail-login.net",
-      reg_date: "2024-05-02",
-      garuda_date: "2024-05-02 (+1h)",
-      real_detection_date: "2024-05-15",
-      days_saved: 13,
-      score: 95,
-      lead_beat: true,
-    },
-    {
-      domain: "isro-telemetry.site",
-      reg_date: "2024-06-12",
-      garuda_date: "2024-06-12 (+3h)",
-      real_detection_date: "2024-06-21",
-      days_saved: 9,
-      score: 85,
-      lead_beat: true,
-    },
-    {
-      domain: "modgov-helpdesk.online",
-      reg_date: "2024-07-04",
-      garuda_date: "2024-07-04 (+2h)",
-      real_detection_date: "2024-07-10",
-      days_saved: 6,
-      score: 78,
-      lead_beat: false,
-    },
-  ]
+  // Only show real results — no synthetic fallback data
+  const sampleHistoricalHits = results?.historical_hits || []
 
   const detectedCount = results?.detected_count
   const totalEvaluated = results?.total_evaluated

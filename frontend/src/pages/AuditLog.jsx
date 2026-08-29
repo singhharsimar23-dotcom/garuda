@@ -1,6 +1,6 @@
 import React from "react"
 import { useQuery } from "@tanstack/react-query"
-import { FileCheck2, ShieldAlert, User, Clock, CheckCircle } from "lucide-react"
+import { FileCheck2, User, CheckCircle, Clock } from "lucide-react"
 
 import { getAlertAudit } from "../lib/api"
 
@@ -11,36 +11,8 @@ export default function AuditLog() {
     refetchInterval: 20000,
   })
 
-  const sampleEntries = auditEntries?.length > 0 ? auditEntries : [
-    {
-      id: "1",
-      action: "confirm_alert",
-      analyst_id: "soc_analyst_lead",
-      justification: "Confirmed APT36 credential staging infrastructure targeting DRDO webmail portal.",
-      created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-    },
-    {
-      id: "2",
-      action: "generate_certin_advisory",
-      analyst_id: "automated_pipeline",
-      justification: "Dispatched CERT-In Advisory Reference CERT-In/2026/GARUDA to national defense SOCs.",
-      created_at: new Date(Date.now() - 3600000 * 3).toISOString(),
-    },
-    {
-      id: "3",
-      action: "reject_alert",
-      analyst_id: "soc_analyst_2",
-      justification: "Domain verified as legitimate vendor infrastructure under NIC IT delegation.",
-      created_at: new Date(Date.now() - 3600000 * 6).toISOString(),
-    },
-    {
-      id: "4",
-      action: "add_whitelist",
-      analyst_id: "soc_analyst_2",
-      justification: "Whitelisted legitimate domain to suppress recurring false alarms.",
-      created_at: new Date(Date.now() - 3600000 * 6).toISOString(),
-    },
-  ]
+  // Only real entries — no synthetic fallbacks
+  const entries = Array.isArray(auditEntries) ? auditEntries : []
 
   return (
     <div className="space-y-6 pb-12">
@@ -69,7 +41,11 @@ export default function AuditLog() {
               </tr>
             </thead>
             <tbody className="divide-y divide-navy-800">
-              {sampleEntries.map((entry) => (
+              {isLoading ? (
+                <tr><td colSpan={5} className="px-4 py-12 text-center text-xs text-gray-500">Loading audit trail…</td></tr>
+              ) : entries.length === 0 ? (
+                <tr><td colSpan={5} className="px-4 py-12 text-center text-xs text-gray-500">No analyst decisions recorded yet. Audit entries appear when alerts are confirmed, rejected, or whitelisted.</td></tr>
+              ) : entries.map((entry) => (
                 <tr key={entry.id} className="hover:bg-navy-800/40 transition-colors">
                   <td className="px-4 py-3 font-mono text-gray-400">
                     {new Date(entry.created_at).toLocaleString()}
