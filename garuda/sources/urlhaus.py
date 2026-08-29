@@ -41,9 +41,12 @@ async def fetch_recent_malware_urls() -> List[Dict[str, Any]]:
         headers["Auth-Key"] = settings.URLHAUS_TOKEN
 
     try:
-        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True, headers=headers) as client:
-            # Try public export feed first
-            response = await client.get("https://urlhaus.abuse.ch/downloads/json_recent/")
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True, headers=headers, verify=False) as client:
+            # Try API recent feed first
+            response = await client.get("https://urlhaus-api.abuse.ch/v1/urls/recent/")
+            if response.status_code != 200:
+                # Fallback to download feed
+                response = await client.get("https://urlhaus.abuse.ch/downloads/json_recent/")
             if response.status_code == 200:
                 data = response.json()
                 urls = []

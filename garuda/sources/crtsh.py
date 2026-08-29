@@ -37,19 +37,19 @@ async def _fetch_single_keyword(
         return cached_data
 
     url = f"https://crt.sh/?q=%.{keyword}%&output=json"
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     retried_429 = False
 
     async with semaphore:
         while True:
             try:
-                response = await client.get(url)
+                response = await client.get(url, headers=headers, timeout=12.0)
                 if response.status_code == 429 and not retried_429:
-                    logger.warning(f"[crtsh] Rate limit hit (429) for keyword '{keyword}'. Sleeping 60s...")
+                    logger.warning(f"[crtsh] Rate limit hit (429) for keyword '{keyword}'. Sleeping 5s...")
                     retried_429 = True
-                    await asyncio.sleep(60)
+                    await asyncio.sleep(5)
                     continue
-                elif response.status_code == 503:
-                    logger.warning(f"[crtsh] Service unavailable (503) for keyword '{keyword}'. Returning [].")
+                elif response.status_code in (404, 502, 503, 504):
                     return []
 
                 response.raise_for_status()
@@ -58,11 +58,10 @@ async def _fetch_single_keyword(
                     await set_cached_json(cache_key, data, ex=1800)
                     return data
                 return []
-            except httpx.HTTPError as err:
-                logger.error(f"[crtsh] HTTP error fetching keyword '{keyword}' from {url}: {err}")
+            except (httpx.HTTPError, httpx.TimeoutException):
                 return []
             except Exception as e:
-                logger.error(f"[crtsh] Unexpected error parsing crt.sh response for '{keyword}': {e}")
+                logger.debug(f"[crtsh] Error parsing response for '{keyword}': {e}")
                 return []
 
 
