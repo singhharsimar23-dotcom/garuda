@@ -205,10 +205,16 @@ def create_app() -> FastAPI:
                 return FileResponse(fav)
             return JSONResponse(status_code=204, content={})
 
+        NO_CACHE_HEADERS = {
+            "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        }
+
         @application.get("/index.html", include_in_schema=False)
         @application.get("/", include_in_schema=False)
         async def serve_root_index():
-            return FileResponse(dist_dir / "index.html")
+            return FileResponse(dist_dir / "index.html", headers=NO_CACHE_HEADERS)
 
         @application.get("/{full_path:path}", include_in_schema=False)
         async def serve_spa_fallback(full_path: str):
@@ -218,7 +224,7 @@ def create_app() -> FastAPI:
             target = dist_dir / full_path
             if target.exists() and target.is_file():
                 return FileResponse(target)
-            return FileResponse(dist_dir / "index.html")
+            return FileResponse(dist_dir / "index.html", headers=NO_CACHE_HEADERS)
 
     return application
 

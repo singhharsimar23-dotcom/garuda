@@ -77,10 +77,9 @@ export default function OrbTracker() {
         zoom: 4,
         zoomControl: true,
       })
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-        attribution: "©OpenStreetMap ©CartoDB",
-        subdomains: "abcd",
-        maxZoom: 19,
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
+        attribution: "© Esri, DeLorme, NAVTEQ",
+        maxZoom: 16,
       }).addTo(map)
       layerRef.current = L.layerGroup().addTo(map)
       mapInstanceRef.current = map
