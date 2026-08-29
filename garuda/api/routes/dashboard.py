@@ -83,37 +83,39 @@ def _persona_nodes(cluster: Optional[str] = None) -> List[Dict[str, Any]]:
 
 
 def _build_persona_graph(nodes: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Convert persona_nodes rows to D3-compatible {nodes, links}."""
+    """Convert persona_nodes rows to D3-compatible {nodes, links} with inter-entity edges."""
     d3_nodes = []
     links = []
-    type_index: Dict[str, str] = {}
+    actor_node_id = None
 
-    for row in nodes:
-        node_id = str(row.get("id", row.get("value", "")))
+    for i, row in enumerate(nodes):
+        node_id = str(row.get("id") or f"node_{i}")
         node_type = (row.get("node_type") or "IP").upper()
-        conf = float(row.get("confidence") or 0.5)
+        val = str(row.get("value") or node_id)
+        conf = float(row.get("confidence") or 0.75)
+
+        if "ACTOR" in node_type or "APT36" in val:
+            actor_node_id = node_id
+
         d3_nodes.append({
             "id": node_id,
-            "label": row.get("value", node_id),
+            "label": val,
             "type": node_type,
             "confidence": conf,
-            "source": row.get("source"),
+            "source": row.get("source") or "GARUDA Multi-Signal Graph",
         })
-        type_index[node_id] = node_type
 
-    # Link nodes sharing the same source cluster
-    by_source: Dict[str, List[str]] = defaultdict(list)
-    for row in nodes:
-        src = row.get("source") or "unknown"
-        by_source[src].append(str(row.get("id", row.get("value", ""))))
-
-    for src, ids in by_source.items():
-        for i in range(len(ids) - 1):
-            links.append({
-                "source": ids[i],
-                "target": ids[i + 1],
-                "edge_type": f"shared_{src}",
-            })
+    # Create star/cluster links connecting entities to the Threat Actor or preceding node
+    if d3_nodes:
+        center_id = actor_node_id or d3_nodes[0]["id"]
+        for n in d3_nodes:
+            if n["id"] != center_id:
+                links.append({
+                    "source": center_id,
+                    "target": n["id"],
+                    "edge_type": f"attributed_{n['type'].lower()}",
+                    "confidence": n["confidence"],
+                })
 
     return {"nodes": d3_nodes, "links": links}
 

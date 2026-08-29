@@ -505,24 +505,62 @@ async def list_easm_findings(
         except Exception as e:
             logger.warning(f"[easm] Failed querying easm_findings: {e}")
 
-    # Format findings with joined org_name
+    # Format findings with joined org_name and KEV/APT data (FIX-03)
+    from garuda.modules.easm.constants import CVE_TO_APT, PRODUCT_CVE_FALLBACK
+
+    # Fetch any existing cve_kev_matches
+    cve_map = {}
+    if client and findings:
+        try:
+            finding_ids = [f.get("id") for f in findings if f.get("id")]
+            m_res = client.table("cve_kev_matches").select("easm_finding_id,cve_id,threat_actor_attribution,severity_computed").in_("easm_finding_id", finding_ids).execute()
+            for m in (m_res.data or []):
+                cve_map[m.get("easm_finding_id")] = m
+        except Exception:
+            pass
+
     formatted = []
     for f in findings:
+        fid = f.get("id")
         range_data = f.get("monitored_asn_ranges") or {}
         org_name = range_data.get("org_name") if isinstance(range_data, dict) else None
+        service_str = (f.get("service") or "").lower()
+        fp_str = (f.get("product_fingerprint") or "").lower()
+        combined_text = f"{service_str} {fp_str}".strip()
+
+        matched_cve = None
+        threat_actor = None
+        severity = f.get("severity") or "medium"
+
+        if fid in cve_map:
+            matched_cve = cve_map[fid].get("cve_id")
+            threat_actor = cve_map[fid].get("threat_actor_attribution")
+            severity = cve_map[fid].get("severity_computed") or severity
+        else:
+            # Fallback product match
+            for p_key, cves in PRODUCT_CVE_FALLBACK.items():
+                if p_key in combined_text:
+                    matched_cve = cves[0]
+                    actors = CVE_TO_APT.get(matched_cve, [])
+                    threat_actor = ", ".join(actors) if actors else None
+                    severity = "critical" if "volt typhoon" in (threat_actor or "").lower() else "high"
+                    break
+
         formatted.append({
-            "id": f.get("id"),
+            "id": fid,
             "org_name": org_name or f.get("org_name", "Monitored Asset"),
             "ip": f.get("ip"),
             "port": f.get("port"),
             "service": f.get("service"),
             "product": f.get("product_fingerprint", "").split("\n")[0][:60] if f.get("product_fingerprint") else f.get("service"),
             "product_fingerprint": f.get("product_fingerprint"),
+            "cve_id": matched_cve,
+            "threat_actor": threat_actor,
             "first_seen": f.get("created_at"),
             "last_seen": f.get("last_seen") or f.get("created_at"),
             "kev_date_added": f.get("kev_date_added"),
-            "threat_actor_correlation_id": f.get("threat_actor_correlation_id"),
-            "severity": f.get("severity") or "medium",
+            "threat_actor_correlation_id": threat_actor or f.get("threat_actor_correlation_id"),
+            "severity": severity,
             "status": f.get("status", "open"),
             "stix_indicator_id": f.get("stix_indicator_id"),
         })

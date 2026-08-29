@@ -1,12 +1,38 @@
 import React, { useState } from "react"
 import { Link } from "react-router-dom"
 import { CheckCircle2, XCircle, Search, ShieldAlert, ArrowUpDown } from "lucide-react"
+import EmptyState from "./EmptyState"
+
+const SOURCE_LABELS = {
+  "crt.sh": { label: "CT LOG", color: "#00C853" },
+  "ct_log": { label: "CT LOG", color: "#00C853" },
+  "otx_pulse": { label: "OTX", color: "#2196F3" },
+  "otx": { label: "OTX", color: "#2196F3" },
+  "urlhaus": { label: "URLhaus", color: "#9C27B0" },
+  "circl_pdns": { label: "CIRCL PDNS", color: "#00BCD4" },
+  "malwarebazaar": { label: "MBZ", color: "#E91E63" },
+  "manual": { label: "MANUAL", color: "#FF8C00" },
+  "analyst_manual": { label: "ANALYST", color: "#FF8C00" },
+}
 
 export default function AlertTable({ alerts = [], onConfirm, onReject, isLoading = false }) {
   const [filterText, setFilterText] = useState("")
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [sortField, setSortField] = useState("score")
   const [sortAsc, setSortAsc] = useState(false)
+
+  if (!isLoading && (!alerts || alerts.length === 0)) {
+    return (
+      <div className="bg-navy-900 border border-navy-700/80 rounded-xl overflow-hidden shadow-2xl p-6">
+        <EmptyState
+          icon="🔍"
+          title="NO REAL ALERTS COLLECTED YET"
+          reason="The CT log collector runs every 5 minutes and queries crt.sh for new domains matching Indian government impersonation patterns. Real alerts appear here as they are detected."
+          dataSource="crt.sh Certificate Transparency Log Monitor · OTX AlienVault · URLhaus"
+        />
+      </div>
+    )
+  }
 
   // Filter alerts
   const filtered = alerts.filter((a) => {
@@ -118,6 +144,7 @@ export default function AlertTable({ alerts = [], onConfirm, onReject, isLoading
                   <ArrowUpDown className="w-3 h-3 opacity-60" />
                 </div>
               </th>
+              <th className="px-4 py-3">Provenance Source</th>
               <th className="px-4 py-3">Target Sector</th>
               <th className="px-4 py-3">Registrar / Host</th>
               <th className="px-4 py-3 cursor-pointer hover:text-white" onClick={() => toggleSort("age_days")}>
@@ -162,6 +189,39 @@ export default function AlertTable({ alerts = [], onConfirm, onReject, isLoading
                     <span className={`px-2.5 py-1 rounded-md border font-mono font-bold text-xs ${getScoreBadge(alert.score)}`}>
                       {alert.score}/100
                     </span>
+                  </td>
+
+                  {/* Provenance Source */}
+                  <td className="px-4 py-3">
+                    {alert.data_source ? (
+                      <span
+                        style={{
+                          fontSize: 9,
+                          padding: "2px 5px",
+                          borderRadius: 2,
+                          background: (SOURCE_LABELS[alert.data_source]?.color || "#00C853") + "22",
+                          color: SOURCE_LABELS[alert.data_source]?.color || "#00C853",
+                          border: `1px solid ${SOURCE_LABELS[alert.data_source]?.color || "#00C853"}44`,
+                          fontFamily: "JetBrains Mono, monospace",
+                        }}
+                      >
+                        {SOURCE_LABELS[alert.data_source]?.label || alert.data_source.toUpperCase()}
+                      </span>
+                    ) : (
+                      <span
+                        style={{
+                          fontSize: 9,
+                          padding: "2px 5px",
+                          borderRadius: 2,
+                          background: "#00C85322",
+                          color: "#00C853",
+                          border: "1px solid #00C85344",
+                          fontFamily: "JetBrains Mono, monospace",
+                        }}
+                      >
+                        CT LOG
+                      </span>
+                    )}
                   </td>
 
                   {/* Sector */}

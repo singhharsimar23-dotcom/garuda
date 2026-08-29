@@ -1,0 +1,27 @@
+{
+  "honeypot_domains": [
+    "army-hq-portal.space",
+    "modgov-portal.space",
+    "mod-india-portal.space",
+    "modgov-secure.online",
+    "raksha-mantralaya.site",
+    "defenceindia-services.xyz",
+    "nicmail-secure.space",
+    "nic-webmail-login.online",
+    "nicindia-portal.site",
+    "drdo-research.space",
+    "drdo-collaboration.online",
+    "drdolab-access.site",
+    "indianarmy-login.online",
+    "iaf-services.space",
+    "airforceindia-sso.online",
+    "indiannavy-portal.space",
+    "boss-linux-update.space",
+    "india-sso.space",
+    "govtindia-login.online",
+    "iaf-recruitment-portal.site",
+    "drdo-eprocurement.online",
+    "indianarmy-welfare.xyz"
+  ],
+  "description": "Domains registered by GARUDA as honeypots. NEVER score, alert, block, or report these as hostile. Checked via is_own_honeypot() before any insert into alerts, rpz_entries, or passive_dns_observations."
+}

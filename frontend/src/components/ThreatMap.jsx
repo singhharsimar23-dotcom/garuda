@@ -222,13 +222,15 @@ export default function ThreatMap({ alerts = [], onSelectAlert }) {
 
       L.control.zoom({ position: "bottomright" }).addTo(map)
 
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
-        attribution: '&copy; Esri &mdash; National Geographic, DeLorme, HERE',
-        maxZoom: 16,
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        attribution: "©OpenStreetMap ©CartoDB",
+        subdomains: "abcd",
+        maxZoom: 19,
       }).addTo(map)
 
       layerGroupRef.current = L.layerGroup().addTo(map)
       mapInstanceRef.current = map
+      setTimeout(() => map.invalidateSize(), 200)
     }
 
     return () => {

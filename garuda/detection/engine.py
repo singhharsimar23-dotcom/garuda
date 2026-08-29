@@ -165,7 +165,12 @@ async def process_domain(
     if not domain or "." not in domain:
         return None
 
-    # Step 1: Whitelist Check
+    # Step 1: Whitelist Check & Honeypot Guard
+    from garuda.utils.honeypot_guard import is_own_honeypot
+    if is_own_honeypot(domain):
+        logger.info(f"[engine] Skipping own honeypot domain: '{domain}'")
+        return None
+
     if _is_whitelisted(domain):
         logger.debug(f"[engine] Domain '{domain}' is whitelisted. Skipping.")
         return None
@@ -184,10 +189,20 @@ async def process_domain(
     has_homoglyphs, detected_chars = detect_homoglyph(domain)
     nic_similarity, best_nic_match = compute_similarity(domain)
 
-    # Step 4: WHOIS Query in Async Executor
+    # Step 4: WHOIS Query in Async Executor + RDAP fallback
     whois_data = await _fetch_whois_data(domain)
     domain_age_days = _calculate_domain_age(whois_data.get("creation_date"))
     registrar = whois_data.get("registrar")
+
+    if not registrar or registrar == "Unknown":
+        from garuda.modules.enrichment.rdap import get_registrar_via_rdap
+        rdap_data = await get_registrar_via_rdap(domain)
+        if rdap_data.get("registrar") and rdap_data["registrar"] != "Unknown":
+            registrar = rdap_data["registrar"]
+        if domain_age_days is None and rdap_data.get("domain_age_days") is not None:
+            domain_age_days = rdap_data["domain_age_days"]
+        if not whois_data.get("creation_date") and rdap_data.get("creation_date"):
+            whois_data["creation_date"] = rdap_data["creation_date"]
 
     # Step 5: DNS Resolution
     hosting_ip = await _resolve_ip(domain)
@@ -248,12 +263,11 @@ async def process_domain(
         "source": source,
     }
 
-    # Step 9: Write Alert to Supabase
+    # Step 9: Write Alert to Supabase (with honeypot guard & deduplication)
     client = get_supabase_client()
-    if client is not None and score >= settings.SCORE_THRESHOLD_LOG:
+    if client is not None and score >= settings.SCORE_THRESHOLD_LOG and not is_own_honeypot(domain):
         try:
-            # TODO: verify Supabase insertion columns mapping
-            client.table("alerts").insert({
+            alert_payload = {
                 "domain": domain,
                 "score": score,
                 "signals": signals,
@@ -264,7 +278,17 @@ async def process_domain(
                 "hosting_asn": hosting_asn,
                 "sector": sector,
                 "status": status_str,
-            }).execute()
+                "lifecycle_state": "ACTIVE",
+            }
+            # Deduplicate by domain check before insert
+            existing = client.table("alerts").select("id,score").eq("domain", domain).order("detected_at", desc=True).limit(1).execute()
+            if existing.data:
+                # Update existing alert if score higher
+                existing_id = existing.data[0]["id"]
+                if score > (existing.data[0].get("score") or 0):
+                    client.table("alerts").update({"score": score, "signals": signals, "registrar": registrar}).eq("id", existing_id).execute()
+            else:
+                client.table("alerts").insert(alert_payload).execute()
         except Exception as e:
             logger.error(f"[engine] Error persisting alert for '{domain}' to Supabase: {e}")
 

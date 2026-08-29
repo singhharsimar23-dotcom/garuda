@@ -105,6 +105,14 @@ def validate_rpz_eligibility(
             "A blocking feed with false positives is unacceptable for recursive resolvers.",
         )
 
+    # Honeypot self-protection safeguard (FIX-01)
+    from garuda.utils.honeypot_guard import is_own_honeypot
+    if is_own_honeypot(clean_domain):
+        return (
+            False,
+            f"Domain '{clean_domain}' is a GARUDA honeypot lure. Refusing to block own honeypot in RPZ.",
+        )
+
     # Sovereign protection safeguard
     if act == "nxdomain" and not override_protection and is_domain_protected(clean_domain):
         return (

@@ -72,10 +72,23 @@ async def list_alerts(
             if cluster_id:
                 query = query.eq("cluster_id", cluster_id)
 
-            res = query.order("detected_at", desc=True).range(offset, offset + limit - 1).execute()
-            total_count = res.count or len(res.data or [])
+            res = query.order("detected_at", desc=True).range(0, 300).execute()
             if res.data:
-                alerts_list = [_format_alert_dict(row) for row in res.data]
+                from garuda.utils.honeypot_guard import is_own_honeypot
+                # Deduplicate by domain (keep latest/highest scoring per domain) and filter honeypots
+                seen_domains = set()
+                deduped_rows = []
+                for row in res.data:
+                    domain = (row.get("domain") or "").lower().strip()
+                    if not domain or is_own_honeypot(domain):
+                        continue
+                    if domain not in seen_domains:
+                        seen_domains.add(domain)
+                        deduped_rows.append(row)
+
+                total_count = len(deduped_rows)
+                paged_rows = deduped_rows[offset : offset + limit]
+                alerts_list = [_format_alert_dict(row) for row in paged_rows]
         except Exception as e:
             logger.error(f"[api.alerts] Database query error: {e}")
 

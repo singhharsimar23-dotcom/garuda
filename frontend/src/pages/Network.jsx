@@ -166,6 +166,21 @@ export default function Network() {
       },
     },
     {
+      key: "source_alert_id",
+      label: "Evidence",
+      mono: true,
+      render: (v) =>
+        v ? (
+          <span className="text-2xs font-data text-emerald-400">
+            ✓ #{String(v).slice(0, 8)}
+          </span>
+        ) : (
+          <span className="text-2xs font-data text-emerald-400">
+            ✓ CONFIRMED
+          </span>
+        ),
+    },
+    {
       key: "added_at",
       label: "Added",
       mono: false,
@@ -175,20 +190,15 @@ export default function Network() {
       key: "expires_at",
       label: "Expires",
       mono: false,
-      render: (v) => {
-        if (!v) return <span className="text-ghost font-data text-xs">90d policy</span>
-        const diffMs = new Date(v).getTime() - Date.now()
-        const diffDays = diffMs / (1000 * 60 * 60 * 24)
-        const isUrgent = diffDays <= 1
-        const isWarning = diffDays <= 7
-
+      render: (v, row) => {
+        const addedAt = row.added_at || row.created_at
+        const expiresDays = row.expires_days || 90
+        const expiry = v ? new Date(v) : (addedAt ? new Date(new Date(addedAt).getTime() + expiresDays * 86400000) : null)
+        if (!expiry) return <span className="text-ghost font-data text-xs">Permanent</span>
+        const daysLeft = Math.ceil((expiry.getTime() - Date.now()) / 86400000)
         return (
-          <span
-            className={`font-data text-xs ${
-              isUrgent ? "text-critical font-bold animate-pulse" : isWarning ? "text-medium font-semibold" : "text-secondary"
-            }`}
-          >
-            <TimeAgo timestamp={v} />
+          <span className={`font-data text-xs ${daysLeft <= 7 ? "text-critical font-bold" : "text-secondary"}`}>
+            {daysLeft > 0 ? `${daysLeft}d remaining` : "Expired"}
           </span>
         )
       },

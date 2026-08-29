@@ -1,16 +1,64 @@
 {
-  "_comment": "Manually update these values after each billing period or credit top-up. Scan jobs read this file before consuming credits — if remaining <= 0 the job logs a warning and skips rather than burning quota silently.",
-  "shodan": {
-    "daily_credits_remaining": 100,
-    "note": "Shodan free tier: 1 query credit per search. Check https://account.shodan.io after each scan."
-  },
-  "censys": {
-    "monthly_queries_remaining": 250,
-    "note": "Censys free non-commercial tier. Verify current allowance at https://search.censys.io/account."
-  },
-  "nvd": {
-    "daily_requests_remaining": 1000,
-    "note": "NVD API free tier: 50 req/30s with API key, 5 req/30s without. Set NVD_API_KEY in .env."
-  },
-  "last_updated": "2026-08-27"
+  "services": [
+    {
+      "name": "Shodan InternetDB",
+      "daily_limit": null,
+      "rate": "1 req/sec",
+      "auth": "none",
+      "endpoint": "https://internetdb.shodan.io/{ip}"
+    },
+    {
+      "name": "Shodan API",
+      "daily_limit": null,
+      "monthly_query_credits": 100,
+      "rate": "1 req/sec",
+      "auth": "SHODAN_API_KEY"
+    },
+    {
+      "name": "Censys",
+      "daily_limit": null,
+      "monthly_limit": 250,
+      "rate": "1 req/sec",
+      "auth": "CENSYS_API_ID + CENSYS_API_SECRET"
+    },
+    {
+      "name": "VirusTotal",
+      "daily_limit": 500,
+      "rate": "4 req/min",
+      "auth": "VIRUSTOTAL_API_KEY"
+    },
+    {
+      "name": "Robtex",
+      "daily_limit": null,
+      "hourly_limit": 10,
+      "auth": "none"
+    },
+    {
+      "name": "HackerTarget",
+      "daily_limit": 100,
+      "auth": "none"
+    },
+    {
+      "name": "CISA KEV",
+      "daily_limit": null,
+      "auth": "none",
+      "poll_interval": "6h"
+    },
+    {
+      "name": "NVD CVE API",
+      "daily_limit": null,
+      "rate_per_30s": 50,
+      "auth": "NVD_API_KEY"
+    },
+    {
+      "name": "OTX AlienVault",
+      "daily_limit": null,
+      "auth": "OTX_API_KEY"
+    },
+    {
+      "name": "URLhaus / MalwareBazaar",
+      "daily_limit": null,
+      "auth": "URLHAUS_API_KEY"
+    }
+  ]
 }

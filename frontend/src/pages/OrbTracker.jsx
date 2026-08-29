@@ -73,17 +73,18 @@ export default function OrbTracker() {
     if (!mapRef.current) return
     if (!mapInstanceRef.current) {
       const map = L.map(mapRef.current, {
-        center: [25, 80],
-        zoom: 3,
-        zoomControl: false,
+        center: [20, 80],
+        zoom: 4,
+        zoomControl: true,
       })
-      L.control.zoom({ position: "bottomright" }).addTo(map)
-      L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
-        { maxZoom: 16 }
-      ).addTo(map)
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        attribution: "©OpenStreetMap ©CartoDB",
+        subdomains: "abcd",
+        maxZoom: 19,
+      }).addTo(map)
       layerRef.current = L.layerGroup().addTo(map)
       mapInstanceRef.current = map
+      setTimeout(() => map.invalidateSize(), 200)
     }
     return () => {
       if (mapInstanceRef.current) {
@@ -96,7 +97,7 @@ export default function OrbTracker() {
 
   useEffect(() => {
     const layer = layerRef.current
-    if (!layer) return
+    if (!layer || !mapInstanceRef.current) return
     layer.clearLayers()
 
     nodes.forEach((node) => {
@@ -105,21 +106,22 @@ export default function OrbTracker() {
       const pulsing = node.targeting_indian_defence
 
       const marker = L.circleMarker(coords, {
-        radius: pulsing ? 12 : 9,
+        radius: pulsing ? 10 : 7,
         fillColor: color,
-        color: pulsing ? "#FFFFFF" : color,
+        color: "#ffffff",
         weight: pulsing ? 2 : 1,
-        fillOpacity: 0.9,
+        fillOpacity: 0.85,
         className: pulsing ? "orb-pulse-marker" : "",
       })
 
       marker.on("click", () => setSelected(node))
       marker.bindTooltip(
-        `<span class="font-data">${node.ip || "unknown"} — ${node.orb_score || 0}/130</span>`,
-        { direction: "top" }
+        `<b>${node.ip || "unknown"}</b><br/>${node.country || "—"} — ${node.product || "SOHO Gateway"}<br/>ORB Score: ${node.orb_score || 0}/130`,
+        { className: "garuda-tooltip", direction: "top" }
       )
       layer.addLayer(marker)
     })
+    setTimeout(() => mapInstanceRef.current?.invalidateSize(), 150)
   }, [nodes])
 
   return (
@@ -132,7 +134,7 @@ export default function OrbTracker() {
       {/* Stats bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Total Nodes", value: stats.total, icon: Globe },
+          { label: "Total Nodes", value: stats.total || nodes.length, icon: Globe },
           { label: "Probable", value: stats.probable, color: "text-high" },
           { label: "Confirmed", value: stats.confirmed, color: "text-critical" },
           { label: "Targeting India", value: stats.targeting_india, icon: Target, color: "text-saffron" },
@@ -148,17 +150,17 @@ export default function OrbTracker() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-8 relative border border-border bg-void h-[480px]">
-          {loading ? (
-            <p className="text-xs text-ghost text-center py-20">Loading ORB telemetry…</p>
-          ) : nodes.length === 0 ? (
-            <EmptyState
-              icon={Radio}
-              title="No ORB nodes flagged"
-              message="Weekly ORB sweeps flag probable relay nodes scoring ≥60. Nodes appear here after the GitHub Actions sweep completes."
-            />
-          ) : (
-            <div ref={mapRef} className="w-full h-full" data-testid="orb-map" />
+        <div className="lg:col-span-8 relative border border-border bg-void" style={{ height: "520px" }}>
+          <div ref={mapRef} className="w-full h-full" style={{ height: "520px", width: "100%" }} data-testid="orb-map" />
+          {loading && (
+            <div className="absolute inset-0 bg-void/70 flex items-center justify-center pointer-events-none">
+              <p className="text-xs text-ghost">Loading ORB telemetry…</p>
+            </div>
+          )}
+          {!loading && nodes.length === 0 && (
+            <div className="absolute bottom-4 left-4 right-4 bg-surface/90 border border-border p-3 text-center pointer-events-none">
+              <p className="text-2xs text-secondary font-data">Weekly automated ORB sweeps active via GitHub Actions</p>
+            </div>
           )}
         </div>
 

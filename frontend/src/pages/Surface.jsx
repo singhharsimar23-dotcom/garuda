@@ -206,31 +206,35 @@ export default function Surface() {
       render: (v) => <TimeAgo timestamp={v} />,
     },
     {
-      key: "kev_date_added",
+      key: "cve_id",
       label: "KEV",
       mono: true,
-      render: (v) =>
-        v ? (
+      render: (_, row) => {
+        const cve = row.cve_id
+        return cve ? (
           <span
-            title={`CISA KEV Date Added: ${v}`}
+            title={`CISA KEV Match: ${cve}`}
             className="bg-critical text-white font-data text-2xs font-bold px-1.5 py-0.5 tracking-wider"
           >
-            KEV
+            {cve}
           </span>
         ) : (
-          <span className="text-ghost text-2xs font-data">—</span>
-        ),
+          <span className="text-ghost text-2xs font-data">No KEV match</span>
+        )
+      },
     },
     {
-      key: "threat_actor_correlation_id",
+      key: "threat_actor",
       label: "Threat Actor",
       mono: true,
-      render: (v) =>
-        v ? (
-          <span className="font-data text-xs text-gold border-l-2 border-gold pl-1.5">{v}</span>
+      render: (_, row) => {
+        const actor = row.threat_actor || row.threat_actor_correlation_id
+        return actor ? (
+          <span className="font-data text-xs text-gold border-l-2 border-gold pl-1.5">{actor}</span>
         ) : (
           <span className="text-ghost font-data text-xs">—</span>
-        ),
+        )
+      },
     },
     {
       key: "severity",
@@ -433,10 +437,11 @@ export default function Surface() {
         <p className="text-xs text-ghost py-12 text-center">Loading attack surface telemetry…</p>
       ) : displayFindings.length === 0 ? (
         <EmptyState
-          icon={Server}
-          title="No attack surface findings"
-          message="No open findings matching your filter criteria. Scheduled reconnaissance will index findings as soon as exposed services or CISA KEV signatures trigger."
-          collectionNote="Sovereign EASM scans execute daily against documented ASN netblocks. Zero simulated or fabricated findings."
+          icon="🛡️"
+          title="NO EXPOSURES FOUND IN MONITORED RANGES"
+          reason="The EASM sweep runs weekly and queries Shodan InternetDB for all IPs in documented Indian defence ASNs. If no results appear here, either no services were found on monitored IP ranges, or the weekly sweep has not yet run. Check GH Actions for last sweep timestamp."
+          dataSource="Shodan InternetDB · CISA KEV API · NVD CVE API v2.0"
+          nextAttempt="Next Monday 01:00 UTC"
         />
       ) : (
         <DataTable

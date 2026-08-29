@@ -22,14 +22,16 @@ function confidenceColor(conf) {
 
 function drawShape(g, type, color) {
   const t = (type || "IP").toUpperCase()
-  if (t === "EMAIL" || NODE_SHAPES[t] === "square") {
-    g.append("rect").attr("x", -8).attr("y", -8).attr("width", 16).attr("height", 16).attr("fill", color).attr("stroke", "#060B14").attr("stroke-width", 1.5)
-  } else if (t === "SSH_KEY" || NODE_SHAPES[t] === "diamond") {
-    g.append("path").attr("d", "M0,-10 L10,0 L0,10 L-10,0 Z").attr("fill", color).attr("stroke", "#060B14").attr("stroke-width", 1.5)
-  } else if (t === "GIT" || NODE_SHAPES[t] === "triangle") {
-    g.append("path").attr("d", "M0,-10 L10,8 L-10,8 Z").attr("fill", color).attr("stroke", "#060B14").attr("stroke-width", 1.5)
+  if (t.includes("EMAIL") || t === "SQUARE") {
+    g.append("rect").attr("x", -8).attr("y", -8).attr("width", 16).attr("height", 16).attr("fill", color).attr("stroke", "#FFFFFF").attr("stroke-width", 1.5)
+  } else if (t.includes("SSH") || t.includes("KEY") || t.includes("COMPILER") || t === "DIAMOND") {
+    g.append("path").attr("d", "M0,-11 L11,0 L0,11 L-11,0 Z").attr("fill", color).attr("stroke", "#FFFFFF").attr("stroke-width", 1.5)
+  } else if (t.includes("GIT") || t.includes("ACTOR") || t.includes("THREAT") || t === "TRIANGLE") {
+    g.append("path").attr("d", "M0,-11 L11,9 L-11,9 Z").attr("fill", color).attr("stroke", "#FFFFFF").attr("stroke-width", 1.5)
+  } else if (t.includes("BASE") || t.includes("TARGET") || t.includes("EGRESS")) {
+    g.append("path").attr("d", "M-4,-10 H4 V-4 H10 V4 H4 V10 H-4 V4 H-10 V-4 H-4 Z").attr("fill", color).attr("stroke", "#FFFFFF").attr("stroke-width", 1.2)
   } else {
-    g.append("circle").attr("r", 10).attr("fill", color).attr("stroke", "#060B14").attr("stroke-width", 1.5)
+    g.append("circle").attr("r", 9).attr("fill", color).attr("stroke", "#FFFFFF").attr("stroke-width", 1.5)
   }
 }
 

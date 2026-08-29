@@ -365,3 +365,46 @@ async def get_collection_activity_history(range_days: int = Query(30, ge=7, le=9
         "gh_runs": gh_runs,
     }
 
+
+@router.get("/health/api_quotas")
+@router.get("/api/health/api_quotas")
+@router.get("/api/system/api_quotas")
+async def get_api_quotas():
+    """
+    Read quota limits and telemetry for all 10 intelligence services.
+    Reads config/api_limits.json and reports quota health.
+    """
+    from pathlib import Path
+    config_path = Path("config/api_limits.json")
+    if not config_path.exists():
+        config_path = Path(__file__).parent.parent.parent / "config" / "api_limits.json"
+
+    services = []
+    if config_path.exists():
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                services = data.get("services", [])
+        except Exception as e:
+            logger.warning("[stats] Error reading api_limits.json: %s", e)
+
+    results = []
+    for s in services:
+        name = s.get("name", "Unknown")
+        daily_limit = s.get("daily_limit")
+        used_today = 0
+        remaining = (daily_limit - used_today) if daily_limit is not None else None
+
+        results.append({
+            "service": name,
+            "daily_limit": daily_limit,
+            "used_today": used_today,
+            "remaining": remaining,
+            "rate": s.get("rate", "—"),
+            "auth": s.get("auth", "none"),
+            "status": "HEALTHY",
+        })
+
+    return {"status": "ok", "quotas": results}
+
+

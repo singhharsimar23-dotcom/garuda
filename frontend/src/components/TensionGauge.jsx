@@ -1,17 +1,24 @@
 import React from "react"
 
+export const getTensionLabel = (score) => {
+  const s = Number(score) || 0
+  if (s >= 0.80) return { label: "KINETIC", color: "#FF0000", bg: "bg-red-500/20 text-red-400 border-red-500/40" }
+  if (s >= 0.65) return { label: "HIGH", color: "#FF4500", bg: "bg-orange-500/20 text-orange-400 border-orange-500/40" }
+  if (s >= 0.45) return { label: "ELEVATED", color: "#FF8C00", bg: "bg-amber-500/20 text-amber-400 border-amber-500/40" }
+  if (s >= 0.25) return { label: "GUARDED", color: "#FFA500", bg: "bg-yellow-500/20 text-yellow-400 border-yellow-500/40" }
+  return { label: "NOMINAL", color: "#00C853", bg: "bg-emerald-500/20 text-emerald-400 border-emerald-500/40" }
+}
+
 export default function TensionGauge({ tension = 0.50, conflictMode = false }) {
-  const percentage = Math.min(100, Math.max(0, Math.round(tension * 100)))
+  const val = typeof tension === "number" ? tension : Number(tension) || 0.50
+  const percentage = Math.min(100, Math.max(0, Math.round(val * 100)))
+  const tensionInfo = getTensionLabel(val)
 
   // SVG Arc Calculation (Half-Circle Gauge)
   const radius = 60
   const circumference = Math.PI * radius
   const strokeDashoffset = circumference - (percentage / 100) * circumference
-
-  const color =
-    percentage >= 65 ? "#ef4444"
-    : percentage >= 45 ? "#f59e0b"
-    : "#10b981"
+  const color = tensionInfo.color
 
   return (
     <div className="bg-navy-900 border border-navy-700/80 rounded-xl p-4 shadow-xl flex flex-col items-center justify-center relative overflow-hidden">
@@ -24,8 +31,8 @@ export default function TensionGauge({ tension = 0.50, conflictMode = false }) {
             Conflict Mode
           </span>
         ) : (
-          <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-            Nominal
+          <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase border ${tensionInfo.bg}`}>
+            {tensionInfo.label}
           </span>
         )}
       </div>
