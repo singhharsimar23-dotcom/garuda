@@ -15,8 +15,9 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# Python build lib dirs (root-level only, NOT frontend source)
+/lib/
+/lib64/
 parts/
 sdist/
 var/

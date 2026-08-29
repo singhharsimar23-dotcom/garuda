@@ -284,17 +284,9 @@ _DEFAULT_COLLECTIONS: List[Dict[str, Any]] = [
 
 _IN_MEMORY_COLLECTIONS: Dict[str, Dict[str, Any]] = {c["id"]: dict(c) for c in _DEFAULT_COLLECTIONS}
 _IN_MEMORY_STIX_OBJECTS: List[Dict[str, Any]] = []
-_IN_MEMORY_SUBSCRIBERS: Dict[str, Dict[str, Any]] = {
-    # Default development / test API key
-    "garuda-demo-key-1234567890abcdef": {
-        "id": "99999999-9999-9999-9999-999999999999",
-        "name": "AFCERT / Govt Subscriber Demo",
-        "api_key": "garuda-demo-key-1234567890abcdef",
-        "allowed_collections": ["*"],
-        "active": True,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-    }
-}
+_IN_MEMORY_SUBSCRIBERS: Dict[str, Dict[str, Any]] = {}
+# NOTE: Subscribers are only created via POST /api/intelligence/subscribers
+# and stored in Supabase taxii_subscribers table. No demo/seed keys exist.
 _IN_MEMORY_ACCESS_LOGS: List[Dict[str, Any]] = []
 _IN_MEMORY_RPZ_ENTRIES: List[Dict[str, Any]] = []
 _IN_MEMORY_DEFENCE_IPS: List[Dict[str, Any]] = []
