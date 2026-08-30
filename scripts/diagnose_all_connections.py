@@ -103,22 +103,8 @@ async def check_all():
     else:
         results.append(("Telegram Bot Notification", "MISSING", "TELEGRAM_BOT_TOKEN not set in .env"))
 
-    # 6. Northflank PostgreSQL (Phase 3 Almanac DB)
-    print("[6] Checking Northflank PostgreSQL (NORTHFLANK_DB_URL)...")
-    nf_db = os.environ.get("NORTHFLANK_DB_URL") or os.environ.get("DATABASE_URL")
-    if nf_db:
-        try:
-            import psycopg2
-            conn = psycopg2.connect(nf_db, connect_timeout=5)
-            conn.close()
-            results.append(("Northflank PostgreSQL (Almanac DB)", "PASS", "Direct DB connection verified"))
-        except Exception as e:
-            results.append(("Northflank PostgreSQL (Almanac DB)", "FAIL", str(e)[:100]))
-    else:
-        results.append(("Northflank PostgreSQL (Almanac DB)", "MISSING", "NORTHFLANK_DB_URL not set in .env"))
-
-    # 7. Cloudflare DNS Sinkhole
-    print("[7] Checking Cloudflare API...")
+    # 6. Cloudflare DNS Sinkhole
+    print("[6] Checking Cloudflare API...")
     cf_token = os.environ.get("CF_API_TOKEN")
     cf_zone = os.environ.get("CF_ZONE_ID")
     if cf_token:
@@ -134,50 +120,43 @@ async def check_all():
     else:
         results.append(("Cloudflare DNS Sinkhole", "MISSING", "CF_API_TOKEN not set in .env"))
 
-    # 8. External Threat Intel Feeds (OTX, VirusTotal, AbuseIPDB, Shodan)
-    print("[8] Checking Intel Feeds (OTX, VirusTotal, AbuseIPDB, Shodan)...")
-    otx_key = os.environ.get("OTX_API_KEY")
-    if otx_key:
-        results.append(("AlienVault OTX", "PASS", "Key Configured"))
-    else:
-        results.append(("AlienVault OTX", "MISSING", "OTX_API_KEY not set in .env"))
-
+    # 7. External Threat Intel Feeds (VirusTotal, Shodan, OTX, AbuseIPDB)
+    print("[7] Checking Intel Feeds (VirusTotal, Shodan)...")
     vt_key = os.environ.get("VIRUSTOTAL_API_KEY")
-    if vt_key:
-        results.append(("VirusTotal API", "PASS", "Key Configured"))
-    else:
-        results.append(("VirusTotal API", "MISSING", "VIRUSTOTAL_API_KEY not set in .env"))
-
-    abuse_key = os.environ.get("ABUSEIPDB_KEY")
-    if abuse_key:
-        results.append(("AbuseIPDB API", "PASS", "Key Configured"))
-    else:
-        results.append(("AbuseIPDB API", "MISSING", "ABUSEIPDB_KEY not set in .env"))
+    results.append(("VirusTotal API", "PASS" if vt_key else "MISSING", "Key Configured" if vt_key else "VIRUSTOTAL_API_KEY not set"))
 
     shodan_key = os.environ.get("SHODAN_API_KEY")
-    if shodan_key:
-        results.append(("Shodan API", "PASS", "Key Configured"))
-    else:
-        results.append(("Shodan API", "MISSING", "SHODAN_API_KEY not set in .env"))
+    results.append(("Shodan API", "PASS" if shodan_key else "MISSING", "Key Configured" if shodan_key else "SHODAN_API_KEY not set"))
 
-    # 9. Phase 3 Inter-Service Security
-    print("[9] Checking Inter-Service & Agent Security Keys...")
+    # 8. Phase 3 Inter-Service Security
+    print("[8] Checking Inter-Service & Agent Security Keys...")
     agent_key = os.environ.get("AGENT_API_KEY")
     secret = os.environ.get("INTER_SERVICE_SECRET")
     cron_sec = os.environ.get("CRON_SECRET")
+    render_key = os.environ.get("RENDER_API_KEY")
 
     results.append(("AGENT_API_KEY (Host Agent Auth)", "PASS" if agent_key else "MISSING", "Configured" if agent_key else "Needs generated token"))
     results.append(("INTER_SERVICE_SECRET (AXIOM <-> BRAHMA)", "PASS" if secret else "MISSING", "Configured" if secret else "Needs generated token"))
     results.append(("CRON_SECRET (Scheduled Endpoints)", "PASS" if cron_sec else "MISSING", "Configured" if cron_sec else "Needs generated token"))
+    results.append(("RENDER_API_KEY (Render Automation)", "PASS" if render_key else "MISSING", "Configured" if render_key else "RENDER_API_KEY not set in .env"))
 
-    # 10. Service Deployment URLs
-    axiom_url = os.environ.get("NORTHFLANK_AXIOM_URL")
-    brahma_url = os.environ.get("NORTHFLANK_BRAHMA_URL")
-    koyeb_url = os.environ.get("KOYEB_UTNE_URL")
-
-    results.append(("NORTHFLANK_AXIOM_URL (Service 1)", "PASS" if axiom_url else "OPTIONAL_UNTIL_DEPLOYED", axiom_url or "Fill after Northflank deploy"))
-    results.append(("NORTHFLANK_BRAHMA_URL (Service 2)", "PASS" if brahma_url else "OPTIONAL_UNTIL_DEPLOYED", brahma_url or "Fill after Northflank deploy"))
-    results.append(("KOYEB_UTNE_URL (Service 3)", "PASS" if koyeb_url else "OPTIONAL_UNTIL_DEPLOYED", koyeb_url or "Fill after Koyeb deploy"))
+    # 9. Live Production Render Services
+    print("[9] Checking Live Render Microservices...")
+    render_services = [
+        ("AXIOM-II Service (Render)", os.environ.get("NORTHFLANK_AXIOM_URL") or "https://garuda-axiom-service.onrender.com"),
+        ("BRAHMA Service (Render)", os.environ.get("NORTHFLANK_BRAHMA_URL") or "https://garuda-brahma-service.onrender.com"),
+        ("UTNE Service (Render)", os.environ.get("RENDER_UTNE_URL") or "https://garuda-utne-service.onrender.com"),
+    ]
+    async with httpx.AsyncClient(timeout=8.0) as client:
+        for sname, surl in render_services:
+            try:
+                hr = await client.get(f"{surl}/health")
+                if hr.status_code == 200:
+                    results.append((sname, "PASS", f"LIVE ({surl})"))
+                else:
+                    results.append((sname, "FAIL", f"HTTP {hr.status_code}"))
+            except Exception as e:
+                results.append((sname, "FAIL", str(e)[:60]))
 
     print("\n" + "=" * 80)
     print("  SUMMARY AUDIT REPORT")

@@ -2208,9 +2208,9 @@
     "semantic_hash": ""
   },
   "maintenance/health_check.py": {
-    "mtime": 1788066440.0961394,
-    "seen": 1788066599.459479,
-    "ast_hash": "631552e4a3d6266283c3f62ff308c07e",
+    "mtime": 1788068400.3028054,
+    "seen": 1788068444.0422487,
+    "ast_hash": "866aaafbaa67117cec2576c943607d54",
     "semantic_hash": ""
   },
   "tests/test_e2e_integration.py": {
@@ -2373,6 +2373,18 @@
     "mtime": 1788066717.5147758,
     "seen": 1788067143.2344317,
     "ast_hash": "6a1d5c84dae67391ce965e254110f2fe",
+    "semantic_hash": ""
+  },
+  "scripts/diagnose_all_connections.py": {
+    "mtime": 1788067463.0046647,
+    "seen": 1788068444.042338,
+    "ast_hash": "c74c97715d8c56d96126e99545cb513f",
+    "semantic_hash": ""
+  },
+  "render.yaml": {
+    "mtime": 1788068392.6513903,
+    "seen": 1788068444.0427477,
+    "ast_hash": "65dd8d0f8db15c6973f492b342308428",
     "semantic_hash": ""
   }
 }

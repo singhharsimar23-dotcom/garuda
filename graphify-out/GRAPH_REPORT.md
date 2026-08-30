@@ -1,16 +1,16 @@
 # Graph Report - garuda  (2026-08-30)
 
 ## Corpus Check
-- 367 files · ~154,000 words
+- 370 files · ~155,480 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3211 nodes · 6083 edges · 206 communities (172 shown, 34 thin omitted)
+- 3226 nodes · 6099 edges · 223 communities (184 shown, 39 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 148 edges (avg confidence: 0.92)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `302665de`
+- Built from commit: `820f6326`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -26,7 +26,7 @@
 - detect_mode
 - Intelligence.jsx
 - pdns.py
-- routes/__init__.py
+- routes/analyst.py
 - engine.py
 - cluster.py
 - init_db.sql
@@ -40,28 +40,28 @@
 - score_candidate
 - devDependencies
 - dependencies
-- garuda/collector.py
+- cache.py
 - database.py
 - registrar.py
 - scripts/init_db.sql
-- Path
-- intelligence/__init__.py
+- TestGarudaResponse
+- extract_dga_features
 - hijack_detector.py
 - DeceptionLedger
 - dashboard.py
 - AxiomSettings
-- garuda/config.py
+- api/main.py
 - ssh_tracker.py
-- models/telemetry.py
+- routers/telemetry.py
 - ias_computer.py
 - stix_export.py
 - get_cached_json
 - get_db_pool
 - App.jsx
 - orb/tracker.py
-- routers/telemetry.py
+- ingest_telemetry
 - malware_hunt/corpus_builder.py
-- honeypot.py
+- test_refactor_kill_list.py
 - KillChainTracker
 - RAPLReader
 - ripe_stat.py
@@ -72,15 +72,15 @@
 - update.py
 - axiom/db/__init__.py
 - rpz_generator.py
-- TestAirGappedIAS
+- garuda_analyst.py
 - fingerprint_matches_cve
 - migration_sessions_8_to_15.sql
-- ._get_connection
-- decide_attribution_endpoint
+- LocalAlmanac
+- routes/alerts.py
 - predictive/__init__.py
 - test_all_env_integrations.py
 - TestRpkiSignals
-- agent_main.py
+- .__init__
 - cisa_kev.py
 - brahma.py
 - Any
@@ -90,17 +90,17 @@
 - TestGarudaAPI
 - cloudflare-worker/package.json
 - frontend/package.json
-- .flush
-- TestTaxii2ServerAndSTIX21
+- TelemetryBatcher
+- ._create_oasis_server
 - EPPILoader
 - get_announced_prefixes
-- create_stix_bundle
+- set_cached_json
 - bayesian_updater.py
 - test_e2e_integration.py
 - test_malware_hunt.py
 - ErrorBoundary
 - StatusBar.jsx
-- trigger_background_collection
+- garuda/collector.py
 - validate_rpz_eligibility
 - state_machine.py
 - MultiDimensionalLinearPowerWorkloadModel
@@ -121,7 +121,7 @@
 - health_check.py
 - Any
 - ThreatMap.jsx
-- routes/analyst.py
+- response/__init__.py
 - scrape_ispr_statements
 - workflows/graphify.md
 - vercel.json
@@ -149,7 +149,7 @@
 - OTXPuller
 - BudgetLimiter
 - utne/__init__.py
-- RollbackManager
+- PlanCache
 - get_active_rpz_entries
 - score_orb_probability
 - brahma/services/__init__.py
@@ -168,52 +168,69 @@
 - CloudflareDNS
 - Any
 - 004_brahma.sql
-- TestTelemetryEndpoint
+- agent_main.py
 - brahma/__init__.py
 - data-pipeline/__init__.py
-- PlanCache
+- .get_all_pending_actions
 - dharma.py
 - rate_limiter.py
 - .get_status
 - .test_sla_enforcement
 - rpz.py
-- TestClient
+- tier0_executor.py
 - ._extract_evidence_iocs
-- 005_dharma_eppi.sql
+- supabase_all_in_one_migration.sql
 - .send_command
 - brahma_grammar_push.py
 - get_sitrep
 - run_first_boot_setup
-- BayesianUpdater
+- _run_post_confirmation_tasks
 - Demonstration Timeline (10 Minutes)
-- build_ioc_graph
-- SchedstatReader
-- test_taxii2.py
+- intelligence/__init__.py
+- process_domain
+- assemble_score
 - TestRpzApiEndpoints
 - upsert_rpz_entry
-- compute_ioc_confidence
+- OfflineIASComputer
 - Technical Abstract
 - revoke_taxii_subscriber
 - get_registrar_via_rdap
-- create_subscriber
+- register_taxii_subscriber
 - diagnose_all_connections.py
 - Zero-Host-Install Physics-Layer Intrusion Detection for Sovereign & Air-Gapped Networks
 - get_all_rpz_entries
 - iDEX DISC Portal Submission — Problem Statement
 - Sovereign Defense & Enterprise Licensing Schedule
 - Sovereign Pre-Attack Cyber Threat Intelligence & Physics-Layer Endpoint Defense
-- enrichment/__init__.py
+- TPMReader
+- garuda/config.py
 - TestRpzZoneFileSyntax
 - RegisterDomainRequest
 - GarudaActiveLearner
+- TestAirGappedIAS
+- effectiveness.py
 - MockFuzz
+- confirm_threat_alert
+- AlmanacService
+- TestGarudaIntelligence
+- Any
 - garuda_usb_agent/__init__.py
 - build_image.sh
 - partition_setup.sh
 - sign.sh
+- StatsResponse
+- fetch_all_agent_posteriors
+- Path
+- _load_local_ground_truth
+- fetch_cloudflare_dns_logs
+- deploy_render_api.py
+- .delete_plan
+- .test_03_tier1_authorization_and_rollback
+- .test_04_brahma_bayesian_convergence
+- .test_02_critical_anomaly_and_response_cascade
 
 ## God Nodes (most connected - your core abstractions)
-1. `get_supabase_client()` - 143 edges
+1. `get_supabase_client()` - 144 edges
 2. `react` - 46 edges
 3. `get_cached_json()` - 41 edges
 4. `set_cached_json()` - 41 edges
@@ -229,17 +246,17 @@
   tests/test_ias_computer.py → axiom-service/axiom/models/telemetry.py
 - `TestEndToEndPhase3Pipeline` --uses--> `ChannelObservation`  [INFERRED]
   tests/test_e2e_integration.py → axiom-service/axiom/models/telemetry.py
+- `TestIASComputer` --uses--> `AlmanacService`  [INFERRED]
+  tests/test_ias_computer.py → axiom-service/axiom/services/almanac_service.py
 - `TestBayesianUpdater` --uses--> `BayesianUpdater`  [INFERRED]
   tests/test_bayesian_updater.py → brahma-service/brahma/services/bayesian_updater.py
 - `TestEndToEndPhase3Pipeline` --uses--> `BayesianUpdater`  [INFERRED]
   tests/test_e2e_integration.py → brahma-service/brahma/services/bayesian_updater.py
-- `TestDharmaTier0` --uses--> `CloudflareDNS`  [INFERRED]
-  tests/test_dharma_tier0.py → brahma-service/dharma/cloudflare_dns.py
 
 ## Import Cycles
 - None detected.
 
-## Communities (206 total, 34 thin omitted)
+## Communities (223 total, 39 thin omitted)
 
 ### Community 0 - "reasoner.py"
 Cohesion: 0.05
@@ -247,11 +264,11 @@ Nodes (58): ingest_all(), ingest_cisa_advisories(), ingest_garuda_confirmed_aler
 
 ### Community 1 - "lifecycle/tracker.py"
 Cohesion: 0.06
-Nodes (56): date, compute_lead_time_metrics(), _parse_date(), _parse_datetime(), Any, datetime, Compute lead-time and burn-cadence metrics from confirmed alerts.…, check_lifecycle() (+48 more)
+Nodes (49): check_lifecycle(), _detect_cluster_burns(), _detect_parking(), _dispatch_cluster_burn_alert(), _dispatch_transferred_alert(), _fetch_ip_asn(), _fetch_sweep_candidates(), _get_supabase_client() (+41 more)
 
 ### Community 2 - "webhook.py"
 Cohesion: 0.07
-Nodes (38): Exception, canary_webhook_endpoint(), _get_supabase_client(), Any, post, Request, Canary webhook endpoint — thin FastAPI wrapper., Public webhook for canarytokens.org document fires. (+30 more)
+Nodes (36): Exception, canary_webhook_endpoint(), _get_supabase_client(), Any, post, Request, Canary webhook endpoint — thin FastAPI wrapper., Public webhook for canarytokens.org document fires. (+28 more)
 
 ### Community 3 - "trigger.py"
 Cohesion: 0.06
@@ -270,8 +287,8 @@ Cohesion: 0.09
 Nodes (40): _classify_shodan_service(), export_easm_stix_bundle(), _fetch_monitored_ranges(), _fetch_open_findings(), get_easm_finding_detail(), get_easm_orgs(), _get_supabase_client(), _insert_kev_match() (+32 more)
 
 ### Community 7 - "clusters.py"
-Cohesion: 0.07
-Nodes (45): alias_list_clusters(), alias_list_fingerprints(), alias_list_queue(), list_clusters_endpoint(), list_fingerprints_endpoint(), list_review_queue_endpoint(), get, GARUDA — Operator Clusters & Campaign Fingerprints API (+37 more)
+Cohesion: 0.05
+Nodes (65): alias_list_clusters(), alias_list_fingerprints(), alias_list_queue(), assign_attribution_endpoint(), AssignAttributionRequest, create_cluster_endpoint(), CreateClusterRequest, decide_attribution_endpoint() (+57 more)
 
 ### Community 8 - "detect_mode"
 Cohesion: 0.13
@@ -282,36 +299,36 @@ Cohesion: 0.10
 Nodes (30): ConfidencePill(), confidenceTier(), CopyField(), ContextMenu(), DataTable(), EmptyState(), ScoreBadge(), SectionHeader() (+22 more)
 
 ### Community 10 - "pdns.py"
-Cohesion: 0.05
-Nodes (44): CorrelateDomainRequest, get_alert_pdns_matches(), list_defence_ips(), list_pdns_observations(), BaseModel, get, post, GARUDA — Passive DNS Correlation & Defence IP Management Endpoints (+36 more)
+Cohesion: 0.06
+Nodes (42): CorrelateDomainRequest, get_alert_pdns_matches(), list_defence_ips(), list_pdns_observations(), BaseModel, get, post, GARUDA — Passive DNS Correlation & Defence IP Management Endpoints (+34 more)
 
-### Community 11 - "routes/__init__.py"
-Cohesion: 0.08
-Nodes (39): AlertListResponse, AlertResponse, AuditLogEntry, CampaignListResponse, CampaignResponse, ConfirmAlertRequest, ConfirmAlertResponse, BaseModel (+31 more)
+### Community 11 - "routes/analyst.py"
+Cohesion: 0.11
+Nodes (28): AlertListResponse, AlertResponse, AuditLogEntry, CampaignListResponse, CampaignResponse, ConfirmAlertRequest, ConfirmAlertResponse, BaseModel (+20 more)
 
 ### Community 12 - "engine.py"
-Cohesion: 0.08
-Nodes (40): _calculate_domain_age(), _fetch_whois_data(), _is_valid_domain(), _is_whitelisted(), process_domain(), Any, Calculate age of domain in days from creation timestamp., Process, evaluate, score, and alert on a candidate domain through the full… (+32 more)
+Cohesion: 0.21
+Nodes (16): detect_homoglyph(), normalize_domain(), Normalize domain name using NFKD decomposition, confusable translation, and…, Detect presence of internationalized unicode homoglyphs or lookalike spoofing…, GARUDA Detection Engine Package., compute_similarity(), _extract_stem(), load_nic_domains() (+8 more)
 
 ### Community 13 - "cluster.py"
-Cohesion: 0.13
-Nodes (20): detect_campaigns(), encode_features(), _encode_registrar(), _encode_sector(), _encode_subnet24(), _encode_time_bucket(), estimate_attack_window(), Any (+12 more)
+Cohesion: 0.22
+Nodes (13): detect_campaigns(), encode_features(), _encode_registrar(), _encode_sector(), _encode_subnet24(), _encode_time_bucket(), Any, ndarray (+5 more)
 
 ### Community 14 - "init_db.sql"
 Cohesion: 0.11
 Nodes (28): alerts, audit_log, bgp_incidents, bgp_watchlist, campaign_infrastructure_fingerprints, campaigns, canary_fires, canary_tokens (+20 more)
 
 ### Community 15 - "get_supabase_client"
-Cohesion: 0.12
-Nodes (16): Client, get_alert_audit_trail(), get, Retrieve the immutable append-only audit trail entries associated with an alert., get_supabase_client(), Retrieve or initialize the Supabase client singleton., clean_and_dedup(), GARUDA — Master Deduplication & Deep Purge Removes all test tokens, duplicates,… (+8 more)
+Cohesion: 0.08
+Nodes (24): Client, get_supabase_client(), init_database_tables(), Assign or unassign a cluster to a campaign infrastructure fingerprint., Retrieve or initialize the Supabase client singleton., Execute startup initialization and ensure default collections exist., update_fingerprint_cluster(), get_honeypot_domains() (+16 more)
 
 ### Community 16 - "agent_main_usb.py"
-Cohesion: 0.10
-Nodes (20): GARUDA USB Agent Main Orchestrator Coordinates multi-mode physical execution…, Main execution loop for GARUDA USB Agent., USBAgentRunner, CloudSynchronizer, GARUDA USB Cloud Synchronization Engine Syncs offline observations and alerts…, Manages synchronization between local SQLite / alert files and remote AXIOM…, Uploads local alert JSON files to cloud and deletes synced files., load_usb_config() (+12 more)
+Cohesion: 0.17
+Nodes (12): GARUDA USB Agent Main Orchestrator Coordinates multi-mode physical execution…, Main execution loop for GARUDA USB Agent., USBAgentRunner, CloudSynchronizer, GARUDA USB Cloud Synchronization Engine Syncs offline observations and alerts…, Manages synchronization between local SQLite / alert files and remote AXIOM…, Uploads local alert JSON files to cloud and deletes synced files., load_usb_config() (+4 more)
 
 ### Community 17 - "is_own_honeypot"
-Cohesion: 0.11
-Nodes (22): DataQualityError, Any, ValueError, GARUDA Data Quality & Truth Guards (PART 5) Enforces strict input validation…, Raised when incoming data fails quality or provenance verification., Validate alert before database insertion. Raises DataQualityError if data…, Validate SSH SHA256 fingerprint format. Real format: SHA256:[A-Za-z0-9+/]{43}=…, STIX objects must have a backing alert. No orphaned STIX objects allowed. (+14 more)
+Cohesion: 0.17
+Nodes (15): DataQualityError, Any, ValueError, GARUDA Data Quality & Truth Guards (PART 5) Enforces strict input validation…, Raised when incoming data fails quality or provenance verification., Validate alert before database insertion. Raises DataQualityError if data…, Validate SSH SHA256 fingerprint format. Real format: SHA256:[A-Za-z0-9+/]{43}=…, STIX objects must have a backing alert. No orphaned STIX objects allowed. (+7 more)
 
 ### Community 18 - "TestCpeMatchFunction"
 Cohesion: 0.10
@@ -341,13 +358,13 @@ Nodes (21): autoprefixer, devDependencies, autoprefixer, postcss, tailwindcss, @
 Cohesion: 0.10
 Nodes (21): chart.js, clsx, d3, dependencies, chart.js, clsx, d3, leaflet (+13 more)
 
-### Community 25 - "garuda/collector.py"
-Cohesion: 0.07
-Nodes (38): check_and_add_set(), get_redis_client(), Retrieve or initialize the Upstash Async Redis client., Check if a member exists in a Redis set. If not present, add it. Returns True…, Any, Orchestrate multi-source threat intelligence ingestion and scoring pipeline.…, run_collection(), _pivot_pdns_nameservers() (+30 more)
+### Community 25 - "cache.py"
+Cohesion: 0.12
+Nodes (21): generate_cache_key(), Generate a cache key using the standard pattern 'garuda:{source}:{query_hash}'., Threat Intelligence Source Ingestion Modules., fetch_boss_samples(), Any, AsyncClient, _query_tag(), Query MalwareBazaar API for samples matching a specific tag. Args: client:… (+13 more)
 
 ### Community 26 - "database.py"
-Cohesion: 0.12
-Nodes (29): AlertBase, AlertCreate, AlertInDB, AuditLogBase, AuditLogCreate, AuditLogInDB, CampaignBase, CampaignCreate (+21 more)
+Cohesion: 0.14
+Nodes (25): AlertBase, AlertCreate, AlertInDB, AuditLogBase, AuditLogCreate, AuditLogInDB, CampaignBase, CampaignCreate (+17 more)
 
 ### Community 27 - "registrar.py"
 Cohesion: 0.14
@@ -357,13 +374,13 @@ Nodes (22): count_predictive_registrations_this_month(), insert_predictive_domai
 Cohesion: 0.16
 Nodes (20): alerts, audit_log, campaign_infrastructure_fingerprints, campaigns, cluster_review_queue, compiler_fingerprints, cve_kev_matches, easm_findings (+12 more)
 
-### Community 29 - "Path"
-Cohesion: 0.15
-Nodes (8): generate_daily_bulletin_pdf(), Any, Generate an executive defense intelligence PDF bulletin using ReportLab.…, Path, No websockets package or ris-live WebSocket endpoint in Python source., TestNoWebsocketInCodebase, patch, TestGarudaResponse
+### Community 29 - "TestGarudaResponse"
+Cohesion: 0.18
+Nodes (5): generate_advisory_draft(), Any, Generate a formal CERT-In (Indian Computer Emergency Response Team) security…, patch, TestGarudaResponse
 
-### Community 30 - "intelligence/__init__.py"
-Cohesion: 0.08
-Nodes (31): _dictionary_coverage(), extract_dga_features(), _extract_stem(), _get_model(), _load_resources(), _max_consonant_cluster(), predict_dga(), Load or initialize pre-trained XGBoost DGA classifier. (+23 more)
+### Community 30 - "extract_dga_features"
+Cohesion: 0.16
+Nodes (16): _dictionary_coverage(), extract_dga_features(), _extract_stem(), _get_model(), _load_resources(), _max_consonant_cluster(), predict_dga(), Load or initialize pre-trained XGBoost DGA classifier. (+8 more)
 
 ### Community 31 - "hijack_detector.py"
 Cohesion: 0.18
@@ -374,40 +391,40 @@ Cohesion: 0.05
 Nodes (41): DeceptionLedger, Any, MAYA Deception Ledger Seed-deterministic generation module ensuring consistent…, Manages deterministic deception seeds and asset tracking. Key in Redis:…, Derives a deterministic integer seed from compartment and entity name:…, Persists deception asset metadata to ledger., Retrieves asset from ledger., Increments access count when a canary file or document is opened. (+33 more)
 
 ### Community 33 - "dashboard.py"
-Cohesion: 0.28
-Nodes (16): _build_persona_graph(), get_attribution_graph(), _lifecycle_alerts(), lifecycle_summary(), list_orb_nodes(), list_predictive_domains(), list_sandbox_analyses(), list_ssh_observations() (+8 more)
+Cohesion: 0.24
+Nodes (18): _build_persona_graph(), get_attribution_graph(), _lifecycle_alerts(), lifecycle_summary(), list_orb_nodes(), list_predictive_domains(), list_sandbox_analyses(), list_ssh_observations() (+10 more)
 
 ### Community 34 - "AxiomSettings"
 Cohesion: 0.09
 Nodes (34): AxiomSettings, Config, get_settings(), AXIOM Service Configuration Module Centralized settings management loaded…, Configuration settings for AXIOM detection service., Retrieve singleton configuration instance., create_app(), lifespan() (+26 more)
 
-### Community 35 - "garuda/config.py"
-Cohesion: 0.09
-Nodes (30): Vercel Serverless Function entry point for GARUDA API., create_app(), lifespan(), FastAPI, Application lifespan manager for startup telemetry loading and shutdown hooks., FastAPI Application Factory., get_api_quotas(), get_collection_activity_history() (+22 more)
+### Community 35 - "api/main.py"
+Cohesion: 0.10
+Nodes (27): Vercel Serverless Function entry point for GARUDA API., create_app(), lifespan(), FastAPI, Application lifespan manager for startup telemetry loading and shutdown hooks., FastAPI Application Factory., get_api_quotas(), get_collection_activity_history() (+19 more)
 
 ### Community 36 - "ssh_tracker.py"
 Cohesion: 0.15
 Nodes (18): collect_ssh_fingerprints(), detect_ssh_anomalies(), _extract_ssh_fingerprints(), _fetch_shodan_host(), _get_supabase_client(), _load_apt_ssh_keys(), persist_ssh_observations(), Any (+10 more)
 
-### Community 37 - "models/telemetry.py"
+### Community 37 - "routers/telemetry.py"
 Cohesion: 0.09
-Nodes (32): AnomalyAlertRecord, AnomalyEvent, ProvenanceRequest, ProvenanceResponse, BaseModel, Anomaly and Provenance Pydantic Schemas, Event model representing a detected physical anomaly., Database entity representation of an anomaly alert. (+24 more)
+Nodes (35): AnomalyAlertRecord, AnomalyEvent, ProvenanceRequest, ProvenanceResponse, BaseModel, Anomaly and Provenance Pydantic Schemas, Event model representing a detected physical anomaly., Database entity representation of an anomaly alert. (+27 more)
 
 ### Community 38 - "ias_computer.py"
-Cohesion: 0.07
-Nodes (29): AlmanacService, Any, Almanac Baseline Lifecycle Service Coordinates baseline persistence, memory…, Manages Gaussian baseline statistics and calibration state for monitored agents., Retrieves active baseline from cache or database., Updates baseline EMA if observation is clean (ias_score < log_threshold).…, calibrate_thresholds(), compute_gaussian_kl() (+21 more)
+Cohesion: 0.09
+Nodes (24): Almanac Baseline Lifecycle Service Coordinates baseline persistence, memory…, calibrate_thresholds(), compute_gaussian_kl(), compute_ias(), _extract_channel_values(), Any, Instruction/Anomaly Score (IAS) Computer Computes Gaussian Kullback-Leibler…, Updates baseline Gaussian parameters (mu, sigma) via Exponential Moving Average… (+16 more)
 
 ### Community 39 - "stix_export.py"
-Cohesion: 0.20
-Nodes (14): get_taxii_collections(), insert_stix_objects(), Retrieve all available TAXII 2.1 collections., Insert a list of validated STIX objects into stix_objects table. Ensures…, _format_valid_from(), _map_sector_to_slug(), persist_stix_bundle(), Any (+6 more)
+Cohesion: 0.10
+Nodes (28): Bundle, get_taxii_collections(), insert_stix_objects(), Retrieve all available TAXII 2.1 collections., Insert a list of validated STIX objects into stix_objects table. Ensures…, compute_ioc_confidence(), Any, GARUDA Threat Intelligence - IOC Confidence Scoring Engine Calculates an… (+20 more)
 
 ### Community 40 - "get_cached_json"
 Cohesion: 0.11
-Nodes (32): generate_cache_key(), get_cached_json(), Any, Generate a cache key using the standard pattern 'garuda:{source}:{query_hash}'., Retrieve cached JSON data by key., Store data in cache as JSON with a specified TTL in seconds (default: 1800)., set_cached_json(), check_hosting_asn() (+24 more)
+Nodes (26): get_cached_json(), Retrieve cached JSON data by key., build_ioc_graph(), _compute_registrant_hash(), _pivot_pdns_nameservers(), _pivot_reverse_ip(), _pivot_ssl_sans(), Any (+18 more)
 
 ### Community 41 - "get_db_pool"
-Cohesion: 0.13
-Nodes (20): BRAHMA Database Layer, close_db_pool(), get_db_pool(), init_db_pool(), BRAHMA Database Pool Module Asyncpg connection pool with exponential backoff…, Initializes asyncpg connection pool., Returns the active asyncpg connection pool., Closes all database pool connections. (+12 more)
+Cohesion: 0.12
+Nodes (22): get_settings(), BRAHMA Service Configuration Module Centralized configuration management loaded…, Retrieve singleton configuration instance., BRAHMA Database Layer, close_db_pool(), get_db_pool(), init_db_pool(), BRAHMA Database Pool Module Asyncpg connection pool with exponential backoff… (+14 more)
 
 ### Community 42 - "App.jsx"
 Cohesion: 0.26
@@ -417,21 +434,21 @@ Nodes (6): GlobalSearch(), getStixFeed(), runRetrohunt(), supabase, Retrohunt(),
 Cohesion: 0.12
 Nodes (26): get_bgp_updates(), Get BGP updates for a prefix or ASN over last N minutes. GET…, get_defence_prefixes_cached(), Load and cache Indian defence BGP prefixes for targeting checks., _check_otx_ioc(), _dispatch_orb_alert(), _fetch_internetdb(), _fetch_shodan_host() (+18 more)
 
-### Community 44 - "routers/telemetry.py"
-Cohesion: 0.10
-Nodes (31): check_tables_exist(), get_almanac_baseline(), get_clean_baseline_observations(), insert_anomaly_alert(), insert_physics_observations_bulk(), insert_tpm_snapshot(), Any, Typed Database Query Layer for AXIOM Service Ensures table existence checks,… (+23 more)
+### Community 44 - "ingest_telemetry"
+Cohesion: 0.11
+Nodes (25): check_tables_exist(), get_almanac_baseline(), get_clean_baseline_observations(), insert_anomaly_alert(), insert_physics_observations_bulk(), insert_tpm_snapshot(), Any, Typed Database Query Layer for AXIOM Service Ensures table existence checks,… (+17 more)
 
 ### Community 45 - "malware_hunt/corpus_builder.py"
 Cohesion: 0.20
 Nodes (15): ArgumentParser, _build_cli(), build_corpus_from_malwarebazaar(), _download_sample_pe(), _fingerprint_row(), _get_supabase_client(), _main(), _match_fields_between() (+7 more)
 
-### Community 46 - "honeypot.py"
-Cohesion: 0.12
-Nodes (17): Aggregated real-time SOC metrics and threat posture telemetry., StatsResponse, fetch_cloudflare_dns_logs(), generate_canary_alert_copy(), handle_canary_token_trigger(), Any, Generate calibrated alert copy for canary token triggers. CRITICAL ATTRIBUTION…, Process an activated canary token decoy. Dispatches timing alert without… (+9 more)
+### Community 46 - "test_refactor_kill_list.py"
+Cohesion: 0.13
+Nodes (13): estimate_attack_window(), Bayesian attack-window and timing estimation model. CRITICAL SCIENTIFIC &…, generate_canary_alert_copy(), handle_canary_token_trigger(), Generate calibrated alert copy for canary token triggers. CRITICAL ATTRIBUTION…, Process an activated canary token decoy. Dispatches timing alert without…, GARUDA Session 7 Acceptance Tests — Kill-List Refactor & Methodological…, Acceptance Criteria: Netflow exfiltration and classified tap modules must NOT… (+5 more)
 
 ### Community 47 - "KillChainTracker"
-Cohesion: 0.11
-Nodes (13): KillChainTracker, Tracks adversary tactic progression using a discrete probability distribution…, Ensures probabilities sum to exactly 1.0., Computes Shannon entropy in bits: H = -sum(p * log2(p))., Returns the Maximum A Posteriori (MAP) tactic., Predicts the most probable next tactic based on transition graph., Determines actor attribution, convergence status, and confidence. Strictly…, Test suite for Bayesian Kill-Chain Tracker and mathematical convergence. (+5 more)
+Cohesion: 0.10
+Nodes (15): KillChainTracker, Kill Chain Tracker Service Maintains Bayesian posterior over MITRE ATT&CK kill-…, Tracks adversary tactic progression using a discrete probability distribution…, Ensures probabilities sum to exactly 1.0., Computes Shannon entropy in bits: H = -sum(p * log2(p))., Returns the Maximum A Posteriori (MAP) tactic., Predicts the most probable next tactic based on transition graph., Determines actor attribution, convergence status, and confidence. Strictly… (+7 more)
 
 ### Community 48 - "RAPLReader"
 Cohesion: 0.10
@@ -443,7 +460,7 @@ Nodes (18): AnnouncedPrefixEntry, AnnouncedPrefixesData, BgpUpdateAttrs, BgpUpda
 
 ### Community 50 - "TestReaderDegradation"
 Cohesion: 0.08
-Nodes (18): EntropyReader, Kernel Entropy Pool Reader Reads /proc/sys/kernel/random/entropy_avail to…, Reads the available system entropy bits from Linux sysctl /proc interface., Returns available entropy bits (usually between 0 and 4096). Returns None if…, EPPI (Execution Provenance and Physical Invariants) eBPF Loader Applies kernel…, TPM 2.0 PCR State Reader Reads hardware Platform Configuration Registers (PCRs…, Interacts with TPM 2.0 hardware via tpm2_pcrread to measure platform integrity., Executes tpm2_pcrread and returns a mapping of PCR indices to their SHA256 hex… (+10 more)
+Nodes (17): EntropyReader, Kernel Entropy Pool Reader Reads /proc/sys/kernel/random/entropy_avail to…, Reads the available system entropy bits from Linux sysctl /proc interface., Returns available entropy bits (usually between 0 and 4096). Returns None if…, Local Almanac Storage & Offline Telemetry Buffer Stores offline telemetry…, Linux Kernel Scheduler Statistics Reader Parses /proc/schedstat to measure CPU…, Tracks kernel scheduler run delay, execution time, and timeslices. High run…, Reads /proc/schedstat and computes rates: - run_time_ms_per_sec: CPU running… (+9 more)
 
 ### Community 51 - "Sidebar.jsx"
 Cohesion: 0.15
@@ -459,19 +476,19 @@ Nodes (16): _dns_available(), _fallback_candidates(), filter_available_candidate
 
 ### Community 54 - "update.py"
 Cohesion: 0.12
-Nodes (25): BrahmaSettings, Config, get_settings(), BRAHMA Service Configuration Module Centralized configuration management loaded…, Runtime configuration for BRAHMA service., Retrieve singleton configuration instance., verify_inter_service_auth(), post (+17 more)
+Nodes (22): BrahmaSettings, Config, Runtime configuration for BRAHMA service., post, Grammar Expansion Router Allows explicit triggers for behavioral grammar…, Synthesizes expanded grammar rules for off-pattern adversary execution., trigger_grammar_expansion(), BRAHMA API Routers Package (+14 more)
 
 ### Community 55 - "axiom/db/__init__.py"
-Cohesion: 0.16
-Nodes (13): close_db_pool(), get_db_pool(), init_db_pool(), Asyncpg Database Connection Pool Management Enforces connection pooling (min=2,…, Initializes asyncpg connection pool with exponential backoff retry logic., Returns the active asyncpg connection pool or None., Gracefully terminates all pool connections., health_check() (+5 more)
+Cohesion: 0.13
+Nodes (16): close_db_pool(), get_db_pool(), init_db_pool(), Asyncpg Database Connection Pool Management Enforces connection pooling (min=2,…, Initializes asyncpg connection pool with exponential backoff retry logic., Returns the active asyncpg connection pool or None., Gracefully terminates all pool connections., health_check() (+8 more)
 
 ### Community 56 - "rpz_generator.py"
 Cohesion: 0.23
 Nodes (12): compute_zone_serial(), generate_active_rpz_zone(), publish_domain_to_rpz(), Any, datetime, GARUDA — Response Policy Zone (RPZ) DNS Defense Engine Generates RFC-conformant…, Compute standard BIND zone serial number in YYYYMMDDNN format. Example:…, Render a list of RPZ entries into a fully conformant BIND 9 Response Policy… (+4 more)
 
-### Community 57 - "TestAirGappedIAS"
-Cohesion: 0.09
-Nodes (19): Acceptance Tests for Offline Air-Gapped IAS Scoring, PDF Reporting, and STIX…, Test suite for offline IAS parity, safety gates, and analyst report generation., When observation count < 1000, all evaluations return 'BASELINING — NO ALERTS…, When calibrated (>= 1000 events), offline IAS detects physical divergence., Generates PDF forensic report from offline alert array without throwing…, Exporting alerts produces a valid STIX 2.1 JSON bundle structure., TestAirGappedIAS, main() (+11 more)
+### Community 57 - "garuda_analyst.py"
+Cohesion: 0.16
+Nodes (13): Acceptance Tests for Offline Air-Gapped IAS Scoring, PDF Reporting, and STIX…, main(), GARUDA Air-Gapped Analyst Workstation CLI Extracts offline physical alerts and…, Executes air-gapped triage pipeline over USB mount., run_analyst_pipeline(), generate_pdf_report(), Any, Air-Gapped PDF Report Generator Produces executive PDF reports using reportlab… (+5 more)
 
 ### Community 58 - "fingerprint_matches_cve"
 Cohesion: 0.10
@@ -481,13 +498,13 @@ Nodes (19): compute_severity(), _extract_cpe_components(), fingerprint_matches_c
 Cohesion: 0.17
 Nodes (12): alerts, bgp_incidents, bgp_watchlist, canary_fires, canary_tokens, compiler_fingerprints, orb_nodes, persona_nodes (+4 more)
 
-### Community 60 - "._get_connection"
-Cohesion: 0.15
-Nodes (7): Connection, Any, Mark a buffered batch as successfully synchronized., Purge synchronized or expired records older than max_age_days., Initialize required SQLite tables., Buffer unsent telemetry batch to SQLite., Retrieve pending unsent telemetry batches.
+### Community 60 - "LocalAlmanac"
+Cohesion: 0.18
+Nodes (9): Connection, LocalAlmanac, Any, Mark a buffered batch as successfully synchronized., Purge synchronized or expired records older than max_age_days., Manages local SQLite database for buffering telemetry during network partitions…, Initialize required SQLite tables., Buffer unsent telemetry batch to SQLite. (+1 more)
 
-### Community 61 - "decide_attribution_endpoint"
-Cohesion: 0.15
-Nodes (20): assign_attribution_endpoint(), AssignAttributionRequest, create_cluster_endpoint(), CreateClusterRequest, decide_attribution_endpoint(), propose_attribution_endpoint(), ProposeAttributionRequest, BaseModel (+12 more)
+### Community 61 - "routes/alerts.py"
+Cohesion: 0.16
+Nodes (16): _format_alert_dict(), get_alert_detail(), get_alert_graph(), get_alert_yara_rule(), list_alerts(), Any, get, Retrieve complete dossier for an individual alert directly from database. (+8 more)
 
 ### Community 62 - "predictive/__init__.py"
 Cohesion: 0.22
@@ -501,21 +518,21 @@ Nodes (12): main(), GARUDA — Comprehensive Environment & API Integration Diagn
 Cohesion: 0.19
 Nodes (7): patch, unknown' RPKI status → no alert, advisory only., RPKI status drives alert severity correctly., RIPE returns 'valid' + expected ASN → no alert., RIPE returns 'invalid' → HIGH alert dispatched., Invalid RPKI + unexpected ASN → CRITICAL., TestRpkiSignals
 
-### Community 65 - "agent_main.py"
-Cohesion: 0.09
-Nodes (24): GarudaAgent, main(), Any, GARUDA Host Agent Main Loop & Orchestrator Continuously samples host physical…, Processes server response from AXIOM (e.g. updating poll interval or…, Starts the telemetry collection loop., Main agent orchestration service., Register signal handlers for termination and on-demand integrity triggers. (+16 more)
+### Community 65 - ".__init__"
+Cohesion: 0.14
+Nodes (11): Register signal handlers for termination and on-demand integrity triggers., AgentConfig, BaseSettings, Config, get_config(), GARUDA Agent Configuration Module Loads configuration from environment…, Agent runtime configuration., Retrieve active configuration instance. (+3 more)
 
 ### Community 66 - "cisa_kev.py"
 Cohesion: 0.18
 Nodes (13): fetch_kev_catalog(), get_kev_entry_by_cve(), KevSyncResult, _normalise_entry(), Any, datetime, GARUDA — CISA Known Exploited Vulnerabilities (KEV) Catalog Source Fetches and…, Fetch the CISA KEV catalog. Returns (entries, was_refreshed). Args:… (+5 more)
 
 ### Community 67 - "brahma.py"
-Cohesion: 0.20
-Nodes (15): AdversaryAssessmentResponse, BrahmaUpdateRequest, BrahmaUpdateResponse, GrammarExpansionRequest, GrammarExpansionResponse, BaseModel, BRAHMA Pydantic Data Models Schemas for adversary modeling, Bayesian kill-chain…, Payload received from AXIOM upon anomaly detection. (+7 more)
+Cohesion: 0.15
+Nodes (19): AdversaryAssessmentResponse, BrahmaUpdateRequest, BrahmaUpdateResponse, GrammarExpansionRequest, GrammarExpansionResponse, BaseModel, BRAHMA Pydantic Data Models Schemas for adversary modeling, Bayesian kill-chain…, Payload received from AXIOM upon anomaly detection. (+11 more)
 
 ### Community 68 - "Any"
-Cohesion: 0.15
-Nodes (17): get_canary_token_by_value(), get_predictive_domains(), increment_canary_fire_count(), insert_canary_fire(), _parse_ts(), Any, datetime, query_stix_manifest() (+9 more)
+Cohesion: 0.13
+Nodes (19): get_canary_token_by_value(), get_predictive_domains(), increment_canary_fire_count(), insert_canary_fire(), _parse_ts(), Any, datetime, query_stix_manifest() (+11 more)
 
 ### Community 69 - "extract_compiler_fingerprint"
 Cohesion: 0.32
@@ -529,6 +546,10 @@ Nodes (6): _compile_tz_hypothesis(), Map compile hour (UTC) to weak timezone hyp
 Cohesion: 0.22
 Nodes (6): PerfReader, Hardware Performance Counter Reader Uses perf_event_open syscall or `perf stat`…, Execute `perf stat` in CSV mode to retrieve aggregate metrics., Samples hardware performance counters: instructions, cache misses, cycles, IPC., Verify paranoid level, root permissions, and available measurement backends., Samples hardware counters and returns instructions, cache misses, cycles, and…
 
+### Community 72 - "TestGarudaAPI"
+Cohesion: 0.04
+Nodes (18): HTTPAdapter, TestClient, patch, TestGarudaAPI, TestCanaryWebhookEndpoint, API endpoint acceptance tests for /api/v1/clusters/*., TestClusterApiEndpoints, API endpoint acceptance tests for /api/v1/pdns/*. (+10 more)
+
 ### Community 73 - "cloudflare-worker/package.json"
 Cohesion: 0.18
 Nodes (10): description, devDependencies, wrangler, main, name, scripts, deploy, dev (+2 more)
@@ -537,13 +558,13 @@ Nodes (10): description, devDependencies, wrangler, main, name, scripts, deploy,
 Cohesion: 0.18
 Nodes (10): name, private, scripts, build, dev, preview, test, test:watch (+2 more)
 
-### Community 75 - ".flush"
-Cohesion: 0.31
-Nodes (5): Any, Attempts to synchronize cached offline batches when connectivity is available., Appends a reading to the in-memory buffer. If buffer size >= batch_size,…, Dispatches all buffered readings to AXIOM service., Sends a single batch payload to AXIOM endpoint with retry logic. Uses standard…
+### Community 75 - "TelemetryBatcher"
+Cohesion: 0.29
+Nodes (7): Any, Attempts to synchronize cached offline batches when connectivity is available., Batches telemetry observations and handles resilient transmission to AXIOM…, Appends a reading to the in-memory buffer. If buffer size >= batch_size,…, Dispatches all buffered readings to AXIOM service., Sends a single batch payload to AXIOM endpoint with retry logic. Uses standard…, TelemetryBatcher
 
-### Community 76 - "TestTaxii2ServerAndSTIX21"
-Cohesion: 0.15
-Nodes (8): Server, Acceptance Test: Every row in stix_objects deserializes cleanly via…, Acceptance Test: Official OASIS taxii2-client discovers server, inspects API…, Acceptance Test: Pull objects from a collection using taxii2-client and verify…, Verify /manifest/ and /objects/{object_id}/ endpoints. Uses 'all-iocs'…, Acceptance Test: Auth rejects unrecognized API key with a proper TAXII 2.1…, Create and configure an official OASIS TAXII 2.1 Server instance with adapter., TestTaxii2ServerAndSTIX21
+### Community 76 - "._create_oasis_server"
+Cohesion: 0.29
+Nodes (4): Server, Acceptance Test: Official OASIS taxii2-client discovers server, inspects API…, Acceptance Test: Pull objects from a collection using taxii2-client and verify…, Create and configure an official OASIS TAXII 2.1 Server instance with adapter.
 
 ### Community 77 - "EPPILoader"
 Cohesion: 0.07
@@ -553,17 +574,17 @@ Nodes (22): EPPILoader, Any, EPPI eBPF Loader & Ring Buffer Poller Selects match
 Cohesion: 0.24
 Nodes (9): get_announced_prefixes(), Get all BGP-announced prefixes for an ASN. GET…, get_defence_scan_targets(), get_live_defence_prefixes(), Any, EASM collector — live BGP-announced prefixes for Indian defence ASNs. Replaces…, Fetch live BGP-announced prefixes for each ASN in INDIAN_DEFENCE_ASNS. Returns…, Build scan targets for EASM: live BGP prefixes for defence ASNs. Used by EASM… (+1 more)
 
-### Community 79 - "create_stix_bundle"
-Cohesion: 0.26
-Nodes (11): Bundle, get_single_alert_stix(), get_stix_threat_feed(), get, Response, Export all analyst-confirmed IOCs as a standardized STIX 2.1 JSON Bundle.…, Generate and retrieve a dedicated STIX 2.1 Bundle for an individual alert., create_stix_bundle() (+3 more)
+### Community 79 - "set_cached_json"
+Cohesion: 0.12
+Nodes (17): GARUDA API Subroutes Package., get_single_alert_stix(), get_stix_threat_feed(), get, Response, Export all analyst-confirmed IOCs as a standardized STIX 2.1 JSON Bundle.…, Generate and retrieve a dedicated STIX 2.1 Bundle for an individual alert., get_redis_client() (+9 more)
 
 ### Community 80 - "bayesian_updater.py"
 Cohesion: 0.14
-Nodes (14): get_brahma_model(), insert_ttp_intel_bulk(), Any, Typed Database Queries for BRAHMA Service Manages persistence of adversary…, Bulk inserts TTP threat intelligence records., Retrieves active adversary model for an agent., Upserts adversary state model into PostgreSQL., upsert_brahma_model() (+6 more)
+Nodes (16): get_brahma_model(), insert_ttp_intel_bulk(), Any, Typed Database Queries for BRAHMA Service Manages persistence of adversary…, Bulk inserts TTP threat intelligence records., Retrieves active adversary model for an agent., Upserts adversary state model into PostgreSQL., upsert_brahma_model() (+8 more)
 
 ### Community 81 - "test_e2e_integration.py"
-Cohesion: 0.07
-Nodes (26): ANPSBatchRunner, Any, KALI ANPS (Autonomous Novel Path Synthesis) Batch Runner Generates candidate…, Runs weekly automated red-team candidate path synthesis., Synthesizes candidate attack paths and computes utility + detection metrics.…, evaluate_path_coverage(), KALI Deterministic Coverage Evaluator Calculates estimated detection…, Computes estimated detection probability P(detection) in range [0.0, 1.0].… (+18 more)
+Cohesion: 0.08
+Nodes (22): ANPSBatchRunner, Any, KALI ANPS (Autonomous Novel Path Synthesis) Batch Runner Generates candidate…, Runs weekly automated red-team candidate path synthesis., Synthesizes candidate attack paths and computes utility + detection metrics.…, evaluate_path_coverage(), KALI Deterministic Coverage Evaluator Calculates estimated detection…, Computes estimated detection probability P(detection) in range [0.0, 1.0].… (+14 more)
 
 ### Community 82 - "test_malware_hunt.py"
 Cohesion: 0.20
@@ -577,9 +598,9 @@ Nodes (3): App(), ErrorBoundary, queryClient
 Cohesion: 0.24
 Nodes (5): SERVICES, StatusBar(), tensionColor(), STATUS_MAP, StatusDot()
 
-### Community 85 - "trigger_background_collection"
-Cohesion: 0.29
-Nodes (9): Any, BackgroundTasks, get, post, Request, Vercel Cron target. Returns 200 immediately and dispatches collection run to…, Ingest a real-time domain candidate from the Cloudflare Edge Worker., receive_edge_candidate() (+1 more)
+### Community 85 - "garuda/collector.py"
+Cohesion: 0.11
+Nodes (25): Any, BackgroundTasks, get, post, Request, Vercel Cron target. Returns 200 immediately and dispatches collection run to…, Ingest a real-time domain candidate from the Cloudflare Edge Worker., receive_edge_candidate() (+17 more)
 
 ### Community 86 - "validate_rpz_eligibility"
 Cohesion: 0.19
@@ -598,8 +619,8 @@ Cohesion: 0.09
 Nodes (14): ProvenanceProcessor, Any, PROVDAG Execution Provenance & Physical Fusion Processor Builds execution…, Identifies the root entry point process by walking DAG ancestors from anomalous…, Processes kernel provenance events and fuses them with microarchitectural RAPL…, Adds EPPI kernel events to the provenance DAG. Handles FORK, EXEC, CONNECT, and…, Tags each PROVDAG process node with RAPL power observations within a ±500ms…, Acceptance Tests for EPPI PROVDAG & Physical Power Fusion (+6 more)
 
 ### Community 90 - "EPPILoader"
-Cohesion: 0.22
-Nodes (6): EPPILoader, Any, Manages loading of pre-compiled eBPF CO-RE bytecode for process execution…, Gates eBPF execution based on Linux kernel release version. Requires >= 5.4 for…, Polls events from the eBPF perf buffer / ring buffer. Returns a list of parsed…, Kernels older than 5.4 must disable EPPI kprobes.
+Cohesion: 0.18
+Nodes (7): EPPILoader, Any, EPPI (Execution Provenance and Physical Invariants) eBPF Loader Applies kernel…, Manages loading of pre-compiled eBPF CO-RE bytecode for process execution…, Gates eBPF execution based on Linux kernel release version. Requires >= 5.4 for…, Polls events from the eBPF perf buffer / ring buffer. Returns a list of parsed…, Kernels older than 5.4 must disable EPPI kprobes.
 
 ### Community 91 - "InfraGraph.jsx"
 Cohesion: 0.22
@@ -653,9 +674,9 @@ Nodes (3): Any, Pre-computes deterministic rollback state for an action before e
 Cohesion: 0.60
 Nodes (4): getAttackerGeo(), getTargetHubId(), STRATEGIC_HUBS, ThreatMap()
 
-### Community 106 - "routes/analyst.py"
-Cohesion: 0.08
-Nodes (42): add_whitelist_domain(), confirm_threat_alert(), Any, BackgroundTasks, post, Analyst rejection of false positive or benign domain alert. If reason_code ==…, Explicitly add a domain to the permanent whitelist and record audit entry., Execute background blocklist submissions and visual screenshot captures. (+34 more)
+### Community 106 - "response/__init__.py"
+Cohesion: 0.13
+Nodes (24): dispatch_alert(), Dispatch multi-channel threat intelligence alerts (Telegram MarkdownV2, Slack,…, confirm_alert(), Any, Mark an alert as confirmed malicious by an authorized analyst and record audit…, Mark an alert as false positive / rejected with justification in the audit log.…, Add a domain to the permanent whitelist and log justification in audit log., reject_alert() (+16 more)
 
 ### Community 107 - "scrape_ispr_statements"
 Cohesion: 0.40
@@ -697,9 +718,9 @@ Nodes (10): Synthesizes CTI sitreps and threat narratives with Anti-Hallucinatio
 Cohesion: 0.22
 Nodes (6): UTNE (Unified Threat Narrative Engine) Package, Any, UTNE Sitrep Evidence Aggregator Gathers telemetry, BRAHMA assessments, DHARMA…, Assembles evidence from distributed microservices and databases., Compiles live evidence bundle from active data sources., SitrepBuilder
 
-### Community 142 - "RollbackManager"
-Cohesion: 0.15
-Nodes (19): ActionLogRepository, DHARMA Action Log Repository Manages append-only execution history for all…, Appends action records to PostgreSQL dharma_action_log table., AgentCommander, Agent Commander Subsystem Publishes real-time command directives to monitored…, Dispatches containment and configuration commands to monitored agents., Cloudflare DNS Sinkhole Client Automates DNS redirection of confirmed malicious…, DHARMA (Defense Heuristic Autonomous Response Mechanism & Architecture) Package… (+11 more)
+### Community 142 - "PlanCache"
+Cohesion: 0.18
+Nodes (22): authorize_action(), handle_critical_anomaly_trigger(), Processes operator approval or rejection for a Tier 1 action., Executes automated Tier 0 actions (Intensification + Canary + Sinkhole) and…, ActionLogRepository, Appends action records to PostgreSQL dharma_action_log table., AgentCommander, Dispatches containment and configuration commands to monitored agents. (+14 more)
 
 ### Community 143 - "get_active_rpz_entries"
 Cohesion: 0.18
@@ -746,8 +767,8 @@ Cohesion: 0.24
 Nodes (6): patch, Integration tests with mocked external APIs., Score=65 → upsert to orb_nodes, no alert., Score=85 AND targeting_indian_defence → alert dispatched., No information available' → skip, no crash., TestOrbSweepIntegration
 
 ### Community 154 - "TestBrahmaEndpoints"
-Cohesion: 0.18
-Nodes (6): Acceptance Tests for BRAHMA REST API Endpoints, Test suite for BRAHMA FastAPI endpoints., POST /api/v1/brahma/update must reject requests without valid X-Inter-Service-…, GET /api/v1/brahma/assessment/{agent_id} on a fresh agent returns…, Valid authenticated update successfully processes event and returns prediction., TestBrahmaEndpoints
+Cohesion: 0.22
+Nodes (5): Test suite for BRAHMA FastAPI endpoints., POST /api/v1/brahma/update must reject requests without valid X-Inter-Service-…, GET /api/v1/brahma/assessment/{agent_id} on a fresh agent returns…, Valid authenticated update successfully processes event and returns prediction., TestBrahmaEndpoints
 
 ### Community 157 - "OperatorQA"
 Cohesion: 0.25
@@ -761,17 +782,17 @@ Nodes (6): CloudflareDNS, Any, Interacts with Cloudflare API to sinkhole verifie
 Cohesion: 0.29
 Nodes (4): Any, Checks for expired or unanswered Tier 1 actions and triggers escalation., Queues a process isolation action awaiting operator authorization., Processes operator approval or rejection for a pending Tier 1 action.
 
-### Community 161 - "TestTelemetryEndpoint"
-Cohesion: 0.17
-Nodes (7): patch, Test suite for POST /api/v1/telemetry., Request with missing or invalid Bearer token must return 401 Unauthorized., New agent with <1000 observations returns BASELINING status and CLEAN level., Observations with missing RAPL channels should degrade gracefully without error., CRITICAL IAS anomaly triggers DHARMA dispatch., TestTelemetryEndpoint
+### Community 161 - "agent_main.py"
+Cohesion: 0.19
+Nodes (8): GarudaAgent, main(), Any, GARUDA Host Agent Main Loop & Orchestrator Continuously samples host physical…, Processes server response from AXIOM (e.g. updating poll interval or…, Starts the telemetry collection loop., Main agent orchestration service., Samples all active telemetry channels and returns a unified observation record.
 
-### Community 164 - "PlanCache"
-Cohesion: 0.08
-Nodes (18): PlanCache, Any, Manages in-memory and Redis-backed containment plan caching and pending…, Sets a key-value record with TTL., Retrieves a cached plan if not expired., Removes a key from cache., Lists all active non-expired pending actions., Any (+10 more)
+### Community 164 - ".get_all_pending_actions"
+Cohesion: 0.29
+Nodes (4): Any, Sets a key-value record with TTL., Retrieves a cached plan if not expired., Lists all active non-expired pending actions.
 
 ### Community 165 - "dharma.py"
-Cohesion: 0.18
-Nodes (15): authorize_action(), AuthorizeActionRequest, CriticalAnomalyTriggerRequest, get_pending_actions(), handle_critical_anomaly_trigger(), BaseModel, get, post (+7 more)
+Cohesion: 0.19
+Nodes (12): AuthorizeActionRequest, CriticalAnomalyTriggerRequest, get_pending_actions(), BaseModel, get, post, DHARMA Autonomous Containment & Authorization Router Exposes endpoints for…, Returns all active Tier 1 actions awaiting operator authorization. (+4 more)
 
 ### Community 166 - "rate_limiter.py"
 Cohesion: 0.40
@@ -785,17 +806,17 @@ Nodes (4): _get_current_day(), Any, Checks if the request is within daily budget
 Cohesion: 0.24
 Nodes (11): publish_rpz_rule(), PublishRPZRequest, BaseModel, post, GARUDA — Response Policy Zone (RPZ) DNS Feed API Serves RFC-conformant BIND…, Publish a threat domain to the sovereign RPZ feed. Enforces minimum confidence…, Analyst-initiated removal of RPZ entry with mandatory justification., remove_rpz_entry_by_id() (+3 more)
 
-### Community 170 - "TestClient"
-Cohesion: 0.18
-Nodes (4): TestClient, TestCanaryWebhookEndpoint, API endpoint acceptance tests for /api/v1/clusters/*., TestClusterApiEndpoints
+### Community 170 - "tier0_executor.py"
+Cohesion: 0.20
+Nodes (7): DHARMA Action Log Repository Manages append-only execution history for all…, Agent Commander Subsystem Publishes real-time command directives to monitored…, Cloudflare DNS Sinkhole Client Automates DNS redirection of confirmed malicious…, Upstash Redis Plan Cache & State Manager Caches pre-computed containment plans,…, Rollback Manager Subsystem Pre-computes and executes safe rollbacks for all…, DHARMA Tier 0 Autonomous Executor Executes deterministic, low-risk containment…, Acceptance Tests for DHARMA Autonomous Response Engine (Tier 0 & Tier 1)
 
 ### Community 171 - "._extract_evidence_iocs"
 Cohesion: 0.40
 Nodes (3): Any, Extracts all legitimate known IOCs present in the evidence bundle., Generates an hourly executive SITREP based strictly on the provided evidence…
 
-### Community 172 - "005_dharma_eppi.sql"
-Cohesion: 0.33
-Nodes (6): block_dharma_log_modifications(), dharma_action_log, eppi_provdag_graphs, maya_deception_assets, trg_dharma_log_immutable, vishnu_host_state
+### Community 172 - "supabase_all_in_one_migration.sql"
+Cohesion: 0.12
+Nodes (15): block_dharma_log_modifications(), dharma_action_log, eppi_provdag_graphs, maya_deception_assets, trg_dharma_log_immutable, vishnu_host_state, public.agent_heartbeats, public.anomaly_alerts_mirror (+7 more)
 
 ### Community 175 - "brahma_grammar_push.py"
 Cohesion: 0.50
@@ -809,25 +830,25 @@ Nodes (4): get_sitrep(), health(), get, Generates live operational situation rep
 Cohesion: 0.23
 Nodes (10): Starts 1Hz sampling loop., generate_agent_id(), initialize_luks_storage(), GARUDA USB Agent First-Boot Setup Script Executes cryptographic signature…, Executes first-boot sequence., Verifies GPG Ed25519 signature of the read-only squashfs root., Generates deterministic agent identifier: sha256(hostname +…, Initializes local data directories and SQLite database. (+2 more)
 
-### Community 178 - "BayesianUpdater"
-Cohesion: 0.24
-Nodes (7): BayesianUpdater, compute_evidence_likelihood(), Any, Computes P(Evidence | Tactic) based on the divergent physical channels in the…, Manages continuous Bayesian updating of the adversary kill-chain state for all…, Retrieves active tracker from cache or database., Executes Bayesian update from anomaly observation: P(T_k | E) = P(E | T_k) *…
+### Community 178 - "_run_post_confirmation_tasks"
+Cohesion: 0.15
+Nodes (12): Execute background blocklist submissions and visual screenshot captures., _run_post_confirmation_tasks(), generate_threat_narrative(), Any, Generate an executive natural language threat intelligence summary using Google…, Any, Submit a confirmed malicious payload or C2 URL to abuse.ch URLhaus. CRITICAL…, Submit a credential harvesting phishing URL to PhishTank. Queries POST… (+4 more)
 
 ### Community 179 - "Demonstration Timeline (10 Minutes)"
 Cohesion: 0.18
 Nodes (10): Demonstration Timeline (10 Minutes), GARUDA Proof-of-Concept: 10-Minute Live Demonstration Script, Minute 00:00 - 01:30 | Zero-Host-Install Plug & Play Activation, Minute 01:30 - 03:30 | Physical Microarchitectural Baselining, Minute 03:30 - 05:30 | Simulated APT36 C2 Beacon & Physics Spike, Minute 05:30 - 07:00 | BRAHMA Bayesian Kill-Chain Tracker, Minute 07:00 - 08:30 | DHARMA Tier 0/1 Autonomous Response, Minute 08:30 - 09:30 | UTNE Executive SITREP Narrative (+2 more)
 
-### Community 180 - "build_ioc_graph"
+### Community 180 - "intelligence/__init__.py"
 Cohesion: 0.22
-Nodes (10): build_ioc_graph(), _compute_registrant_hash(), _pivot_reverse_ip(), _pivot_ssl_sans(), Any, AsyncClient, Construct an interconnected threat infrastructure graph across 4 pivot…, Pivot 1: Query crt.sh to extract Subject Alternative Names (SANs). (+2 more)
+Nodes (10): init_known_actor_ips(), process_honeypot_logs(), Load known APT36 / Transparent Tribe C2 and scanning IPs from database alerts…, Inspect incoming DNS and HTTP query logs to honeypot decoy domains for APT36…, GARUDA Intelligence Layer Package., _load_historical_iocs(), Any, Load historical APT36 IOC benchmarks from data/apt36_iocs_historical.json. (+2 more)
 
-### Community 181 - "SchedstatReader"
-Cohesion: 0.22
-Nodes (5): Linux Kernel Scheduler Statistics Reader Parses /proc/schedstat to measure CPU…, Tracks kernel scheduler run delay, execution time, and timeslices. High run…, Reads /proc/schedstat and computes rates: - run_time_ms_per_sec: CPU running…, SchedstatReader, When /proc/schedstat is absent, reader returns None fields gracefully.
+### Community 181 - "process_domain"
+Cohesion: 0.17
+Nodes (13): _calculate_domain_age(), _fetch_whois_data(), _is_valid_domain(), _is_whitelisted(), process_domain(), Any, Calculate age of domain in days from creation timestamp., Process, evaluate, score, and alert on a candidate domain through the full… (+5 more)
 
-### Community 182 - "test_taxii2.py"
-Cohesion: 0.29
-Nodes (5): Register or update a TAXII subscriber with API key., register_taxii_subscriber(), HTTPAdapter, FastAPITestAdapter, Adapter enabling the official OASIS taxii2client (built on requests) to…
+### Community 182 - "assemble_score"
+Cohesion: 0.17
+Nodes (7): check_registrar_fingerprint(), Evaluate registrar against known APT36 / Transparent Tribe infrastructure…, assemble_score(), Any, Assemble multi-vector threat intelligence signals into a normalized composite…, patch, TestGarudaDetection
 
 ### Community 183 - "TestRpzApiEndpoints"
 Cohesion: 0.18
@@ -837,9 +858,9 @@ Nodes (6): Acceptance tests for RPZ HTTP API endpoints and Vercel crons., Accept
 Cohesion: 0.22
 Nodes (6): Publish or update a DNS RPZ trigger entry. Confidence must be >= 80 (enforced…, upsert_rpz_entry(), Validates soft-deletion, audit retention, and 90-day automatic roll-off., Active entries are retrieved; upserts update existing records., Acceptance Criteria: Deleting an entry sets removed_at (soft-delete). It is…, TestRpzLifecycleAndSoftDelete
 
-### Community 185 - "compute_ioc_confidence"
-Cohesion: 0.29
-Nodes (5): compute_ioc_confidence(), Any, GARUDA Threat Intelligence - IOC Confidence Scoring Engine Calculates an…, Compute normalized confidence score (0-100) and methodology description for an…, Acceptance Test: Every row's confidence traces to a lib/ioc_confidence call; no…
+### Community 185 - "OfflineIASComputer"
+Cohesion: 0.21
+Nodes (8): compute_gaussian_kl(), OfflineIASComputer, Any, Offline IAS Computer for Air-Gapped Operation Executes deterministic Gaussian…, Saves alert JSON to event_queue directory for air-gapped analyst collection., Computes Gaussian KL divergence D_KL(N(mu1, sigma1^2) || N(mu2, sigma2^2))., Computes IAS scores offline against SQLite baseline without cloud connectivity., Evaluates physical observation. If observation_count < 1000: strictly enforces…
 
 ### Community 186 - "Technical Abstract"
 Cohesion: 0.22
@@ -853,9 +874,9 @@ Nodes (5): delete, delete_subscriber(), Revoke a TAXII subscriber access key., R
 Cohesion: 0.31
 Nodes (8): _compute_age_days(), _empty_result(), enrich_alert_registrar(), get_registrar_via_rdap(), GARUDA RDAP Registrar Enrichment (FIX-05) Fetches registrar, creation date, and…, Fetch RDAP data and update the alert record immediately after insertion. Call…, Fetch registrar info using IANA RDAP — no API key, no rate limit. Returns: {…, Compute domain age in days from ISO creation date string.
 
-### Community 189 - "create_subscriber"
-Cohesion: 0.40
-Nodes (5): create_subscriber(), CreateSubscriberRequest, BaseModel, post, Generate a new TAXII subscriber and return full API key once.
+### Community 189 - "register_taxii_subscriber"
+Cohesion: 0.29
+Nodes (7): create_subscriber(), CreateSubscriberRequest, BaseModel, post, Generate a new TAXII subscriber and return full API key once., Register or update a TAXII subscriber with API key., register_taxii_subscriber()
 
 ### Community 191 - "Zero-Host-Install Physics-Layer Intrusion Detection for Sovereign & Air-Gapped Networks"
 Cohesion: 0.29
@@ -877,9 +898,13 @@ Nodes (5): 1. Hardware Tactical Appliance (USB Edition), 2. SaaS & Central Platf
 Cohesion: 0.33
 Nodes (5): Core Platform Capabilities, Deployment Options, GARUDA Enterprise Defense Platform, Platform Architecture, Sovereign Pre-Attack Cyber Threat Intelligence & Physics-Layer Endpoint Defense
 
-### Community 197 - "enrichment/__init__.py"
-Cohesion: 0.23
-Nodes (13): check_c2_ports(), Query Shodan for open ports on an IP address and detect known APT36 C2…, enrich_threat_indicators(), _otx_safe(), Any, GARUDA Enrichment Layer., Enrich high-priority candidate domains with graceful degradation on…, _shodan_safe() (+5 more)
+### Community 196 - "TPMReader"
+Cohesion: 0.20
+Nodes (6): Interacts with TPM 2.0 hardware via tpm2_pcrread to measure platform integrity., Executes tpm2_pcrread and returns a mapping of PCR indices to their SHA256 hex…, Parses YAML-like or text output from tpm2_pcrread. Standard format: 0 :…, TPMReader, When tpm2_pcrread is not installed, reader disables gracefully., TPMReader parses standard tpm2_pcrread output.
+
+### Community 197 - "garuda/config.py"
+Cohesion: 0.13
+Nodes (21): check_c2_ports(), check_hosting_asn(), check_virustotal_reputation(), fetch_whois_record(), Any, Query IP geolocation/ASN data and detect if hosting ASN matches APT36 hosting…, Query Shodan for open ports on an IP address and detect known APT36 C2…, Query VirusTotal v3 API for community threat verdict, malicious votes, and… (+13 more)
 
 ### Community 198 - "TestRpzZoneFileSyntax"
 Cohesion: 0.33
@@ -889,25 +914,65 @@ Nodes (4): Validates RFC-compliant BIND 9 zone file generation., Zone serial mus
 Cohesion: 0.50
 Nodes (3): BaseModel, field_validator, RegisterDomainRequest
 
+### Community 201 - "TestAirGappedIAS"
+Cohesion: 0.18
+Nodes (6): Test suite for offline IAS parity, safety gates, and analyst report generation., When observation count < 1000, all evaluations return 'BASELINING — NO ALERTS…, When calibrated (>= 1000 events), offline IAS detects physical divergence., Generates PDF forensic report from offline alert array without throwing…, Exporting alerts produces a valid STIX 2.1 JSON bundle structure., TestAirGappedIAS
+
+### Community 202 - "effectiveness.py"
+Cohesion: 0.36
+Nodes (8): date, compute_lead_time_metrics(), _parse_date(), _parse_datetime(), Any, datetime, Lifecycle effectiveness metrics — lead time and burn cadence analysis. Computes…, Compute lead-time and burn-cadence metrics from confirmed alerts.…
+
+### Community 204 - "confirm_threat_alert"
+Cohesion: 0.25
+Nodes (9): add_whitelist_domain(), confirm_threat_alert(), Any, BackgroundTasks, post, Analyst rejection of false positive or benign domain alert. If reason_code ==…, Explicitly add a domain to the permanent whitelist and record audit entry., Analyst confirmation of malicious threat infrastructure. Actions: 1. Updates… (+1 more)
+
+### Community 205 - "AlmanacService"
+Cohesion: 0.32
+Nodes (5): AlmanacService, Any, Manages Gaussian baseline statistics and calibration state for monitored agents., Retrieves active baseline from cache or database., Updates baseline EMA if observation is clean (ias_score < log_threshold).…
+
+### Community 207 - "Any"
+Cohesion: 0.29
+Nodes (4): Any, Sinkholes verified malicious C2 domain to 127.0.0.1., Commands the agent to intensify physical and kernel polling to 10Hz., Deploys shadow canary credentials to detect unauthorized lateral file access.
+
+### Community 213 - "StatsResponse"
+Cohesion: 0.50
+Nodes (4): Aggregated real-time SOC metrics and threat posture telemetry., StatsResponse, Acceptance Criteria: Quality metrics must be dynamic, computable numbers (e.g.…, TestQualityMetricsComputation
+
+### Community 214 - "fetch_all_agent_posteriors"
+Cohesion: 0.40
+Nodes (4): fetch_all_agent_posteriors(), Any, KALI Threat State Synchronizer Pulls live adversary posteriors from BRAHMA…, Retrieves current kill-chain distributions for active agents.
+
+### Community 215 - "Path"
+Cohesion: 0.50
+Nodes (3): Path, No websockets package or ris-live WebSocket endpoint in Python source., TestNoWebsocketInCodebase
+
+### Community 216 - "_load_local_ground_truth"
+Cohesion: 0.50
+Nodes (4): _load_defaults(), _load_local_ground_truth(), Initial population of default ground truth on startup., Load curated NIC/Gov domains from data/nic_domains.json.
+
+### Community 217 - "fetch_cloudflare_dns_logs"
+Cohesion: 0.67
+Nodes (3): fetch_cloudflare_dns_logs(), Any, Fetch DNS telemetry logs from Cloudflare DNS Analytics API. Queries GET…
+
 ## Knowledge Gaps
-- **146 isolated node(s):** `Config`, `Config`, `name`, `version`, `description` (+141 more)
+- **152 isolated node(s):** `Config`, `Config`, `name`, `version`, `description` (+147 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **34 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **39 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `BaseSettings` connect `agent_main.py` to `AxiomSettings`, `update.py`?**
-  _High betweenness centrality (0.308) - this node is a cross-community bridge._
-- **Why does `Settings` connect `agent_main.py` to `garuda/config.py`?**
-  _High betweenness centrality (0.277) - this node is a cross-community bridge._
-- **Why does `BrahmaSettings` connect `update.py` to `agent_main.py`, `dharma.py`?**
-  _High betweenness centrality (0.147) - this node is a cross-community bridge._
+- **Why does `BaseSettings` connect `.__init__` to `AxiomSettings`, `update.py`?**
+  _High betweenness centrality (0.303) - this node is a cross-community bridge._
+- **Why does `Settings` connect `.__init__` to `garuda/config.py`?**
+  _High betweenness centrality (0.271) - this node is a cross-community bridge._
+- **Why does `BrahmaSettings` connect `update.py` to `.__init__`, `get_db_pool`, `dharma.py`, `PlanCache`?**
+  _High betweenness centrality (0.144) - this node is a cross-community bridge._
 - **What connects `Config`, `Config`, `name` to the rest of the system?**
-  _146 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _152 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `reasoner.py` be split into smaller, more focused modules?**
   _Cohesion score 0.05271629778672032 - nodes in this community are weakly interconnected._
 - **Should `lifecycle/tracker.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.057342657342657345 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06487434248977206 - nodes in this community are weakly interconnected._
 - **Should `webhook.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.06676342525399129 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06823529411764706 - nodes in this community are weakly interconnected._
