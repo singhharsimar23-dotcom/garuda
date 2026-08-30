@@ -141,17 +141,12 @@ class KaliMCTSEngine:
         sample_count: Optional[int] = None,
     ) -> float:
         """
-        Calculates per-step adversary reward using calibrated per-technique physics.
+        Calculates per-step adversary reward: tactic_value * (1.0 - P_detection).
         """
-        physics = TECHNIQUE_PHYSICS.get(technique_id)
-        if physics:
-            p_det = physics["p_detection"]
-            pref = physics["apt36_preference"]
-        else:
-            p_det, _ = self.detection_model.compute_technique_detection_prob(technique_id, tactic, sample_count)
-            pref = TACTIC_VALUES.get(tactic.lower(), 0.5)
+        p_det, _ = self.detection_model.compute_technique_detection_prob(technique_id, tactic, sample_count)
         p_evasion = max(0.01, 1.0 - p_det)
-        return pref * p_evasion
+        tactic_val = TACTIC_VALUES.get(tactic.lower(), 0.5)
+        return tactic_val * p_evasion
 
     def compute_path_reward(
         self,
@@ -159,13 +154,15 @@ class KaliMCTSEngine:
         sample_count: Optional[int] = None,
     ) -> float:
         """
-        Calculates path reward using _evaluate_trajectory utility.
+        Calculates cumulative path reward as the geometric product of step rewards.
         """
         if not path:
             return 0.0
-        tech_seq = [x[0] for x in path]
-        utility, _ = self._evaluate_trajectory(tech_seq)
-        return utility
+        cumulative = 1.0
+        for tech_id, tactic in path:
+            step_r = self.compute_step_reward(tech_id, tactic, sample_count)
+            cumulative *= step_r
+        return round(cumulative, 4)
 
     def is_terminal(self, path: List[Tuple[str, str]]) -> bool:
         if not path:

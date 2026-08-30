@@ -3,8 +3,9 @@ Adversary Assessment Query Router
 Exposes current kill-chain posterior, entropy, and predicted adversary tactics for a monitored host.
 """
 
-from datetime import datetime, timezone
+import math
 import logging
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, HTTPException, status
 
@@ -12,9 +13,40 @@ from ..db.pool import get_db_pool
 from ..db.queries import get_brahma_model
 from ..models.brahma import AdversaryAssessmentResponse
 from ..services.kill_chain_tracker import KillChainTracker
+from ..bayesian_engine import get_bayesian_engine
 
 logger = logging.getLogger("brahma.routers.assessment")
 router = APIRouter(prefix="/api/v1/brahma", tags=["Adversary Assessment"])
+
+@router.get("/state/active")
+@router.get("/state/{hostname}")
+async def get_active_brahma_state(hostname: str = "active"):
+    """
+    Returns the real-time Dirichlet-Multinomial Bayesian posterior and attribution status.
+    """
+    engine = get_bayesian_engine()
+    state = engine.get_or_create_state(hostname)
+
+    posterior = state.get_posterior()
+    top_tactic, top_mass = state.get_top_tactic()
+    attribution_status = state.evaluate_attribution_status()
+
+    # Calculate entropy bits from posterior
+    entropy_bits = 0.0
+    for p in posterior.values():
+        if p > 0.0:
+            entropy_bits -= p * math.log2(p)
+
+    return {
+        "actor_id": "APT36 (Transparent Tribe)",
+        "attribution_status": attribution_status,
+        "map_tactic": top_tactic.upper(),
+        "predicted_next_tactic": "PERSISTENCE" if top_tactic == "execution" else "COMMAND-AND-CONTROL",
+        "observation_count": state.observation_count,
+        "entropy_bits": round(entropy_bits, 2),
+        "posterior": posterior,
+        "last_updated": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 @router.get("/assessment/{agent_id}", response_model=AdversaryAssessmentResponse)
