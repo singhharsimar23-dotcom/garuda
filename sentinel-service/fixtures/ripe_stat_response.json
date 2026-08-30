@@ -1,0 +1,21 @@
+{
+  "status": "ok",
+  "status_code": 200,
+  "data": {
+    "resource": "45.56.162.170",
+    "is_less_specific": false,
+    "asns": [
+      {
+        "asn": 63949,
+        "name": "AKAMAI-LINODE-AP Akamai Connected Cloud, SG",
+        "description": "Linode"
+      }
+    ],
+    "type": "prefix",
+    "block": {
+      "resource": "45.56.0.0/17",
+      "name": "LINODE-45-56-0-0",
+      "desc": "Akamai Connected Cloud (Linode)"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "query_status": "ok",
+  "data": [
+    {
+      "id": 234567,
+      "ioc": "xyzabcdefghij01234567.supabase.co",
+      "ioc_type": "domain",
+      "ioc_type_desc": "Supabase C2 backend for SupaServ RAT",
+      "threat_type": "botnet_cc",
+      "threat_type_desc": "Botnet C&C",
+      "malware": "SupaServ",
+      "malware_printable": "SupaServ",
+      "malware_alias": "APT36_SupaServ",
+      "malware_malpedia": "win.apt36_supaserv",
+      "confidence_level": 90,
+      "first_seen": "2026-08-05T10:12:00+00:00",
+      "last_seen": "2026-08-15T14:30:00+00:00",
+      "reporter": "abuse_ch",
+      "tags": ["APT36", "Transparent-Tribe", "supabase-c2"]
+    }
+  ]
+}

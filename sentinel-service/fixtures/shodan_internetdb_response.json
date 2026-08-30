@@ -1,0 +1,7 @@
+{
+  "ip": "45.56.162.170",
+  "ports": [22, 80, 443, 4443, 8080],
+  "vulns": ["CVE-2021-41773"],
+  "tags": ["self-signed"],
+  "cpes": ["cpe:/a:apache:http_server:2.4.49"]
+}

@@ -47,6 +47,20 @@ APT36_TECHNIQUE_CATALOG: Dict[str, Dict[str, str]] = {
     "T1071.004": {"name": "DNS C2 Beacon", "tactic": "command-and-control"},
     "T1041": {"name": "Exfiltration Over C2 Channel", "tactic": "exfiltration"},
     "T1486": {"name": "Data Encrypted for Impact", "tactic": "impact"},
+    # Vibeware-era APT36 techniques (March 2026 pivot)
+    # Source: MITRE ATT&CK T1102, T1568.002 — APT36 vibeware pivot confirmed by Bitdefender
+    "T1102": {
+        "name": "Web Service",
+        "tactic": "command-and-control",
+        # C2 via Discord/Slack/Supabase/Firebase (APT36 2026)
+        # apt36_preference: 0.90 — current primary C2 method, very high preference
+    },
+    "T1568.002": {
+        "name": "Dynamic Resolution - Domain Generation",
+        "tactic": "command-and-control",
+        # Living off trusted services (LOTS) pattern
+        # apt36_preference: 0.80
+    },
 }
 
 # Empirical co-occurrence transitions in documented APT36 campaigns
@@ -69,6 +83,14 @@ APT36_CAMPAIGN_EDGES: List[Tuple[str, str, float]] = [
     ("T1003.001", "T1021.001", 3.0),
     ("T1021.001", "T1005", 3.0),
     ("T1005", "T1041", 4.0),
+    # Vibeware C2 edges (APT36 2026 pivot) — Living Off Trusted Services
+    # High weight 7.0: T1102 is the CURRENT primary C2 method for vibeware implants
+    ("T1059.005", "T1102", 7.0),       # VBScript dropper → Discord/Supabase C2
+    ("T1059.003", "T1102", 5.0),       # CMD shell → web service C2
+    ("T1027", "T1102", 6.0),           # Nim/Zig obfuscated binary → web service C2
+    ("T1102", "T1041", 5.0),           # Web service C2 → exfiltration
+    ("T1102", "T1568.002", 4.0),       # Web service → domain generation fallback
+    ("T1568.002", "T1041", 3.0),       # DGA fallback → exfiltration
 ]
 
 

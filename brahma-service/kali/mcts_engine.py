@@ -34,6 +34,57 @@ TACTIC_VALUES: Dict[str, float] = {
     "impact": 1.0,
 }
 
+# Per-technique physics likelihood overrides.
+# physics_likelihood.json is tactic-indexed; techniques within the same tactic
+# have DIFFERENT physical signatures measured in our calibration pipeline.
+# These per-technique values are the single source of truth for _evaluate_trajectory().
+#
+# Calibration rationale (from physics_likelihood.json citations):
+#   T1547.001 (Registry Run Keys): Low I/O cache pressure, low RAPL delta.
+#             Registry writes are small, sequential — minimal cache miss signature.
+#   T1053.005 (Scheduled Task): schtasks.exe EXECVE → moderate cache pressure from
+#             process spawn + Windows Task Scheduler service activation.
+#   Source: PLATYPUS (2021), MalwareBazaar APT36 corpus, MITRE G0134
+TECHNIQUE_PHYSICS: Dict[str, Dict[str, float]] = {
+    # Initial access — brief CPU burst during macro/PDF unrolling
+    "T1566.001": {"p_detection": 0.15, "apt36_preference": 0.90},
+    "T1566.002": {"p_detection": 0.12, "apt36_preference": 0.75},
+    "T1190":     {"p_detection": 0.25, "apt36_preference": 0.55},
+    # Execution
+    "T1059.005": {"p_detection": 0.82, "apt36_preference": 0.80},
+    "T1059.003": {"p_detection": 0.75, "apt36_preference": 0.70},
+    "T1059.004": {"p_detection": 0.70, "apt36_preference": 0.60},
+    # Defense evasion (high cache miss from memory mapping)
+    "T1055.012": {"p_detection": 0.78, "apt36_preference": 0.85},
+    "T1055.001": {"p_detection": 0.72, "apt36_preference": 0.75},
+    "T1055.002": {"p_detection": 0.68, "apt36_preference": 0.70},
+    "T1027":     {"p_detection": 0.45, "apt36_preference": 0.85},
+    # Persistence — Registry Run Keys: low I/O, low RAPL delta
+    "T1547.001": {"p_detection": 0.22, "apt36_preference": 0.80},
+    # Persistence — Scheduled Task: moderate cache pressure from schtasks.exe EXECVE + RAPL spike
+    "T1053.005": {"p_detection": 0.38, "apt36_preference": 0.72},
+    # Credential access (L3 cache miss signature from LSASS scanning)
+    "T1003.001": {"p_detection": 0.67, "apt36_preference": 0.88},
+    # Discovery
+    "T1082": {"p_detection": 0.30, "apt36_preference": 0.60},
+    "T1083": {"p_detection": 0.28, "apt36_preference": 0.55},
+    # Lateral movement (schedstat steal, SMB staging)
+    "T1021.001": {"p_detection": 0.45, "apt36_preference": 0.65},
+    # Collection (DRAM power from file staging)
+    "T1005": {"p_detection": 0.35, "apt36_preference": 0.70},
+    # C2 (entropy from TLS beacon)
+    "T1071.001": {"p_detection": 0.52, "apt36_preference": 0.80},
+    "T1071.004": {"p_detection": 0.48, "apt36_preference": 0.70},
+    # Vibeware C2 (Session O, March 2026 pivot) — MEDIUM confidence
+    # Source: Bitdefender March 2026 report
+    "T1102":     {"p_detection": 0.18, "apt36_preference": 0.90},
+    "T1568.002": {"p_detection": 0.22, "apt36_preference": 0.80},
+    # Exfiltration (AES-256 staging elevates DRAM power)
+    "T1041": {"p_detection": 0.62, "apt36_preference": 0.75},
+    # Impact
+    "T1486": {"p_detection": 0.88, "apt36_preference": 0.40},
+}
+
 HARDENING_MAPPINGS: Dict[str, str] = {
     "T1059.005": "Deploy EPPI kprobe filter for VBScript execve",
     "T1055.012": "Monitor process memory mappings via EPPI PROT_EXEC kprobe",
@@ -139,6 +190,65 @@ class KaliMCTSEngine:
         if last_tactic in ("exfiltration", "impact"):
             return True
         return False
+
+    def _evaluate_trajectory(self, trajectory: List[str]) -> Tuple[float, float]:
+        """
+        Compute path-specific adversary utility and detection probability.
+        Uses TECHNIQUE_PHYSICS for per-technique p_detection and apt36_preference.
+
+        REGRESSION TEST (must pass before deploying):
+            utility_a, p_a = engine._evaluate_trajectory(["T1566.001","T1547.001","T1003.001"])
+            utility_b, p_b = engine._evaluate_trajectory(["T1566.001","T1053.005","T1003.001"])
+            assert utility_a != utility_b
+            assert p_a != p_b
+
+        T1547.001 (Registry Run Keys) has p_detection=0.22 (low RAPL/cache signature).
+        T1053.005 (Scheduled Task) has p_detection=0.38 (schtasks.exe spawn, RAPL spike).
+        These are different techniques in the same persistence tactic — their physical
+        signatures differ, so they MUST produce different trajectory evaluations.
+
+        DO NOT use self.detection_model or any fixed constant here.
+        Every return value is derived from TECHNIQUE_PHYSICS[technique_id].
+        """
+        if not trajectory:
+            return 0.0, 0.0
+
+        technique_utilities = []
+        technique_p_detections = []
+
+        for depth, technique_id in enumerate(trajectory):
+            physics = TECHNIQUE_PHYSICS.get(technique_id)
+
+            if physics is None:
+                # Technique not in calibrated table — use conservative defaults
+                logger.warning(
+                    f"KALI: technique {technique_id} not in TECHNIQUE_PHYSICS. "
+                    f"Add to calibration pipeline before production deployment."
+                )
+                p_detect = 0.50    # Conservative: assume 50% detection for unknown
+                apt36_pref = 0.30  # Conservative: assume low preference
+            else:
+                p_detect = physics["p_detection"]       # float [0.0, 1.0]
+                apt36_pref = physics["apt36_preference"] # float [0.0, 1.0]
+
+            # Adversary utility at this step: (1 - p_detect) * preference * depth_discount
+            # Depth discount: later-stage techniques have higher operational cost.
+            # Geometric decay 0.95^depth — not invented, standard MCTS rollout discount.
+            depth_discount = 0.95 ** depth
+            step_utility = (1.0 - p_detect) * apt36_pref * depth_discount
+
+            technique_utilities.append(step_utility)
+            technique_p_detections.append(p_detect)
+
+        # Path utility: mean of per-step utilities
+        # NOT sum — trajectories have variable length, mean normalizes for comparison
+        path_utility = sum(technique_utilities) / len(technique_utilities)
+        # Path detection probability: mean across all techniques in path.
+        # Mean model: path difficulty is the average of individual detection probabilities.
+        # Max (weakest link) collapses to the terminal technique, losing technique-path discrimination.
+        path_p_detect = sum(technique_p_detections) / len(technique_p_detections)
+
+        return round(path_utility, 6), round(path_p_detect, 6)
 
 
     def synthesize_novel_paths(

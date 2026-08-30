@@ -116,6 +116,51 @@ async def lifespan(app: FastAPI):
     predictor_task = asyncio.create_task(periodic_predictor_loop())
     calibrator_task = asyncio.create_task(periodic_calibrator_loop())
 
+    # ── Session O: GARUDA-HUNT Active Intelligence Collection ──────────────────
+    # Initialize hunt components. Telegram alerter and DHARMA prearm are optional —
+    # lifecycle tracker degrades gracefully if they are not available in this service.
+    from hunt.ct_collector import CTHuntCollector, garuda_score
+    from hunt.enrichment import EnrichmentPipeline
+    from hunt.lifecycle import DomainLifecycleTracker
+    from hunt.vibeware_feed import VibewareFeedIngester
+
+    # Stub telegram alerter — SENTINEL does not have direct Telegram integration;
+    # alerts flow through BRAHMA. Replace with real alerter if integrated.
+    class _NullAlerter:
+        async def alert(self, msg: str) -> None:
+            logger.info(f"[LIFECYCLE-ALERT] {msg}")
+
+    # Stub DHARMA prearm — SENTINEL pre-arms DHARMA via Supabase event, not direct call.
+    async def _null_prearm(**kwargs):
+        logger.info(f"[DHARMA-PREARM] {kwargs}")
+
+    lifecycle_tracker = DomainLifecycleTracker(
+        supabase_client=supabase,
+        telegram_alerter=_NullAlerter(),
+        dharma_prearm_fn=_null_prearm,
+    )
+
+    enrichment_pipeline = EnrichmentPipeline(
+        supabase_client=supabase,
+        lifecycle_tracker=lifecycle_tracker,
+    )
+
+    ct_collector = CTHuntCollector(
+        garuda_scorer=garuda_score,
+        enrichment_pipeline=enrichment_pipeline,
+        supabase_client=supabase,
+    )
+
+    vibeware_ingester = VibewareFeedIngester(supabase_client=supabase)
+
+    # Start new hunt loops alongside existing background loops
+    ct_hunt_task = asyncio.create_task(ct_collector.hunt_loop())        # 15-min CT poll
+    lifecycle_task = asyncio.create_task(lifecycle_tracker.poll_loop()) # 30-min lifecycle
+    vibeware_task = asyncio.create_task(vibeware_ingester.feed_loop())  # 6-hr vibeware IOC
+
+    logger.info("GARUDA-HUNT loops started: CT(15min) + Lifecycle(30min) + Vibeware(6h)")
+    # ──────────────────────────────────────────────────────────────────────────
+
     yield
 
     logger.info("Stopping SENTINEL background loops...")
@@ -123,7 +168,14 @@ async def lifespan(app: FastAPI):
     cross_host_task.cancel()
     predictor_task.cancel()
     calibrator_task.cancel()
-    await asyncio.gather(cross_host_task, predictor_task, calibrator_task, return_exceptions=True)
+    ct_hunt_task.cancel()
+    lifecycle_task.cancel()
+    vibeware_task.cancel()
+    await asyncio.gather(
+        cross_host_task, predictor_task, calibrator_task,
+        ct_hunt_task, lifecycle_task, vibeware_task,
+        return_exceptions=True,
+    )
 
 
 sentinel_app = FastAPI(

@@ -18,7 +18,28 @@ enum event_type {
     EVENT_EXECVE = 1,
     EVENT_CONNECT = 2,
     EVENT_MMAP_EXEC = 3,
-    EVENT_CLONE = 4
+    EVENT_CLONE = 4,
+    /*
+     * VIBEWARE C2 CHANNEL DETECTION
+     * APT36 "vibeware" pivot (Bitdefender, March 2026):
+     * C2 channels are Discord, Slack, Supabase, Firebase.
+     * These are legitimate services — their presence on a DRDO/NIC host = high anomaly.
+     *
+     * Detection approach: DNS hostname matching via SNI extraction from TLS ClientHello.
+     * In the existing tcp_connect kprobe, AFTER emitting the base CONNECT event,
+     * match SNI against vibeware C2 domain patterns.
+     *
+     * VERIFY: SNI extraction from TLS ClientHello at tcp_connect kprobe level
+     * requires reading sk_buff data. This is eBPF-compatible but requires
+     * BCC >= 0.26 and kernel >= 5.15. Check target kernel version first.
+     *
+     * Python-side classification in garuda_agent/eppi.py handles hostname
+     * resolution via reverse DNS as the userspace fallback path.
+     */
+    EVENT_VIBEWARE_C2_DISCORD  = 0x08,  /* CONNECT to discord.com / discordapp.com */
+    EVENT_VIBEWARE_C2_SUPABASE = 0x09,  /* CONNECT to *.supabase.co */
+    EVENT_VIBEWARE_C2_FIREBASE = 0x0A,  /* CONNECT to *.firebaseio.com */
+    EVENT_VIBEWARE_C2_SLACK    = 0x0B,  /* CONNECT to slack.com / files.slack.com */
 };
 
 struct eppi_event_t {

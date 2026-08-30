@@ -6,10 +6,10 @@
     "semantic_hash": "13ff5869b356bf25ba917f7219b852de"
   },
   "cloudflare-worker/index.js": {
-    "mtime": 1787802202.4184294,
-    "seen": 1788059298.3386037,
-    "ast_hash": "783958a10120f0c85256a2dbd075064f",
-    "semantic_hash": "783958a10120f0c85256a2dbd075064f"
+    "mtime": 1788094613.3387308,
+    "seen": 1788094774.4089699,
+    "ast_hash": "0c642f1c0de83e218f24002f10fc944b",
+    "semantic_hash": ""
   },
   "cloudflare-worker/package.json": {
     "mtime": 1787802213.5374506,
@@ -1056,10 +1056,10 @@
     "semantic_hash": "c206abcbb5d132b63b4bf7ec56ffb086"
   },
   "scripts/certstream_monitor.py": {
-    "mtime": 1787818121.7185023,
-    "seen": 1788059298.338976,
-    "ast_hash": "91ec4c270ba8d8fd20fb18c4547cf175",
-    "semantic_hash": "91ec4c270ba8d8fd20fb18c4547cf175"
+    "mtime": 1788094778.3220837,
+    "seen": 1788108685.2940607,
+    "ast_hash": "df1033ba8d28a0dd888e26b18184a230",
+    "semantic_hash": ""
   },
   "scripts/check_gha_runs.py": {
     "mtime": 1787989513.9554775,
@@ -2058,33 +2058,33 @@
     "semantic_hash": ""
   },
   "frontend/src/components/phase3/AuthorizationQueue.jsx": {
-    "mtime": 1788090560.2221813,
-    "seen": 1788090620.350496,
-    "ast_hash": "326f0927e1783e2d6b72864f238c64fa",
+    "mtime": 1788096959.8619144,
+    "seen": 1788108685.2933834,
+    "ast_hash": "a23777d55ed5c336d6b75f225cfa8b34",
     "semantic_hash": ""
   },
   "frontend/src/components/phase3/KaliInsights.jsx": {
-    "mtime": 1788090776.8410747,
-    "seen": 1788090891.6287334,
-    "ast_hash": "76bf9001b6de9df8ee63207d8633f7f3",
+    "mtime": 1788096946.4872737,
+    "seen": 1788108685.293386,
+    "ast_hash": "8bc7332ff2a3a5b46b05edea3f8c0835",
     "semantic_hash": ""
   },
   "frontend/src/components/phase3/PhysicsMonitor.jsx": {
-    "mtime": 1788066150.3873265,
-    "seen": 1788066371.6564636,
-    "ast_hash": "925e68552c6a0975da826864004d2b15",
+    "mtime": 1788097056.4802437,
+    "seen": 1788108685.2933884,
+    "ast_hash": "06daf80bd7db4c2b524f26350cf1f823",
     "semantic_hash": ""
   },
   "frontend/src/components/phase3/SitrepPanel.jsx": {
-    "mtime": 1788091036.5411365,
-    "seen": 1788091162.510199,
-    "ast_hash": "34dfc0591bffa3d8c09ae9eb0161106c",
+    "mtime": 1788108261.065334,
+    "seen": 1788108685.2933908,
+    "ast_hash": "7d628402366c1c2671211818fccf3db4",
     "semantic_hash": ""
   },
   "frontend/src/components/phase3/ThreatAssessment.jsx": {
-    "mtime": 1788091060.0499701,
-    "seen": 1788091162.5102017,
-    "ast_hash": "a8e80293bd4cc42c168093456e9831fa",
+    "mtime": 1788097075.1328597,
+    "seen": 1788108685.2933934,
+    "ast_hash": "d9aafc44f03f80af3259704e1190d558",
     "semantic_hash": ""
   },
   "frontend/src/pages/Phase3Dashboard.jsx": {
@@ -2196,9 +2196,9 @@
     "semantic_hash": ""
   },
   "network-service/requirements.txt": {
-    "mtime": 1788066042.2992132,
-    "seen": 1788066371.6572042,
-    "ast_hash": "2b76705a6b469249c374ea3f80d795bd",
+    "mtime": 1788096315.0855737,
+    "seen": 1788108685.2945397,
+    "ast_hash": "53fc1714a317291508433a03c9b6cc59",
     "semantic_hash": ""
   },
   "maintenance/cleanup.py": {
@@ -2640,9 +2640,9 @@
     "semantic_hash": ""
   },
   "axiom-service/telemetry.py": {
-    "mtime": 1788090981.953123,
-    "seen": 1788091162.5098696,
-    "ast_hash": "54f09205d428a68d975874dfd0d4c6b8",
+    "mtime": 1788097470.7922595,
+    "seen": 1788108685.29306,
+    "ast_hash": "84d211bfdcb26122059535746eea6042",
     "semantic_hash": ""
   },
   "migrations/006_axiom_tables.sql": {
@@ -2742,9 +2742,9 @@
     "semantic_hash": ""
   },
   "brahma-service/kali/attack_graph.py": {
-    "mtime": 1788090688.9052012,
-    "seen": 1788090891.6284685,
-    "ast_hash": "592730cf37363fd046dfa8d0d58683fa",
+    "mtime": 1788108180.8062148,
+    "seen": 1788108685.2931876,
+    "ast_hash": "ef7d291021d3ff1a5a9c63250d29e991",
     "semantic_hash": ""
   },
   "brahma-service/kali/detection_model.py": {
@@ -2754,9 +2754,9 @@
     "semantic_hash": ""
   },
   "brahma-service/kali/mcts_engine.py": {
-    "mtime": 1788092170.7765217,
-    "seen": 1788092211.4815524,
-    "ast_hash": "1486a071ce5b0a2cd489fa6df63d14ea",
+    "mtime": 1788108608.537577,
+    "seen": 1788108685.293196,
+    "ast_hash": "dcd8dbb9cc95a69b9bd6be2e33657dff",
     "semantic_hash": ""
   },
   "kali/attack_graph.py": {
@@ -2772,9 +2772,9 @@
     "semantic_hash": ""
   },
   "kali/mcts_engine.py": {
-    "mtime": 1788090812.137685,
-    "seen": 1788090891.6294758,
-    "ast_hash": "3eadc7b630c0bd0955add36072198abb",
+    "mtime": 1788108597.9973073,
+    "seen": 1788108685.2939596,
+    "ast_hash": "829567cd3102cdd140b570e96037dafc",
     "semantic_hash": ""
   },
   "migrations/009_kali_discoveries.sql": {
@@ -2796,15 +2796,15 @@
     "semantic_hash": ""
   },
   "garuda-agent/garuda_agent/eppi.py": {
-    "mtime": 1788090940.1208196,
-    "seen": 1788091162.510339,
-    "ast_hash": "9a7a10f26a4b531c76532a826a84c954",
+    "mtime": 1788108069.2364082,
+    "seen": 1788108685.2935233,
+    "ast_hash": "ced8c2d2cef2e4d9dfe4f2a0e5b78f53",
     "semantic_hash": ""
   },
   "garuda-agent/garuda_agent/eppi_kprobes.c": {
-    "mtime": 1788090934.5103352,
-    "seen": 1788091162.5103543,
-    "ast_hash": "e0bc644f6938e44a18ed229d615c7874",
+    "mtime": 1788108026.5364664,
+    "seen": 1788108685.2935374,
+    "ast_hash": "eb3b6904a141da66d3e914fb6810eaa5",
     "semantic_hash": ""
   },
   "garuda-agent/garuda_agent/tamper.py": {
@@ -2898,9 +2898,9 @@
     "semantic_hash": ""
   },
   "sentinel-service/hypothesis.py": {
-    "mtime": 1788092105.2817297,
-    "seen": 1788092211.482544,
-    "ast_hash": "be60bda68852ccfa6577bd4e395c882d",
+    "mtime": 1788108198.2454636,
+    "seen": 1788108685.2941778,
+    "ast_hash": "706ae731ce0e547222e5c3dad110a3ae",
     "semantic_hash": ""
   },
   "sentinel-service/learner.py": {
@@ -2910,9 +2910,9 @@
     "semantic_hash": ""
   },
   "sentinel-service/main.py": {
-    "mtime": 1788091316.8374066,
-    "seen": 1788091582.2361228,
-    "ast_hash": "89fb552db8c2b4cae54b6f42e9896a48",
+    "mtime": 1788096191.979178,
+    "seen": 1788108685.294183,
+    "ast_hash": "9109b2e306e9f650beefb9cb74d38bb4",
     "semantic_hash": ""
   },
   "sentinel-service/models.py": {
@@ -2940,15 +2940,15 @@
     "semantic_hash": ""
   },
   "sentinel-service/sentinel_fusion.py": {
-    "mtime": 1788091514.5731134,
-    "seen": 1788091582.2361336,
-    "ast_hash": "21893b22ecc0c3e248a345096795b402",
+    "mtime": 1788108008.0855315,
+    "seen": 1788108685.2942095,
+    "ast_hash": "20c7a5485d90c9bd8cbd92442f9a4dde",
     "semantic_hash": ""
   },
   "sentinel-service/sentinel_main.py": {
-    "mtime": 1788091442.6722522,
-    "seen": 1788091582.2361357,
-    "ast_hash": "9135592f9e1a485aacbf11f8f900420c",
+    "mtime": 1788108288.572874,
+    "seen": 1788108685.2942123,
+    "ast_hash": "6ad88aea5bbf6180bc3d8c20dc7c0073",
     "semantic_hash": ""
   },
   "sentinel-service/sentinel_models.py": {
@@ -2970,9 +2970,9 @@
     "semantic_hash": ""
   },
   "sentinel-service/requirements.txt": {
-    "mtime": 1788091325.7155685,
-    "seen": 1788091582.23643,
-    "ast_hash": "55a85fe8b8a725c7db062b975be9e5b3",
+    "mtime": 1788108320.3278158,
+    "seen": 1788108685.2945483,
+    "ast_hash": "65db8dc342edc0badd7c5b4b17538b67",
     "semantic_hash": ""
   },
   "axiom-service/online_calibrator.py": {
@@ -3075,6 +3075,156 @@
     "mtime": 1788092115.5474467,
     "seen": 1788092211.4826548,
     "ast_hash": "247296e8954ae244bd22b1c1c93ece7c",
+    "semantic_hash": ""
+  },
+  "lib/ioc_confidence.py": {
+    "mtime": 1787840818.0049026,
+    "seen": 1788094774.409871,
+    "ast_hash": "90b4759e6dbbdb89e3ea1493d659293e",
+    "semantic_hash": ""
+  },
+  "lib/resilient_llm.py": {
+    "mtime": 1788094135.1694958,
+    "seen": 1788094774.4098778,
+    "ast_hash": "3c9334ebb9f4914b3d3b467bd312c065",
+    "semantic_hash": ""
+  },
+  "scripts/check_render_status.py": {
+    "mtime": 1788093935.6942542,
+    "seen": 1788094774.4100509,
+    "ast_hash": "baba67c3b2ee5863113f205ba443dcb8",
+    "semantic_hash": ""
+  },
+  "migrations/013_hunt_tables.sql": {
+    "mtime": 1788108318.2634616,
+    "seen": 1788108685.2940166,
+    "ast_hash": "062123ecaab7bcfa62e67791e8750fe0",
+    "semantic_hash": ""
+  },
+  "network-service/utne/resilient_llm.py": {
+    "mtime": 1788095021.8014886,
+    "seen": 1788108685.294044,
+    "ast_hash": "24d6de35383132aade35f6761ba517df",
+    "semantic_hash": ""
+  },
+  "scripts/deploy_render_services.py": {
+    "mtime": 1788095099.863898,
+    "seen": 1788108685.2940807,
+    "ast_hash": "aad9f227dbd26be7244088b6f081d80f",
+    "semantic_hash": ""
+  },
+  "scripts/get_render_logs.py": {
+    "mtime": 1788095506.9621835,
+    "seen": 1788108685.2940865,
+    "ast_hash": "0d2912ac64dd69d703572806d4c7bed4",
+    "semantic_hash": ""
+  },
+  "scripts/sync_render_env_vars.py": {
+    "mtime": 1788095986.4072368,
+    "seen": 1788108685.2941148,
+    "ast_hash": "49db878481076ca73d64904eb07b9449",
+    "semantic_hash": ""
+  },
+  "sentinel-service/brahma_relay.py": {
+    "mtime": 1788107777.8376205,
+    "seen": 1788108685.2941291,
+    "ast_hash": "86ba8a28c676a48771355b191df8c252",
+    "semantic_hash": ""
+  },
+  "sentinel-service/fixtures/crtsh_response.json": {
+    "mtime": 1788107922.4143238,
+    "seen": 1788108685.294146,
+    "ast_hash": "c234c2746d3d010e0a79877b6307819b",
+    "semantic_hash": ""
+  },
+  "sentinel-service/fixtures/ip_api_response.json": {
+    "mtime": 1788107938.540445,
+    "seen": 1788108685.2941482,
+    "ast_hash": "5a346309fb4429c6b896ab728dc89725",
+    "semantic_hash": ""
+  },
+  "sentinel-service/fixtures/malwarebazaar_response.json": {
+    "mtime": 1788107962.8051198,
+    "seen": 1788108685.2941504,
+    "ast_hash": "b33235965f2e4dfc3f89a362a90641ed",
+    "semantic_hash": ""
+  },
+  "sentinel-service/fixtures/ripe_stat_response.json": {
+    "mtime": 1788107940.640006,
+    "seen": 1788108685.2941527,
+    "ast_hash": "89e3ec836f0c5d959ef819ea46568872",
+    "semantic_hash": ""
+  },
+  "sentinel-service/fixtures/shodan_internetdb_response.json": {
+    "mtime": 1788107924.45216,
+    "seen": 1788108685.2941551,
+    "ast_hash": "dc52821886ee861e2e75084f2ad43ff2",
+    "semantic_hash": ""
+  },
+  "sentinel-service/fixtures/threatfox_response.json": {
+    "mtime": 1788107980.3931806,
+    "seen": 1788108685.2941573,
+    "ast_hash": "4827fb7a3c36192505a7e7aaef6bf934",
+    "semantic_hash": ""
+  },
+  "sentinel-service/fixtures/urlscan_search_response.json": {
+    "mtime": 1788107960.74495,
+    "seen": 1788108685.2941597,
+    "ast_hash": "e994304248c549b14c70480eadb81b32",
+    "semantic_hash": ""
+  },
+  "sentinel-service/hunt/__init__.py": {
+    "mtime": 1788107622.110304,
+    "seen": 1788108685.294165,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "sentinel-service/hunt/convergence.py": {
+    "mtime": 1788107746.5859623,
+    "seen": 1788108685.294167,
+    "ast_hash": "a70932fa51dc85c6b803518cc5cdfc44",
+    "semantic_hash": ""
+  },
+  "sentinel-service/hunt/ct_collector.py": {
+    "mtime": 1788107740.1664228,
+    "seen": 1788108685.2941694,
+    "ast_hash": "6a20da49e5fc836d525c6fc9d8e63d94",
+    "semantic_hash": ""
+  },
+  "sentinel-service/hunt/enrichment.py": {
+    "mtime": 1788107849.8327768,
+    "seen": 1788108685.2941713,
+    "ast_hash": "9c3022c13ce4341371737ca83d17648b",
+    "semantic_hash": ""
+  },
+  "sentinel-service/hunt/lifecycle.py": {
+    "mtime": 1788107850.6967678,
+    "seen": 1788108685.2941732,
+    "ast_hash": "b6db82cfc2fb384bf062072e8dc67341",
+    "semantic_hash": ""
+  },
+  "sentinel-service/hunt/vibeware_feed.py": {
+    "mtime": 1788107904.4949305,
+    "seen": 1788108685.2941751,
+    "ast_hash": "9be2086411bec6f4edaaeb60cad1df58",
+    "semantic_hash": ""
+  },
+  "sentinel-service/resilient_llm.py": {
+    "mtime": 1788095036.3586624,
+    "seen": 1788108685.2942002,
+    "ast_hash": "a5fbc28fe636c39a9518fc596444a71a",
+    "semantic_hash": ""
+  },
+  "sentinel-service/stix_writer.py": {
+    "mtime": 1788107775.8142862,
+    "seen": 1788108685.2942219,
+    "ast_hash": "7e6344f17697cc27b01773f409fc605a",
+    "semantic_hash": ""
+  },
+  "tests/test_hunt_and_vibeware.py": {
+    "mtime": 1788108477.9896863,
+    "seen": 1788108685.2943168,
+    "ast_hash": "b5a19fb1d800c5a7ac8fa084eb04bdae",
     "semantic_hash": ""
   }
 }

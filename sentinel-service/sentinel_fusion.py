@@ -20,6 +20,26 @@ class EvidenceFusionEngine:
     Computes multi-dimensional fusion scores from physics, kernel kprobes, and intelligence streams.
     """
 
+    # EPPI signal weights for all event types.
+    # Vibeware signals (0x08-0x0B) are lower than direct APT36 binary detection
+    # because Discord/Slack/Supabase/Firebase are legitimate services on non-defense hosts.
+    # On DRDO/NIC hosts: extremely high anomaly — weights reflect context-dependent severity.
+    # Source: Session O vibeware threat model (Bitdefender, March 2026).
+    EPPI_SIGNAL_WEIGHTS = {
+        # Existing signals — DO NOT CHANGE WEIGHTS
+        "EXECVE_APT36_BINARY": 1.0,    # Direct APT36 payload execution = maximum
+        "MMAP_EXEC": 0.8,              # Process hollowing memory mapping
+        "CONNECT": 0.7,                # Generic C2 CONNECT
+        "CLONE": 0.5,                  # Unexpected process forking
+        "EPPI_BLIND": 0.0,             # Telemetry gap
+        # Vibeware signals (Session O, March 2026 APT36 pivot)
+        "EPPI_VIBEWARE_C2_DISCORD": 0.85,   # Discord on defense host = near-impossible legitimate
+        "EPPI_VIBEWARE_C2_SUPABASE": 0.90,  # SupaServ RAT confirmed pattern
+        "EPPI_VIBEWARE_C2_FIREBASE": 0.85,  # Firebase C2
+        "EPPI_VIBEWARE_C2_SLACK": 0.75,     # Slightly lower — some defense orgs use Slack
+        "EPPI_VIBEWARE_C2_KNOWN_IOC": 1.0,  # Confirmed ThreatFox IOC IP = maximum
+    }
+
     def compute_eppi_signal(self, recent_eppi_events: List[Dict[str, Any]]) -> float:
         if not recent_eppi_events:
             return 0.0
@@ -42,6 +62,15 @@ class EvidenceFusionEngine:
 
             if evt_type == "CLONE":
                 max_signal = max(max_signal, 0.5)
+
+            # Vibeware C2 channel detection (APT36 2026 pivot)
+            vibeware_weight = self.EPPI_SIGNAL_WEIGHTS.get(evt_type)
+            if vibeware_weight is not None and evt_type.startswith("EPPI_VIBEWARE"):
+                max_signal = max(max_signal, vibeware_weight)
+                logger.info(
+                    f"[FUSION] Vibeware C2 event detected: type={evt_type} "
+                    f"comm={comm} weight={vibeware_weight}"
+                )
 
         return round(max_signal, 4)
 

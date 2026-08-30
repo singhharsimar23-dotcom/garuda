@@ -1,0 +1,28 @@
+[
+  {
+    "issuer_ca_id": 183267,
+    "issuer_name": "C=US, O=Let's Encrypt, CN=R3",
+    "common_name": "drdo-portal-india.space",
+    "name_value": "drdo-portal-india.space",
+    "id": 10829384756,
+    "entry_timestamp": "2026-08-15T04:32:11.000",
+    "not_before": "2026-08-15T04:00:00",
+    "not_after": "2026-11-13T04:00:00",
+    "serial_number": "04f9a23b1c56de78901234567890abcdef01",
+    "result_count": 1,
+    "logged_at": "2026-08-15T04:32:11.000"
+  },
+  {
+    "issuer_ca_id": 183267,
+    "issuer_name": "C=US, O=Let's Encrypt, CN=R3",
+    "common_name": "nic-in-govportal.online",
+    "name_value": "nic-in-govportal.online",
+    "id": 10829384757,
+    "entry_timestamp": "2026-08-15T05:01:43.000",
+    "not_before": "2026-08-15T05:00:00",
+    "not_after": "2026-11-13T05:00:00",
+    "serial_number": "04f9a23b1c56de78901234567890abcdef02",
+    "result_count": 1,
+    "logged_at": "2026-08-15T05:01:43.000"
+  }
+]

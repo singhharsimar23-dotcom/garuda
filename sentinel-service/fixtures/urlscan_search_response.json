@@ -1,0 +1,41 @@
+{
+  "results": [
+    {
+      "task": {
+        "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "time": 1723724400,
+        "url": "https://drdo-portal-india.space/"
+      },
+      "stats": {
+        "uniqIPs": 3,
+        "uniqCountries": 2,
+        "dataLength": 45231,
+        "encodedDataLength": 15432,
+        "requests": 12
+      },
+      "page": {
+        "domain": "drdo-portal-india.space",
+        "country": "PK",
+        "city": "Karachi",
+        "server": "nginx",
+        "ip": "45.56.162.170",
+        "mimeType": "text/html",
+        "title": "DRDO - Defence Research and Development Organisation",
+        "asnname": "AKAMAI-LINODE-AP"
+      },
+      "verdicts": {
+        "overall": {
+          "score": 87,
+          "categories": ["phishing", "malicious"],
+          "brands": ["DRDO"],
+          "tags": ["phishing", "apt36", "india-lure"],
+          "malicious": true,
+          "hasVerdicts": true
+        }
+      }
+    }
+  ],
+  "total": 1,
+  "took": 67,
+  "has_more": false
+}

@@ -1,0 +1,17 @@
+{
+  "status": "success",
+  "country": "Pakistan",
+  "countryCode": "PK",
+  "region": "PB",
+  "regionName": "Punjab",
+  "city": "Lahore",
+  "zip": "54000",
+  "lat": 31.5497,
+  "lon": 74.3436,
+  "timezone": "Asia/Karachi",
+  "isp": "Pakistan Telecommunication Company Limited",
+  "org": "PTCL - Pakistan Telecom",
+  "as": "AS17557 Pakistan Telecommunication Company Limited",
+  "asname": "PTCL",
+  "query": "45.56.162.170"
+}

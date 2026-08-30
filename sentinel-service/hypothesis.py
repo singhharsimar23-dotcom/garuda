@@ -94,6 +94,51 @@ class HypothesisSynthesizer:
             return offline_fallback()
 
 
+    async def write_sitrep_to_supabase(
+        self,
+        sitrep_text: str,
+        supabase_client=None,
+    ) -> None:
+        """
+        Writes SITREP to Supabase garuda_sitrep table.
+        Frontend subscribes to Supabase Realtime on this table directly,
+        eliminating UTNE service cold-start dependency for SITREP display.
+        Called after every hypothesis generation cycle (15-minute interval).
+        """
+        if not supabase_client:
+            logger.debug("No Supabase client — skipping SITREP persistence")
+            return
+
+        try:
+            # Count CT hits in last 24 hours
+            ct_hits_result = supabase_client.table("stix_objects").select(
+                "id", count="exact"
+            ).gte("created_at", "now() - interval '24 hours'").execute()
+            ct_hit_count = ct_hits_result.count or 0
+        except Exception:
+            ct_hit_count = 0
+
+        try:
+            # Count active campaigns
+            active_campaigns_result = supabase_client.table("campaigns").select(
+                "id", count="exact"
+            ).eq("status", "ACTIVE").execute()
+            active_campaign_count = active_campaigns_result.count or 0
+        except Exception:
+            active_campaign_count = 0
+
+        try:
+            supabase_client.table("garuda_sitrep").insert({
+                "sitrep_text": sitrep_text,
+                "ct_hit_count": ct_hit_count,
+                "active_campaign_count": active_campaign_count,
+                "source": "SENTINEL",
+            }).execute()
+            logger.info("[SITREP] Written to garuda_sitrep table")
+        except Exception as exc:
+            logger.warning(f"Failed to write SITREP to Supabase: {exc}")
+
+
 _hypothesis_synthesizer = HypothesisSynthesizer()
 
 
