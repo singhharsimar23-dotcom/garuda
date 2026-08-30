@@ -112,24 +112,34 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     logger.info(f"Starting GARUDA SENTINEL Service on port {settings.port} (Conflict Mode={settings.conflict_mode})...")
 
-    supabase = await get_supabase()
-    obs_loop = get_observation_loop()
-    await obs_loop.start(supabase_client=supabase)
+    tasks = []
+    obs_loop = None
+    try:
+        supabase = await get_supabase()
+        obs_loop = get_observation_loop()
+        await obs_loop.start(supabase_client=supabase)
 
-    # Spawn background tasks
-    cross_host_task = asyncio.create_task(periodic_cross_host_loop())
-    predictor_task = asyncio.create_task(periodic_predictor_loop())
-    calibrator_task = asyncio.create_task(periodic_calibrator_loop())
+        # Spawn background tasks
+        tasks.append(asyncio.create_task(periodic_cross_host_loop()))
+        tasks.append(asyncio.create_task(periodic_predictor_loop()))
+        tasks.append(asyncio.create_task(periodic_calibrator_loop()))
+    except Exception as e:
+        logger.warning(f"Background loop startup warning (non-fatal): {e}")
 
     yield
 
     # Teardown
     logger.info("Stopping SENTINEL background loops...")
-    await obs_loop.stop()
-    cross_host_task.cancel()
-    predictor_task.cancel()
-    calibrator_task.cancel()
-    await asyncio.gather(cross_host_task, predictor_task, calibrator_task, return_exceptions=True)
+    if obs_loop:
+        try:
+            await obs_loop.stop()
+        except Exception:
+            pass
+    for t in tasks:
+        t.cancel()
+    if tasks:
+        await asyncio.gather(*tasks, return_exceptions=True)
+
 
 
 app = FastAPI(
