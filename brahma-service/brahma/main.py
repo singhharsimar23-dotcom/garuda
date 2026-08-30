@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
 from .mitre_pipeline import get_mitre_pipeline
+from .routers.assessment import router as assessment_router
 from .routers.dharma import router as dharma_router
 from .routers.kali import router as kali_router
 from .routers.kill_chain import router as kill_chain_router
@@ -84,6 +85,7 @@ def create_app() -> FastAPI:
     # Register Routers
     app.include_router(observe_router)
     app.include_router(kill_chain_router)
+    app.include_router(assessment_router)
     app.include_router(dharma_router)
     app.include_router(kali_router)
     app.include_router(label_router)

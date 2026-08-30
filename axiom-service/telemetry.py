@@ -167,6 +167,15 @@ async def ingest_telemetry(
     observation_id = None
     if supabase:
         try:
+            # Ensure agent is enrolled in monitored_agents table
+            agent_enrollment = {
+                "agent_id": payload.agent_id,
+                "hostname": payload.hostname,
+                "status": "ONLINE",
+                "last_heartbeat": datetime.now(timezone.utc).isoformat(),
+            }
+            supabase.table("monitored_agents").upsert(agent_enrollment, on_conflict="agent_id").execute()
+
             res = supabase.table("physics_observations").insert(db_row).execute()
             if res.data and len(res.data) > 0:
                 observation_id = str(res.data[0].get("id"))
