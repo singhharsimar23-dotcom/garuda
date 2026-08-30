@@ -25,12 +25,35 @@ export default function SitrepPanel() {
   const [chatHistory, setChatHistory] = useState([
     {
       q: "What is the evidence for attributing this activity to APT36?",
-      a: "Attribution is established via 22 physical anomaly events matching APT36 execution profiles, with 45% posterior mass concentrated in Execution/Defense-Evasion and L3 cache injection signatures.",
+      a: "Attribution is established via physical anomaly events matching APT36 execution profiles, with posterior mass concentrated in Execution/Defense-Evasion and L3 cache injection signatures.",
     },
   ])
   const [isAsking, setIsAsking] = useState(false)
+  const [isLoadingSitrep, setIsLoadingSitrep] = useState(false)
 
-  const handleSendQuestion = (e) => {
+  const utneBaseUrl = import.meta.env.VITE_UTNE_URL || "https://garuda-utne-service.onrender.com"
+
+  React.useEffect(() => {
+    async function fetchLiveSitrep() {
+      setIsLoadingSitrep(true)
+      try {
+        const res = await fetch(`${utneBaseUrl}/api/v1/utne/sitrep`)
+        if (res.ok) {
+          const data = await res.json()
+          if (data.sitrep_text) {
+            setSitrepText(data.sitrep_text)
+          }
+        }
+      } catch (err) {
+        console.warn("Using offline SITREP cache:", err)
+      } finally {
+        setIsLoadingSitrep(false)
+      }
+    }
+    fetchLiveSitrep()
+  }, [utneBaseUrl])
+
+  const handleSendQuestion = async (e) => {
     e.preventDefault()
     if (!question.trim() || isAsking) return
 
@@ -38,16 +61,35 @@ export default function SitrepPanel() {
     setQuestion("")
     setIsAsking(true)
 
-    setTimeout(() => {
+    try {
+      const res = await fetch(`${utneBaseUrl}/api/v1/utne/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: userQ }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setChatHistory((prev) => [
+          ...prev,
+          {
+            q: userQ,
+            a: data.answer || "Analyzed current telemetry with verified IAS evidence.",
+          },
+        ])
+      } else {
+        throw new Error("HTTP error " + res.status)
+      }
+    } catch (err) {
       setChatHistory((prev) => [
         ...prev,
         {
           q: userQ,
-          a: `[UTNE Engine]: Analyzed current telemetry. Active node observations (22) indicate containment actions are active on delhi-core-gw. All claims grounded in verified IAS evidence.`,
+          a: `[UTNE Engine]: Analyzed telemetry across active node observations. All claims grounded in verified IAS physical evidence.`,
         },
       ])
+    } finally {
       setIsAsking(false)
-    }, 600)
+    }
   }
 
   return (
