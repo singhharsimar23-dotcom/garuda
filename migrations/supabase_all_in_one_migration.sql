@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS public.rpz_rules (
     added_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     expires_at TIMESTAMPTZ,
     removed_at TIMESTAMPTZ,
-    is_active BOOLEAN GENERATED ALWAYS AS (removed_at IS NULL AND (expires_at IS NULL OR expires_at > NOW())) STORED
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 -- 3. PHASE 3 SCHEMA: MONITORED AGENTS
