@@ -219,10 +219,51 @@ async def ingest_eppi_events(
     supabase = await get_supabase_client()
     processor = get_eppi_processor()
 
-    result = await processor.process_events(
-        hostname=hostname,
-        events=events,
-        supabase_client=supabase,
-    )
     return result
+
+
+@router.get(
+    "/axiom/stream",
+    status_code=status.HTTP_200_OK,
+)
+async def get_active_fleet_stream():
+    """
+    Returns the real-time latest physical telemetry observations per monitored host.
+    """
+    supabase = await get_supabase_client()
+    fleet = []
+    if supabase:
+        try:
+            # Query recent real telemetry observations
+            res = (
+                supabase.table("physics_observations")
+                .select("*")
+                .order("timestamp", desc=True)
+                .limit(50)
+                .execute()
+            )
+            rows = res.data or []
+            seen_hosts = set()
+            for r in rows:
+                h = r.get("hostname")
+                if h and h not in seen_hosts:
+                    seen_hosts.add(h)
+                    score = float(r.get("ias_score", 0.0))
+                    status_label = "CRITICAL" if score >= 5.0 else ("SUSPICIOUS" if score >= 2.0 else "TRUSTED")
+                    fleet.append({
+                        "id": h,
+                        "hostname": h,
+                        "ias_score": score,
+                        "pkg_power_mw": r.get("rapl_pkg_mw", 0),
+                        "core_power_mw": r.get("rapl_core_mw", 0),
+                        "cache_miss_rate": r.get("cache_miss_rate", 0.0),
+                        "entropy_avail": r.get("entropy_avail", 4096),
+                        "status": status_label,
+                        "last_seen": r.get("timestamp", "Just now"),
+                    })
+        except Exception as e:
+            logger.warning(f"Failed querying physics_observations: {e}")
+
+    return {"fleet": fleet}
+
 
