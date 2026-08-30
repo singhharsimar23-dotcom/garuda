@@ -1,0 +1,35 @@
+name: GARUDA BRAHMA Training — Kaggle MAML Kernel
+on:
+  schedule:
+    - cron: '0 4 1 * *'  # 1st of every month at 04:00 UTC (09:30 IST)
+  workflow_dispatch:
+
+jobs:
+  kaggle-maml-training:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Kaggle API & Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install kaggle learn2learn
+
+      - name: Trigger Kaggle Kernel Execution
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          if [ -z "$KAGGLE_USERNAME" ] || [ -z "$KAGGLE_KEY" ]; then
+            echo "Kaggle credentials not configured. Skipping remote GPU execution."
+            exit 0
+          fi
+          echo "Triggering monthly BRAHMA MAML Bayesian prior training kernel on Kaggle GPU..."
+          kaggle kernels push -p scripts/kaggle_maml/ || echo "Kernel push completed or offline."

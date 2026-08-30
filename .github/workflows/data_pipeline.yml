@@ -1,0 +1,53 @@
+name: GARUDA Data Pipeline — BRAHMA Threat Intelligence
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Every Monday 02:00 UTC (07:30 IST)
+  workflow_dispatch:
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Data Pipeline Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r data-pipeline/requirements.txt
+
+      - name: Ingest MITRE ATT&CK Enterprise Bundle
+        run: python data-pipeline/mitre_ingester.py
+
+      - name: Cache APTnotes Reports
+        uses: actions/cache@v4
+        with:
+          path: /tmp/aptnotes
+          key: aptnotes-${{ hashFiles('data-pipeline/aptnotes_parser.py') }}
+
+      - name: Parse APTnotes Threat Reports
+        run: python data-pipeline/aptnotes_parser.py
+
+      - name: Pull OTX, CISA, and MalwareBazaar Feeds
+        env:
+          OTX_API_KEY: ${{ secrets.OTX_API_KEY }}
+        run: |
+          python data-pipeline/otx_puller.py
+          python data-pipeline/cisa_puller.py
+          python data-pipeline/malwarebazaar_puller.py
+
+      - name: Compile STIX 2.1 Objects and Upload to BRAHMA
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NORTHFLANK_BRAHMA_URL: ${{ secrets.NORTHFLANK_BRAHMA_URL }}
+          INTER_SERVICE_SECRET: ${{ secrets.INTER_SERVICE_SECRET }}
+        run: |
+          python data-pipeline/stix_compiler.py
+          python data-pipeline/brahma_uploader.py

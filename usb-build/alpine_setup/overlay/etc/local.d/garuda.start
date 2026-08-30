@@ -1,0 +1,14 @@
+#!/bin/sh
+# GARUDA USB Agent Alpine Auto-Start Script
+# Executed by OpenRC local.d service on boot
+
+echo "Starting GARUDA USB Agent..."
+mkdir -p /media/garuda/data
+mkdir -p /media/garuda/data/event_queue
+
+# Launch agent in background
+if [ -f /opt/garuda/garuda-agent ]; then
+    /opt/garuda/garuda-agent >> /var/log/garuda-usb-agent.log 2>&1 &
+elif [ -d /opt/garuda/usb-agent ]; then
+    cd /opt/garuda/usb-agent && python3 -m garuda_usb_agent.agent_main_usb >> /var/log/garuda-usb-agent.log 2>&1 &
+fi

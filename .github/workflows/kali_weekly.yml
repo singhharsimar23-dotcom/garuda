@@ -1,0 +1,54 @@
+name: GARUDA KALI-PRIME — Weekly Automated Red Team Simulation
+on:
+  schedule:
+    - cron: '0 4 * * 0'  # Every Sunday 04:00 UTC (09:30 IST)
+  workflow_dispatch:
+    inputs:
+      actor_focus:
+        description: 'Threat Actor Focus (e.g. APT36, SideCopy)'
+        required: true
+        default: 'APT36'
+
+jobs:
+  anps-batch-simulation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r kali/requirements.txt
+
+      - name: Execute ANPS Batch Red Team Simulation
+        env:
+          NORTHFLANK_BRAHMA_URL: ${{ secrets.NORTHFLANK_BRAHMA_URL }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ACTOR_FOCUS: ${{ github.event.inputs.actor_focus || 'APT36' }}
+        run: |
+          python -c "
+          from kali.anps_batch import ANPSBatchRunner
+          from kali.dharma_populator import DharmaPopulator
+          import os
+
+          actor = os.environ.get('ACTOR_FOCUS', 'APT36')
+          print(f'Starting KALI ANPS batch simulation for {actor}...')
+          runner = ANPSBatchRunner(max_batch_size=20)
+          discoveries = runner.synthesize_candidate_paths(actor_id=actor)
+          print(f'Synthesized {len(discoveries)} candidate attack paths.')
+
+          populator = DharmaPopulator()
+          cached_count = populator.populate_top_paths(discoveries, actor_id=actor, top_n=10)
+          print(f'Successfully populated {cached_count} top candidate plans to DHARMA cache.')
+          "

@@ -37,5 +37,16 @@ jobs:
           ping_endpoint "$BASE/api/attribution/clusters" "Attribution"
           ping_endpoint "$BASE/api/pdns/matches" "PDNS"
 
+          # Phase 3 Microservices (if configured in secrets/env)
+          if [ -n "$NORTHFLANK_AXIOM_URL" ]; then
+            ping_endpoint "$NORTHFLANK_AXIOM_URL/health" "AXIOM-Service-1"
+          fi
+          if [ -n "$NORTHFLANK_BRAHMA_URL" ]; then
+            ping_endpoint "$NORTHFLANK_BRAHMA_URL/health" "BRAHMA-Service-2"
+          fi
+          if [ -n "$KOYEB_UTNE_URL" ]; then
+            ping_endpoint "$KOYEB_UTNE_URL/health" "UTNE-Koyeb"
+          fi
+
           exit $fail
 

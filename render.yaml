@@ -1,0 +1,73 @@
+services:
+  # Service 1: AXIOM-II Physics Layer Ingestion Engine
+  - type: web
+    name: garuda-axiom-service
+    runtime: docker
+    dockerfilePath: ./axiom-service/Dockerfile
+    dockerContext: ./axiom-service
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      - key: AGENT_API_KEY
+        sync: false
+      - key: INTER_SERVICE_SECRET
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+
+  # Service 2: BRAHMA Adversary & DHARMA Response Engine
+  - type: web
+    name: garuda-brahma-service
+    runtime: docker
+    dockerfilePath: ./brahma-service/Dockerfile
+    dockerContext: ./brahma-service
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      - key: INTER_SERVICE_SECRET
+        sync: false
+
+  # Service 3: UTNE Executive Narrative Engine
+  - type: web
+    name: garuda-utne-service
+    runtime: docker
+    dockerfilePath: ./network-service/Dockerfile
+    dockerContext: ./network-service
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false

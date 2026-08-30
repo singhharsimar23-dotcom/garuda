@@ -1,0 +1,209 @@
+{
+  "type": "bundle",
+  "id": "bundle--1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+  "spec_version": "2.1",
+  "objects": [
+    {
+      "type": "intrusion-set",
+      "id": "intrusion-set--af52ea0c-d49e-4a6c-9c9a-5f8021d7b328",
+      "name": "APT36",
+      "aliases": [
+        "APT36",
+        "Transparent Tribe",
+        "PROJECTM",
+        "Mythic Leopard",
+        "COPPER FIELD"
+      ],
+      "description": "APT36 is a cyber espionage group that has primarily targeted defense, government, and military entities in India.",
+      "created": "2017-05-31T21:31:48.664Z",
+      "modified": "2023-04-18T14:21:12.334Z"
+    },
+    {
+      "type": "intrusion-set",
+      "id": "intrusion-set--8b3f6e12-4c2a-4a7b-8e1d-9a0b1c2d3e4f",
+      "name": "SideCopy",
+      "aliases": [
+        "SideCopy",
+        "SideCopy Group"
+      ],
+      "description": "SideCopy is an operational group suspected to be closely aligned with or a sub-cluster of APT36 targeting Indian defense forces.",
+      "created": "2021-03-01T12:00:00.000Z",
+      "modified": "2023-05-10T12:00:00.000Z"
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--01a5a209-b94c-450b-b7f9-946497d91055",
+      "name": "Spearphishing Attachment",
+      "description": "Adversaries send spearphishing emails with malicious attachments.",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "initial-access"
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1566.001"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--02b6b310-c05d-561c-c8fa-057508e02166",
+      "name": "User Execution: Malicious File",
+      "description": "Adversaries rely on specific actions by a user in order to gain execution.",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "execution"
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1204.002"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--03c7c421-d16e-672d-d9fb-168619f13277",
+      "name": "Registry Run Keys / Startup Folder",
+      "description": "Adversaries may achieve persistence by adding an entry to the 'Run' registry keys or startup folder.",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "persistence"
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1547.001"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--04d8d532-e27f-783e-eafc-279720024388",
+      "name": "Obfuscated Files or Information",
+      "description": "Adversaries may attempt to make an executable or other artifact difficult to discover or analyze.",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "defense-evasion"
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1027"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--05e9e643-f380-894f-fbfd-380831135499",
+      "name": "System Information Discovery",
+      "description": "Adversaries may attempt to get detailed information about the operating system and hardware.",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "discovery"
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1082"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--06f0f754-0491-9a50-0c0e-491942246500",
+      "name": "Application Layer Protocol: Web Protocols",
+      "description": "Adversaries may communicate using application layer protocols associated with web traffic.",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "command-and-control"
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1071.001"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--07010865-1502-ab61-1d1f-502053357611",
+      "name": "Exfiltration Over C2 Channel",
+      "description": "Adversaries may steal data by exfiltrating it over an existing command and control channel.",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "exfiltration"
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1041"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "id": "relationship--101",
+      "source_ref": "intrusion-set--af52ea0c-d49e-4a6c-9c9a-5f8021d7b328",
+      "target_ref": "attack-pattern--01a5a209-b94c-450b-b7f9-946497d91055",
+      "relationship_type": "uses"
+    },
+    {
+      "type": "relationship",
+      "id": "relationship--102",
+      "source_ref": "intrusion-set--af52ea0c-d49e-4a6c-9c9a-5f8021d7b328",
+      "target_ref": "attack-pattern--02b6b310-c05d-561c-c8fa-057508e02166",
+      "relationship_type": "uses"
+    },
+    {
+      "type": "relationship",
+      "id": "relationship--103",
+      "source_ref": "intrusion-set--af52ea0c-d49e-4a6c-9c9a-5f8021d7b328",
+      "target_ref": "attack-pattern--03c7c421-d16e-672d-d9fb-168619f13277",
+      "relationship_type": "uses"
+    },
+    {
+      "type": "relationship",
+      "id": "relationship--104",
+      "source_ref": "intrusion-set--af52ea0c-d49e-4a6c-9c9a-5f8021d7b328",
+      "target_ref": "attack-pattern--04d8d532-e27f-783e-eafc-279720024388",
+      "relationship_type": "uses"
+    },
+    {
+      "type": "relationship",
+      "id": "relationship--105",
+      "source_ref": "intrusion-set--af52ea0c-d49e-4a6c-9c9a-5f8021d7b328",
+      "target_ref": "attack-pattern--05e9e643-f380-894f-fbfd-380831135499",
+      "relationship_type": "uses"
+    },
+    {
+      "type": "relationship",
+      "id": "relationship--106",
+      "source_ref": "intrusion-set--af52ea0c-d49e-4a6c-9c9a-5f8021d7b328",
+      "target_ref": "attack-pattern--06f0f754-0491-9a50-0c0e-491942246500",
+      "relationship_type": "uses"
+    },
+    {
+      "type": "relationship",
+      "id": "relationship--107",
+      "source_ref": "intrusion-set--af52ea0c-d49e-4a6c-9c9a-5f8021d7b328",
+      "target_ref": "attack-pattern--07010865-1502-ab61-1d1f-502053357611",
+      "relationship_type": "uses"
+    }
+  ]
+}

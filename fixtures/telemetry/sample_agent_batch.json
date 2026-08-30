@@ -1,0 +1,29 @@
+{
+  "agent_id": "node-delhi-hq-01",
+  "hostname": "boss-linux-secnode",
+  "timestamp": 1756540800.0,
+  "readings": [
+    {
+      "timestamp": 1756540800.0,
+      "agent_id": "node-delhi-hq-01",
+      "hostname": "boss-linux-secnode",
+      "rapl_pkg_uw": 15420000.0,
+      "rapl_dram_uw": 3210000.0,
+      "rapl_core_uw": 11200000.0,
+      "instructions": 2500000.0,
+      "cache_misses": 15000.0,
+      "cycles": 1800000.0,
+      "ipc": 1.38,
+      "entropy_avail": 3950,
+      "sched_run_ms_per_sec": 450.0,
+      "sched_wait_ms_per_sec": 12.0,
+      "sched_delay_ratio": 0.026,
+      "eppi_events": [],
+      "tpm_pcrs": {
+        "0": "0x4b2c1d3f9e8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c",
+        "7": "0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+        "10": "0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e"
+      }
+    }
+  ]
+}

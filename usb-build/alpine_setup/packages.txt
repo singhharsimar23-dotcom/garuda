@@ -1,0 +1,11 @@
+python3
+py3-pip
+cryptsetup
+squashfs-tools
+grub-efi
+tpm2-tools
+util-linux
+e2fsprogs
+dosfstools
+parted
+linux-headers

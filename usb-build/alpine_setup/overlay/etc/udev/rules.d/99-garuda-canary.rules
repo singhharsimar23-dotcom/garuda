@@ -1,0 +1,3 @@
+# GARUDA Deception & Udev Trigger Rules
+# Monitors insertion of removable media and signals MAYA canary system
+ACTION=="add", SUBSYSTEM=="block", KERNEL=="sd[b-z][0-9]", RUN+="/bin/sh -c 'logger [GARUDA-UDEV] Removable block device inserted: %k'"

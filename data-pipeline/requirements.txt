@@ -1,0 +1,6 @@
+pdfminer.six>=20231228
+requests>=2.31.0
+pydantic>=2.0.0
+stix2>=3.0.1
+supabase>=2.0.0
+pytest>=8.0.0

@@ -1,0 +1,9 @@
+{
+  "status": "PROCESSED",
+  "agent_id": "node-delhi-hq-01",
+  "processed_count": 1,
+  "anomaly_level": "CLEAN",
+  "ias_score": 0.1245,
+  "calibrated": false,
+  "recommended_poll_interval_sec": 1.0
+}

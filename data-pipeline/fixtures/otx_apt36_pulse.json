@@ -1,0 +1,37 @@
+{
+  "count": 1,
+  "results": [
+    {
+      "id": "6489a1c2b5d4e3f2a1b0c9d8",
+      "name": "APT36 Transparent Tribe CrimsonRAT Campaign Target Defense Forces",
+      "description": "Observed spearphishing campaigns delivering CrimsonRAT and CapraRAT payloads.",
+      "author_name": "GarudaThreatIntel",
+      "created": "2023-06-14T11:22:42.000Z",
+      "modified": "2023-06-14T11:22:42.000Z",
+      "tags": ["APT36", "Transparent Tribe", "CrimsonRAT", "India", "Defense"],
+      "indicators": [
+        {
+          "id": 101,
+          "indicator": "194.163.142.71",
+          "type": "IPv4",
+          "title": "CrimsonRAT C2 Server",
+          "description": "Active C2 node communicating over port 4433"
+        },
+        {
+          "id": 102,
+          "indicator": "kavach-auth-portal.nic-gov.in",
+          "type": "domain",
+          "title": "Phishing credential harvester",
+          "description": "Impersonating Indian 2FA NIC portal"
+        },
+        {
+          "id": 103,
+          "indicator": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "type": "FileHash-SHA256",
+          "title": "CrimsonRAT payload binary",
+          "description": "Packed executable dropped via RTF weaponized document"
+        }
+      ]
+    }
+  ]
+}

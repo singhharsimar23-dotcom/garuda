@@ -11,6 +11,7 @@ import {
   Bug,
   Target,
   RefreshCw,
+  Zap,
 } from "lucide-react"
 import { useGarudaStore } from "../store/useGarudaStore"
 import TensionGauge from "./TensionGauge"
@@ -88,6 +89,13 @@ const RAIL = [
     label: "System",
     matchPaths: ["/system"],
     context: "system",
+  },
+  {
+    to: "/phase3",
+    icon: Zap,
+    label: "Phase 3 Defense",
+    matchPaths: ["/phase3", "/axiom", "/brahma", "/sitrep", "/queue"],
+    context: "phase3",
   },
 ]
 

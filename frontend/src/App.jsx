@@ -26,6 +26,7 @@ import MalwareHunt from "./pages/MalwareHunt"
 import PredictiveDashboard from "./pages/PredictiveDashboard"
 import LifecycleDashboard from "./pages/LifecycleDashboard"
 import System from "./pages/System"
+import Phase3Dashboard from "./pages/Phase3Dashboard"
 
 import { supabase } from "./lib/supabase"
 import { useGarudaStore } from "./store/useGarudaStore"
@@ -108,6 +109,11 @@ export default function App() {
             <Route path="/predictive"   element={<PredictiveDashboard />} />
             <Route path="/lifecycle"    element={<LifecycleDashboard />} />
             <Route path="/system"       element={<System />} />
+            <Route path="/phase3"       element={<Phase3Dashboard />} />
+            <Route path="/axiom"        element={<Phase3Dashboard />} />
+            <Route path="/brahma"       element={<Phase3Dashboard />} />
+            <Route path="/sitrep"       element={<Phase3Dashboard />} />
+            <Route path="/queue"        element={<Phase3Dashboard />} />
 
             {/* Legacy redirect */}
             <Route path="/stix" element={<Navigate to="/intelligence" replace />} />
