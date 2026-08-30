@@ -140,23 +140,32 @@ class KaliMCTSEngine:
         tactic: str,
         sample_count: Optional[int] = None,
     ) -> float:
-        p_det, _ = self.detection_model.compute_technique_detection_prob(technique_id, tactic, sample_count)
+        """
+        Calculates per-step adversary reward using calibrated per-technique physics.
+        """
+        physics = TECHNIQUE_PHYSICS.get(technique_id)
+        if physics:
+            p_det = physics["p_detection"]
+            pref = physics["apt36_preference"]
+        else:
+            p_det, _ = self.detection_model.compute_technique_detection_prob(technique_id, tactic, sample_count)
+            pref = TACTIC_VALUES.get(tactic.lower(), 0.5)
         p_evasion = max(0.01, 1.0 - p_det)
-        tactic_val = TACTIC_VALUES.get(tactic.lower(), 0.5)
-        return tactic_val * p_evasion
+        return pref * p_evasion
 
     def compute_path_reward(
         self,
         path: List[Tuple[str, str]],
         sample_count: Optional[int] = None,
     ) -> float:
+        """
+        Calculates path reward using _evaluate_trajectory utility.
+        """
         if not path:
             return 0.0
-        cumulative = 1.0
-        for tech_id, tactic in path:
-            step_r = self.compute_step_reward(tech_id, tactic, sample_count)
-            cumulative *= step_r
-        return round(cumulative, 4)
+        tech_seq = [x[0] for x in path]
+        utility, _ = self._evaluate_trajectory(tech_seq)
+        return utility
 
     def is_terminal(self, path: List[Tuple[str, str]]) -> bool:
         if not path:
@@ -299,17 +308,20 @@ class KaliMCTSEngine:
                 hash_id = hashlib.sha256(seq_str.encode("utf-8")).hexdigest()[:8]
                 disc_id = f"kali-disc-{hash_id}"
 
-                utility = self.compute_path_reward(p, sample_count)
-                p_detect, uncalibrated = self.detection_model.evaluate_path_detection_prob(p, sample_count)
+                model_p_detect, uncalibrated = self.detection_model.evaluate_path_detection_prob(p, sample_count)
+                traj_utility, traj_p_detect = self._evaluate_trajectory(tech_seq)
 
-                is_gap = (p_detect < 0.50) and (utility > 0.70)
+                utility = traj_utility
+                p_detect = model_p_detect if (model_p_detect >= 0.75 or uncalibrated) else traj_p_detect
+
+                is_gap = (p_detect < 0.50) and (utility > 0.40)
                 gap_status = "DEFENSIVE_GAP" if is_gap else "COVERED"
 
                 if gap_status == "DEFENSIVE_GAP":
                     lowest_tech = min(
-                        p,
-                        key=lambda x: self.detection_model.compute_technique_detection_prob(x[0], x[1], sample_count)[0]
-                    )[0]
+                        tech_seq,
+                        key=lambda t: TECHNIQUE_PHYSICS.get(t, {}).get("p_detection", 0.5)
+                    )
                     recommendation = HARDENING_MAPPINGS.get(
                         lowest_tech,
                         f"Deploy targeted EPPI eBPF hook and YARA rule for {lowest_tech}"
@@ -317,18 +329,24 @@ class KaliMCTSEngine:
                 else:
                     recommendation = "Baseline power model captures shell execution bursts (rapl_pkg sigma > 3.0)"
 
-                brahma_pref = round(sum(TACTIC_VALUES.get(t, 0.5) for t in tactic_seq) / len(tactic_seq), 3)
+                apt36_pref = round(
+                    sum(TECHNIQUE_PHYSICS.get(t, {}).get("apt36_preference", 0.5) for t in tech_seq) / len(tech_seq),
+                    3
+                )
 
                 discovered_paths[disc_id] = {
                     "discovery_id": disc_id,
                     "technique_sequence": tech_seq,
                     "tactic_sequence": tactic_seq,
                     "adversary_utility": utility,
+                    "adversary_utility_score": utility,
                     "p_detection": p_detect,
+                    "estimated_detection_probability": p_detect,
                     "detection_uncalibrated": uncalibrated,
                     "gap_status": gap_status,
                     "hardening_recommendation": recommendation,
-                    "brahma_preference_score": brahma_pref,
+                    "brahma_preference_score": apt36_pref,
+                    "apt36_preference_weight": apt36_pref,
                     "mcts_simulations": completed_sims,
                 }
 

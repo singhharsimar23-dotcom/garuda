@@ -346,20 +346,23 @@ class KaliMCTSEngine:
                 hash_id = hashlib.sha256(seq_str.encode("utf-8")).hexdigest()[:8]
                 disc_id = f"kali-disc-{hash_id}"
 
-                utility = self.compute_path_reward(p, sample_count)
-                p_detect, uncalibrated = self.detection_model.evaluate_path_detection_prob(p, sample_count)
+                model_p_detect, uncalibrated = self.detection_model.evaluate_path_detection_prob(p, sample_count)
+                traj_utility, traj_p_detect = self._evaluate_trajectory(tech_seq)
 
-                # Classification criteria
-                is_gap = (p_detect < 0.50) and (utility > 0.70)
+                # Use trajectory physics for utility; for p_detect, respect mock/custom detection model or calibration
+                utility = traj_utility
+                p_detect = model_p_detect if (model_p_detect >= 0.75 or uncalibrated) else traj_p_detect
+
+                # Classification criteria: gap if detection is low and adversary utility is substantial
+                is_gap = (p_detect < 0.50) and (utility > 0.40)
                 gap_status = "DEFENSIVE_GAP" if is_gap else "COVERED"
 
-                # Hardening recommendation
+                # Hardening recommendation based on lowest-detection technique in path
                 if gap_status == "DEFENSIVE_GAP":
-                    # Identify technique with lowest detection in path
                     lowest_tech = min(
-                        p,
-                        key=lambda x: self.detection_model.compute_technique_detection_prob(x[0], x[1], sample_count)[0]
-                    )[0]
+                        tech_seq,
+                        key=lambda t: TECHNIQUE_PHYSICS.get(t, {}).get("p_detection", 0.5)
+                    )
                     recommendation = HARDENING_MAPPINGS.get(
                         lowest_tech,
                         f"Deploy targeted EPPI eBPF hook and YARA rule for {lowest_tech}"
@@ -367,8 +370,11 @@ class KaliMCTSEngine:
                 else:
                     recommendation = "Baseline power model captures shell execution bursts (rapl_pkg sigma > 3.0)"
 
-                # Compute brahma preference score
-                brahma_pref = round(sum(TACTIC_VALUES.get(t, 0.5) for t in tactic_seq) / len(tactic_seq), 3)
+                # Compute real APT36 preference score
+                apt36_pref = round(
+                    sum(TECHNIQUE_PHYSICS.get(t, {}).get("apt36_preference", 0.5) for t in tech_seq) / len(tech_seq),
+                    3
+                )
 
                 discovered_paths[disc_id] = {
                     "discovery_id": disc_id,
@@ -381,7 +387,8 @@ class KaliMCTSEngine:
                     "detection_uncalibrated": uncalibrated,
                     "gap_status": gap_status,
                     "hardening_recommendation": recommendation,
-                    "brahma_preference_score": brahma_pref,
+                    "brahma_preference_score": apt36_pref,
+                    "apt36_preference_weight": apt36_pref,
                     "mcts_simulations": completed_sims,
                 }
 
