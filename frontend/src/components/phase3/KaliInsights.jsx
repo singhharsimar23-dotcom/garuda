@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react"
 import { Shield, Sparkles, CheckCircle2, AlertTriangle, RefreshCw, Activity, Cpu } from "lucide-react"
 
-const API_BASE = import.meta.env.VITE_BRAHMA_API_URL || "https://garuda-brahma.onrender.com"
+const API_BASE = import.meta.env.VITE_BRAHMA_API_URL || "https://garuda-brahma-service.onrender.com"
 
 export default function KaliInsights() {
   const [discoveries, setDiscoveries] = useState([])
