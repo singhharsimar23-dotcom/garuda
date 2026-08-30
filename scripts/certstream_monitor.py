@@ -18,6 +18,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger("certstream_monitor")
 
 GARUDA_API_URL = os.environ.get("GARUDA_API_URL", "https://garud-intel.vercel.app")
+CF_WORKER_URL = os.environ.get("CF_WORKER_URL", "https://garuda-ct-worker.garuda-ct-worker.workers.dev")
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
 RUN_DURATION_SECONDS = 300  # 5 minutes per GH Actions run
 
@@ -73,6 +74,26 @@ def callback(message, context):
 
 async def dispatch_domain(domain: str, cert_data: dict):
     global dispatched
+    payload = {
+        "domain": domain,
+        "source": "certstream_gha",
+        "cert_data": cert_data.get("leaf_cert"),
+        "data": cert_data,
+    }
+
+    # Tier 1: Try Cloudflare Edge Worker gateway
+    if CF_WORKER_URL:
+        try:
+            async with httpx.AsyncClient(timeout=4.0) as client:
+                res = await client.post(CF_WORKER_URL, json=payload)
+                if res.status_code == 200:
+                    dispatched += 1
+                    logger.info(f"[OK: CF EDGE] Dispatched {domain} to Cloudflare Worker ({dispatched} total)")
+                    return
+        except Exception as e:
+            logger.debug(f"CF Worker dispatch failed ({e}). Falling back to direct API...")
+
+    # Tier 2: Direct API Fallback
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             res = await client.post(
@@ -81,17 +102,14 @@ async def dispatch_domain(domain: str, cert_data: dict):
                     "Authorization": f"Bearer {CRON_SECRET}",
                     "Content-Type": "application/json",
                 },
-                json={
-                    "domain": domain,
-                    "source": "certstream_gha",
-                    "cert_data": cert_data.get("leaf_cert"),
-                },
+                json=payload,
             )
             if res.status_code == 200:
                 dispatched += 1
-                logger.info(f"[OK] Dispatched {domain} ({dispatched} total)")
+                logger.info(f"[OK: DIRECT] Dispatched {domain} ({dispatched} total)")
     except Exception as e:
-        logger.warning(f"[ERR] Dispatch failed for {domain}: {e}")
+        logger.warning(f"[ERR] Direct dispatch failed for {domain}: {e}")
+
 
 
 def on_error(instance, exception):
