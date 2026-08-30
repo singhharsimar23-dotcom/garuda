@@ -32352,7 +32352,7 @@
       "file_type": "code",
       "norm_label": "agent_heartbeats",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L20"
+      "source_location": "L23"
     },
     {
       "id": "migrations_000_master_production_schema_agent_registry",
@@ -32374,7 +32374,7 @@
       "file_type": "code",
       "norm_label": "almanac_baselines",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L55"
+      "source_location": "L76"
     },
     {
       "id": "migrations_000_master_production_schema_brahma_label_history",
@@ -32385,7 +32385,7 @@
       "file_type": "code",
       "norm_label": "brahma_label_history",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L102"
+      "source_location": "L146"
     },
     {
       "id": "migrations_000_master_production_schema_brahma_program_models",
@@ -32396,7 +32396,7 @@
       "file_type": "code",
       "norm_label": "brahma_program_models",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L91"
+      "source_location": "L127"
     },
     {
       "id": "migrations_000_master_production_schema_calibration_log",
@@ -32407,7 +32407,7 @@
       "file_type": "code",
       "norm_label": "calibration_log",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L229"
+      "source_location": "L351"
     },
     {
       "id": "migrations_000_master_production_schema_campaigns",
@@ -32418,7 +32418,7 @@
       "file_type": "code",
       "norm_label": "campaigns",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L170"
+      "source_location": "L250"
     },
     {
       "id": "migrations_000_master_production_schema_dharma_action_log",
@@ -32429,7 +32429,7 @@
       "file_type": "code",
       "norm_label": "dharma_action_log",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L125"
+      "source_location": "L181"
     },
     {
       "id": "migrations_000_master_production_schema_eppi_provdag_graphs",
@@ -32440,7 +32440,7 @@
       "file_type": "code",
       "norm_label": "eppi_provdag_graphs",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L72"
+      "source_location": "L99"
     },
     {
       "id": "migrations_000_master_production_schema_host_calibration",
@@ -32451,7 +32451,7 @@
       "file_type": "code",
       "norm_label": "host_calibration",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L218"
+      "source_location": "L334"
     },
     {
       "id": "migrations_000_master_production_schema_kali_discoveries",
@@ -32462,7 +32462,7 @@
       "file_type": "code",
       "norm_label": "kali_discoveries",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L145"
+      "source_location": "L211"
     },
     {
       "id": "migrations_000_master_production_schema_kali_technique_estimates",
@@ -32473,7 +32473,7 @@
       "file_type": "code",
       "norm_label": "kali_technique_estimates",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L159"
+      "source_location": "L235"
     },
     {
       "id": "migrations_000_master_production_schema_model_drift_log",
@@ -32484,7 +32484,7 @@
       "file_type": "code",
       "norm_label": "model_drift_log",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L112"
+      "source_location": "L162"
     },
     {
       "id": "migrations_000_master_production_schema_multi_host_campaigns",
@@ -32495,7 +32495,7 @@
       "file_type": "code",
       "norm_label": "multi_host_campaigns",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L191"
+      "source_location": "L288"
     },
     {
       "id": "migrations_000_master_production_schema_physics_observations",
@@ -32506,7 +32506,7 @@
       "file_type": "code",
       "norm_label": "physics_observations",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L33"
+      "source_location": "L41"
     },
     {
       "id": "migrations_000_master_production_schema_prediction_log",
@@ -32517,7 +32517,7 @@
       "file_type": "code",
       "norm_label": "prediction_log",
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L204"
+      "source_location": "L310"
     },
     {
       "id": "docs_commercial_demo_script",
@@ -109952,28 +109952,6 @@
     },
     {
       "source": "migrations_000_master_production_schema",
-      "target": "migrations_000_master_production_schema_brahma_label_history",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L102",
-      "weight": 1.0
-    },
-    {
-      "source": "migrations_000_master_production_schema",
-      "target": "migrations_000_master_production_schema_model_drift_log",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L112",
-      "weight": 1.0
-    },
-    {
-      "source": "migrations_000_master_production_schema",
       "target": "migrations_000_master_production_schema_agent_registry",
       "relation": "contains",
       "_origin": "ast",
@@ -109985,13 +109963,46 @@
     },
     {
       "source": "migrations_000_master_production_schema",
+      "target": "migrations_000_master_production_schema_brahma_program_models",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "migrations/000_master_production_schema.sql",
+      "source_location": "L127",
+      "weight": 1.0
+    },
+    {
+      "source": "migrations_000_master_production_schema",
+      "target": "migrations_000_master_production_schema_brahma_label_history",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "migrations/000_master_production_schema.sql",
+      "source_location": "L146",
+      "weight": 1.0
+    },
+    {
+      "source": "migrations_000_master_production_schema",
+      "target": "migrations_000_master_production_schema_model_drift_log",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "migrations/000_master_production_schema.sql",
+      "source_location": "L162",
+      "weight": 1.0
+    },
+    {
+      "source": "migrations_000_master_production_schema",
       "target": "migrations_000_master_production_schema_dharma_action_log",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L125",
+      "source_location": "L181",
       "weight": 1.0
     },
     {
@@ -110002,40 +110013,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L145",
-      "weight": 1.0
-    },
-    {
-      "source": "migrations_000_master_production_schema",
-      "target": "migrations_000_master_production_schema_kali_technique_estimates",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L159",
-      "weight": 1.0
-    },
-    {
-      "source": "migrations_000_master_production_schema",
-      "target": "migrations_000_master_production_schema_campaigns",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L170",
-      "weight": 1.0
-    },
-    {
-      "source": "migrations_000_master_production_schema",
-      "target": "migrations_000_master_production_schema_multi_host_campaigns",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L191",
+      "source_location": "L211",
       "weight": 1.0
     },
     {
@@ -110046,7 +110024,40 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L20",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "migrations_000_master_production_schema",
+      "target": "migrations_000_master_production_schema_kali_technique_estimates",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "migrations/000_master_production_schema.sql",
+      "source_location": "L235",
+      "weight": 1.0
+    },
+    {
+      "source": "migrations_000_master_production_schema",
+      "target": "migrations_000_master_production_schema_campaigns",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "migrations/000_master_production_schema.sql",
+      "source_location": "L250",
+      "weight": 1.0
+    },
+    {
+      "source": "migrations_000_master_production_schema",
+      "target": "migrations_000_master_production_schema_multi_host_campaigns",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "migrations/000_master_production_schema.sql",
+      "source_location": "L288",
       "weight": 1.0
     },
     {
@@ -110057,7 +110068,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L204",
+      "source_location": "L310",
       "weight": 1.0
     },
     {
@@ -110068,7 +110079,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L218",
+      "source_location": "L334",
       "weight": 1.0
     },
     {
@@ -110079,7 +110090,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L229",
+      "source_location": "L351",
       "weight": 1.0
     },
     {
@@ -110090,7 +110101,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L33",
+      "source_location": "L41",
       "weight": 1.0
     },
     {
@@ -110101,7 +110112,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L55",
+      "source_location": "L76",
       "weight": 1.0
     },
     {
@@ -110112,18 +110123,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L72",
-      "weight": 1.0
-    },
-    {
-      "source": "migrations_000_master_production_schema",
-      "target": "migrations_000_master_production_schema_brahma_program_models",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L91",
+      "source_location": "L99",
       "weight": 1.0
     },
     {
@@ -140252,7 +140252,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "migrations/000_master_production_schema.sql",
-      "source_location": "L204",
+      "source_location": "L310",
       "weight": 1.0
     },
     {
