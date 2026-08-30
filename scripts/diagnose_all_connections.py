@@ -143,11 +143,11 @@ async def check_all():
     # 9. Live Production Render Services
     print("[9] Checking Live Render Microservices...")
     render_services = [
-        ("AXIOM-II Service (Render)", os.environ.get("NORTHFLANK_AXIOM_URL") or "https://garuda-axiom-service.onrender.com"),
-        ("BRAHMA Service (Render)", os.environ.get("NORTHFLANK_BRAHMA_URL") or "https://garuda-brahma-service.onrender.com"),
-        ("UTNE Service (Render)", os.environ.get("RENDER_UTNE_URL") or "https://garuda-utne-service.onrender.com"),
+        ("AXIOM-II Service (Render)", os.environ.get("AXIOM_SERVICE_URL") or "https://garuda-axiom-service.onrender.com"),
+        ("BRAHMA Service (Render)", os.environ.get("BRAHMA_SERVICE_URL") or "https://garuda-brahma-service.onrender.com"),
+        ("UTNE Service (Render)", os.environ.get("UTNE_SERVICE_URL") or "https://garuda-utne-service.onrender.com"),
     ]
-    async with httpx.AsyncClient(timeout=8.0) as client:
+    async with httpx.AsyncClient(timeout=25.0) as client:
         for sname, surl in render_services:
             try:
                 hr = await client.get(f"{surl}/health")

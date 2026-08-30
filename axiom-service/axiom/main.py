@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     
     # 1. Initialize Database Pool
     pool = await init_db_pool(
-        db_url=settings.northflank_db_url,
+        db_url=settings.database_url,
         min_size=settings.db_pool_min_size,
         max_size=settings.db_pool_max_size,
     )

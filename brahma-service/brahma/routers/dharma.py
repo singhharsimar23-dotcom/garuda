@@ -1,140 +1,113 @@
 """
-DHARMA Autonomous Containment & Authorization Router
-Exposes endpoints for CRITICAL IAS response triggering, pending action polling, operator authorization, and rollback.
+DHARMA Response Router
+Provides operator endpoints for containment authorization, SLA countdowns, and Telegram webhooks.
 """
 
+import logging
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Header, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
-from ..config import BrahmaSettings, get_settings
-from ..db.pool import get_db_pool
-from dharma.action_log import ActionLogRepository
-from dharma.agent_commander import AgentCommander
-from dharma.plan_cache import PlanCache
-from dharma.rollback_manager import RollbackManager
-from dharma.tier0_executor import Tier0Executor
-from dharma.tier1_authorizer import Tier1Authorizer
+from dharma.action_log import get_dharma_action_log_repo
+from dharma.execution_tiers import get_dharma_execution_engine
+from dharma.redis_sla import get_redis_sla_manager
 
-router = APIRouter(prefix="/api/v1/dharma", tags=["DHARMA Autonomous Response"])
+logger = logging.getLogger("brahma.routers.dharma")
+router = APIRouter(prefix="/api/v1/dharma", tags=["DHARMA Defensive Execution"])
 
 
-class CriticalAnomalyTriggerRequest(BaseModel):
-    agent_id: str
+class EvaluateDharmaRequest(BaseModel):
     hostname: str
     ias_score: float
-    top_channels: List[Dict[str, Any]] = Field(default_factory=list)
-    suspect_pid: Optional[int] = None
-    suspect_domain: Optional[str] = None
+    attribution_status: str = "ACCUMULATING EVIDENCE (0/15 minimum)"
+    target_pid: Optional[int] = None
+    target_domain: Optional[str] = None
+    lateral_movement_suspected: bool = False
+    ioc_evidence: Dict[str, Any] = Field(default_factory=dict)
+    physics_evidence: Dict[str, Any] = Field(default_factory=dict)
 
 
-class AuthorizeActionRequest(BaseModel):
-    action_id: str
-    decision: str = "APPROVE"  # 'APPROVE' or 'REJECT'
+class ActionDecisionRequest(BaseModel):
     operator_id: str = "operator_hq"
+    resume_process: bool = False
 
 
-class RollbackActionRequest(BaseModel):
-    rollback_state: Dict[str, Any]
-
-
-def verify_inter_service_auth(
-    x_inter_service_secret: Optional[str] = Header(None),
-    settings: BrahmaSettings = Depends(get_settings),
-) -> str:
-    if not settings.inter_service_secret:
-        return "unrestricted"
-    if not x_inter_service_secret or x_inter_service_secret != settings.inter_service_secret:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or missing X-Inter-Service-Secret.",
-        )
-    return x_inter_service_secret
-
-
-@router.post("/critical")
-async def handle_critical_anomaly_trigger(
-    request: CriticalAnomalyTriggerRequest,
-    auth: str = Depends(verify_inter_service_auth),
-    settings: BrahmaSettings = Depends(get_settings),
-):
-    """
-    Executes automated Tier 0 actions (Intensification + Canary + Sinkhole)
-    and queues Tier 1 Process Isolation for operator approval.
-    """
-    db_pool = await get_db_pool()
-    plan_cache = PlanCache()
-    action_log = ActionLogRepository(db_pool)
-    commander = AgentCommander(settings.supabase_url, settings.supabase_service_key)
-    rollback_mgr = RollbackManager(commander)
-
-    tier0 = Tier0Executor(commander, None, plan_cache, action_log, rollback_mgr)
-    tier1 = Tier1Authorizer(commander, plan_cache, action_log, rollback_mgr)
-
-    # 1. Execute Tier 0 Sensor Intensification (10Hz)
-    t0_intensify = await tier0.execute_sensor_intensification(request.agent_id, request.ias_score)
-
-    # 2. Execute Tier 0 Credential Shadow Rotation
-    t0_canary = await tier0.execute_credential_rotation(request.agent_id, request.ias_score)
-
-    # 3. Optional Tier 0 DNS Sinkhole if suspect domain provided
-    t0_sinkhole = None
-    if request.suspect_domain:
-        t0_sinkhole = await tier0.execute_dns_sinkhole(request.suspect_domain, request.ias_score)
-
-    # 4. Queue Tier 1 Process Isolation if suspect PID provided
-    t1_queued = None
-    if request.suspect_pid:
-        t1_queued = tier1.queue_process_isolation(
-            agent_id=request.agent_id,
-            target_pid=request.suspect_pid,
-            ias_score=request.ias_score,
-            evidence_summary=f"Physical IAS score {request.ias_score:.2f} divergence.",
-        )
-
-    return {
-        "status": "CONTAINMENT_DISPATCHED",
-        "agent_id": request.agent_id,
-        "tier0_actions": {
-            "sensor_intensification": t0_intensify,
-            "credential_rotation": t0_canary,
-            "dns_sinkhole": t0_sinkhole,
-        },
-        "tier1_pending": t1_queued,
-    }
-
-
-@router.get("/pending")
-async def get_pending_actions():
-    """Returns all active Tier 1 actions awaiting operator authorization."""
-    plan_cache = PlanCache()
-    return {
-        "pending_actions": plan_cache.get_all_pending_actions(),
-    }
-
-
-@router.post("/authorize")
-async def authorize_action(request: AuthorizeActionRequest):
-    """Processes operator approval or rejection for a Tier 1 action."""
-    db_pool = await get_db_pool()
-    plan_cache = PlanCache()
-    action_log = ActionLogRepository(db_pool)
-    commander = AgentCommander()
-    rollback_mgr = RollbackManager(commander)
-    tier1 = Tier1Authorizer(commander, plan_cache, action_log, rollback_mgr)
-
-    result = await tier1.authorize_action(
-        action_id=request.action_id,
-        decision=request.decision,
-        operator_id=request.operator_id,
+@router.post("/evaluate", status_code=status.HTTP_200_OK)
+async def evaluate_dharma_event(payload: EvaluateDharmaRequest):
+    """Evaluate telemetry event against Tier 0..3 criteria and dispatch or queue actions."""
+    engine = get_dharma_execution_engine()
+    result = await engine.evaluate_and_dispatch(
+        hostname=payload.hostname,
+        ias_score=payload.ias_score,
+        attribution_status=payload.attribution_status,
+        target_pid=payload.target_pid,
+        target_domain=payload.target_domain,
+        lateral_movement_suspected=payload.lateral_movement_suspected,
+        ioc_evidence=payload.ioc_evidence,
+        physics_evidence=payload.physics_evidence,
     )
     return result
 
 
-@router.post("/rollback")
-async def trigger_rollback(request: RollbackActionRequest):
-    """Executes pre-computed rollback instructions."""
-    commander = AgentCommander()
-    rollback_mgr = RollbackManager(commander)
-    success = rollback_mgr.execute_rollback(request.rollback_state)
-    return {"status": "ROLLED_BACK" if success else "FAILED", "success": success}
+@router.post("/approve/{action_id}", status_code=status.HTTP_200_OK)
+async def approve_dharma_action(action_id: str, body: ActionDecisionRequest = ActionDecisionRequest()):
+    """Approve and execute real SSH SIGSTOP or Cloudflare DNS sinkhole."""
+    engine = get_dharma_execution_engine()
+    result = await engine.approve_action(action_id=action_id, operator_id=body.operator_id)
+    if not result.get("success"):
+        logger.warning(f"Action {action_id} execution failed or partially applied.")
+    return result
+
+
+@router.post("/reject/{action_id}", status_code=status.HTTP_200_OK)
+async def reject_dharma_action(action_id: str, body: ActionDecisionRequest = ActionDecisionRequest()):
+    """Reject containment action and optionally resume process via SIGCONT."""
+    engine = get_dharma_execution_engine()
+    result = await engine.reject_action(
+        action_id=action_id,
+        operator_id=body.operator_id,
+        resume_process=body.resume_process,
+    )
+    return result
+
+
+@router.get("/ttl/{action_id}", status_code=status.HTTP_200_OK)
+async def get_action_ttl(action_id: str):
+    """Retrieve remaining Redis SLA TTL countdown in seconds."""
+    redis_sla = get_redis_sla_manager()
+    ttl = await redis_sla.get_remaining_ttl(action_id)
+    return {"action_id": action_id, "ttl_seconds": ttl, "expired": ttl == 0 or ttl == -1}
+
+
+@router.get("/actions", status_code=status.HTTP_200_OK)
+async def get_recent_actions(limit: int = 50):
+    """List recent immutable events from dharma_action_log."""
+    log_repo = get_dharma_action_log_repo()
+    actions = await log_repo.get_recent_actions(limit=limit)
+    return {"status": "success", "count": len(actions), "actions": actions}
+
+
+@router.post("/webhook/telegram", status_code=status.HTTP_200_OK)
+async def telegram_webhook(request: Request):
+    """Process Telegram inline keyboard callback commands (/dharma_approve_{id} and /dharma_reject_{id})."""
+    engine = get_dharma_execution_engine()
+    try:
+        data = await request.json()
+        callback_query = data.get("callback_query", {})
+        callback_data = callback_query.get("data", "")
+        sender = callback_query.get("from", {}).get("username", "telegram_operator")
+
+        if callback_data.startswith("/dharma_approve_"):
+            action_id = callback_data.replace("/dharma_approve_", "").strip()
+            res = await engine.approve_action(action_id=action_id, operator_id=f"telegram:{sender}")
+            return {"status": "success", "action": "APPROVED", "result": res}
+
+        elif callback_data.startswith("/dharma_reject_"):
+            action_id = callback_data.replace("/dharma_reject_", "").strip()
+            res = await engine.reject_action(action_id=action_id, operator_id=f"telegram:{sender}")
+            return {"status": "success", "action": "REJECTED", "result": res}
+
+    except Exception as e:
+        logger.warning(f"Error handling Telegram webhook: {e}")
+
+    return {"status": "ignored"}

@@ -24,7 +24,7 @@ async def init_db_pool(
     """
     global _pool
     if not db_url:
-        logger.warning("No NORTHFLANK_DB_URL configured. Database pool initialized in disabled/mock state.")
+        logger.warning("No DATABASE_URL configured. Database pool initialized in disabled/mock state.")
         return None
 
     try:

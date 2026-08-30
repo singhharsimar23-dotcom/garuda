@@ -10,7 +10,7 @@ router = APIRouter(tags=["Health"])
 
 @router.get("/health")
 async def health_check():
-    """Northflank liveness / readiness probe."""
+    """Production liveness / readiness probe."""
     db_pool = await get_db_pool()
     return {
         "status": "HEALTHY",

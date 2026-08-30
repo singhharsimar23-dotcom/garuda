@@ -1,73 +1,54 @@
 """
 KALI ANPS (Autonomous Novel Path Synthesis) Batch Runner
-Generates candidate attack paths, scores detection probability, and identifies proactive defensive gaps.
+Executes real Monte Carlo Tree Search (MCTS) over the MITRE ATT&CK technique graph.
+Strictly eliminates all hardcoded technique lists and static utility values.
 """
 
-import hashlib
-import json
 import logging
-import uuid
 from typing import Any, Dict, List, Optional
 
 try:
-    from .coverage_evaluator import evaluate_path_coverage
-except (ImportError, ValueError):
-    from coverage_evaluator import evaluate_path_coverage
+    from brahma.kali.mcts_engine import get_kali_mcts_engine
+except ImportError:
+    try:
+        import sys
+        import os
+        sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../brahma-service")))
+        from kali.mcts_engine import get_kali_mcts_engine
+    except ImportError:
+        get_kali_mcts_engine = None
 
 logger = logging.getLogger("kali.anps")
-
-# Standard APT36 / Transparent Tribe technique archetypes
-SEED_TECHNIQUES = [
-    ["T1566.001", "T1059.005", "T1055.012", "T1071.001"],
-    ["T1566.002", "T1082", "T1027", "T1041"],
-    ["T1190", "T1059.004", "T1055.001", "T1071.004"],
-    ["T1566.001", "T1059.003", "T1055.002", "T1041"],
-]
 
 
 class ANPSBatchRunner:
     """
-    Runs weekly automated red-team candidate path synthesis.
+    Executes automated red-team candidate path synthesis using real MCTS simulations.
     """
 
-    def __init__(self, max_batch_size: int = 20):
+    def __init__(self, max_batch_size: int = 20, simulations: int = 500):
         self.max_batch_size = max_batch_size
+        self.simulations = simulations
 
     def synthesize_candidate_paths(
         self,
         actor_id: str = "APT36",
         base_posteriors: Optional[Dict[str, Any]] = None,
+        alpha_counts: Optional[List[float]] = None,
+        sample_count: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """
-        Synthesizes candidate attack paths and computes utility + detection metrics.
-        All utility and detection values strictly bounded in [0.0, 1.0].
+        Synthesizes novel adversary attack sequences using real MCTS.
+        Adversary utility and detection probabilities are computed from real AXIOM-II models.
         """
-        discoveries = []
+        if get_kali_mcts_engine:
+            engine = get_kali_mcts_engine()
+            return engine.synthesize_novel_paths(
+                num_simulations=self.simulations,
+                alpha_counts=alpha_counts,
+                sample_count=sample_count,
+                top_k=self.max_batch_size,
+            )
 
-        for i in range(min(self.max_batch_size, 20)):
-            tech_seq = SEED_TECHNIQUES[i % len(SEED_TECHNIQUES)]
-            # Generate deterministic path hash
-            seq_str = "->".join(tech_seq)
-            path_hash = hashlib.sha256(seq_str.encode("utf-8")).hexdigest()[:12]
-            discovery_id = f"kali-disc-{path_hash}"
-
-            # Calculate deterministic detection and utility
-            p_detect = evaluate_path_coverage(tech_seq)
-            # Adversary utility is higher if detection probability is low
-            utility_score = max(0.0, min(1.0, round(0.95 - (p_detect * 0.4) + ((i % 5) * 0.02), 4)))
-
-            discovery = {
-                "discovery_id": discovery_id,
-                "actor_target": actor_id,
-                "technique_sequence": tech_seq,
-                "sequence_hash": path_hash,
-                "adversary_utility_score": utility_score,
-                "estimated_detection_probability": p_detect,
-                "is_defensive_gap": (p_detect < 0.65),
-                "recommended_hardening": f"Deploy EPPI kprobe filter for {tech_seq[1]} and monitor {tech_seq[-1]}.",
-            }
-            discoveries.append(discovery)
-
-        # Sort by adversary utility descending
-        discoveries.sort(key=lambda d: d["adversary_utility_score"], reverse=True)
-        return discoveries
+        logger.warning("KALI MCTS Engine unavailable. Returning empty batch.")
+        return []

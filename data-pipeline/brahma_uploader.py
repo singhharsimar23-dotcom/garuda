@@ -24,7 +24,7 @@ class BrahmaUploader:
         brahma_url: Optional[str] = None,
         inter_service_secret: Optional[str] = None,
     ):
-        self.brahma_url = brahma_url or os.environ.get("NORTHFLANK_BRAHMA_URL", "http://localhost:8001")
+        self.brahma_url = brahma_url or os.environ.get("BRAHMA_SERVICE_URL") or "https://garuda-brahma-service.onrender.com"
         self.inter_service_secret = inter_service_secret or os.environ.get("INTER_SERVICE_SECRET", "")
 
     def upload_intel(self, intel_payload: Dict[str, Any]) -> bool:

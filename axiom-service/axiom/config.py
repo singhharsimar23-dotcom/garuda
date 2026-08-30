@@ -18,8 +18,8 @@ class AxiomSettings(BaseSettings):
     port: int = Field(default_factory=lambda: int(os.environ.get("PORT", "8000")))
 
     # Database
-    northflank_db_url: Optional[str] = Field(
-        default_factory=lambda: os.environ.get("NORTHFLANK_DB_URL") or os.environ.get("DATABASE_URL")
+    database_url: Optional[str] = Field(
+        default_factory=lambda: os.environ.get("DATABASE_URL")
     )
     db_pool_min_size: int = Field(default_factory=lambda: int(os.environ.get("DB_POOL_MIN_SIZE", "2")))
     db_pool_max_size: int = Field(default_factory=lambda: int(os.environ.get("DB_POOL_MAX_SIZE", "10")))
@@ -48,7 +48,9 @@ class AxiomSettings(BaseSettings):
     gemini_model: str = Field(default_factory=lambda: os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"))
 
     # Downstream Subsystems (Service 2 - BRAHMA / DHARMA)
-    northflank_brahma_url: Optional[str] = Field(default_factory=lambda: os.environ.get("NORTHFLANK_BRAHMA_URL"))
+    brahma_service_url: Optional[str] = Field(
+        default_factory=lambda: os.environ.get("BRAHMA_SERVICE_URL") or "https://garuda-brahma-service.onrender.com"
+    )
 
     # Redis (Upstash) for Rate Limiting & Counters
     upstash_redis_rest_url: Optional[str] = Field(default_factory=lambda: os.environ.get("UPSTASH_REDIS_REST_URL"))

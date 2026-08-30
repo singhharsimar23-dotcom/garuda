@@ -26,11 +26,11 @@ async def trigger_dharma(
     """
     settings = settings or get_settings()
 
-    if not settings.feature_flag_dharma or not settings.northflank_brahma_url:
+    if not settings.feature_flag_dharma or not settings.brahma_service_url:
         logger.info(f"DHARMA trigger disabled or URL not set. (Agent: {agent_id}, IAS: {ias_result.score})")
         return False
 
-    url = f"{settings.northflank_brahma_url.rstrip('/')}/api/v1/dharma/trigger"
+    url = f"{settings.brahma_service_url.rstrip('/')}/api/v1/dharma/trigger"
     payload = {
         "source": "AXIOM_II_PHYSICS",
         "agent_id": agent_id,

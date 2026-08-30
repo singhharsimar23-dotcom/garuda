@@ -1,55 +1,98 @@
-# GARUDA Host Telemetry Agent (`garuda-agent`)
+# GARUDA Host Telemetry Daemon (`garuda_agent`)
 
-The `garuda-agent` is a lightweight host-level physical execution monitoring agent designed to detect side-channel anomalies, evasive malware, and unauthorized execution on Linux infrastructure (BOSS Linux, Debian, Ubuntu, RHEL).
-
-## Monitored Channels
-1. **RAPL Power Channels**: Intel/AMD microjoule energy consumption counters (`/sys/class/powercap` and `hwmon`).
-2. **Hardware Performance Counters**: Hardware instructions, cache-misses, cycles, and IPC via `perf_event_open` / `perf stat`.
-3. **Kernel Entropy Pool**: Entropy consumption and depletion rates (`/proc/sys/kernel/random/entropy_avail`).
-4. **Hardware TPM 2.0 PCRs**: Platform Configuration Register measurement integrity (`tpm2_pcrread`).
-5. **Kernel Scheduler Latency**: Wait time delay ratios and context switch rates (`/proc/schedstat`).
-6. **EPPI eBPF Event Streams**: Kernel kprobe provenance tracking (kernel 5.4+).
+Production-grade hardware physics & kernel execution telemetry daemon for the **GARUDA** platform. Runs as a root systemd service on monitored Linux hosts (NIC/DRDO/MoD servers) and streams high-precision hardware physics telemetry to **AXIOM-II** on Render.com.
 
 ---
 
-## 3 USB Deployment Modes
+## Architecture & Monitored Channels
 
-### Mode 1: Dropped Daemon Service (Standard Networked Endpoint)
-For persistent background monitoring on networked defense workstations and servers.
+The daemon samples physical hardware state and kernel counters at 1 Hz (normal mode) or 10 Hz (conflict mode):
+
+1. **Intel RAPL / AMD Power (`rapl.py`)**
+   - Discovers domains via `/sys/class/powercap/intel-rapl` (`package-0`, `dram`, `core`)
+   - Handles 32-bit hardware rollover and AMD `hwmon` fallback
+   - Power computation: `delta_energy_uJ / delta_time_s / 1_000_000` (Watts)
+
+2. **Hardware Performance Counters (`perf.py`)**
+   - Direct x86_64/aarch64 `perf_event_open` syscalls via `ctypes`
+   - Monitors: `PERF_COUNT_HW_INSTRUCTIONS`, `PERF_COUNT_HW_CACHE_MISSES`, `PERF_COUNT_HW_CPU_CYCLES`
+   - Gracefully handles `EACCES` or missing kernel perf permissions
+
+3. **Kernel Entropy Monitor (`entropy.py`)**
+   - Monitors `/proc/sys/kernel/random/entropy_avail`
+   - Flags sustained drops (<512 bits) and critical covert channel depletion (<128 bits, APT36 signature)
+
+4. **Scheduler Steal & Latency (`schedstat.py`)**
+   - Parses `/proc/schedstat` (v15) across all CPUs
+   - Computes steal/wait ratio `waiting / (running + waiting)` to detect hidden container CPU stealing (>0.15)
+
+5. **TPM 2.0 PCR Integrity (`tpm.py`)**
+   - Subprocess wrapper for `tpm2_pcrread` over `/dev/tpmrm0`
+
+6. **Integrated Anomaly Score Engine (`ias.py`)**
+   - Weighted multi-channel Gaussian Kullback-Leibler (KL) divergence
+   - K-Means ($k=4$) dynamic workload clustering: `IDLE`, `WEB_SERVER`, `DATABASE`, `BATCH`
+   - **Contamination Prevention**: Baselines are locked and NOT updated when $IAS \ge 1.5$
+   - Thresholds: Log $\ge 1.5$, Medium $\ge 3.0$, Critical $\ge 5.0$
+
+7. **Resilient HTTP Streaming & SQLite Buffer (`streamer.py`, `buffer.py`)**
+   - Streams payloads via HTTP POST `Authorization: Bearer <AGENT_KEY>`
+   - Exponential backoff: `1s, 2s, 4s, 8s, 16s`
+   - Offline SQLite buffer: max 10,000 FIFO records at `/var/lib/garuda/buffer.db`
+   - Automatic buffer drain on reconnection
+   - `401 Unauthorized` handling: emits `AGENT_KEY_REJECTED` and alerts syslog
+
+---
+
+## Installation
 
 ```bash
-# 1. Install pip package
-pip install .
+cd garuda-agent
+pip install -e .
+```
 
-# 2. Configure environment
-export AGENT_API_KEY="<your-agent-key>"
-export AXIOM_URL="https://garuda-intel.vercel.app"
-export GARUDA_AGENT_ID="node-hq-01"
+### Dependencies
+- Python 3.9+
+- `toml`
+- `httpx`
+- `numpy`
+- `scikit-learn`
 
-# 3. Start systemd service
-sudo cp garuda-agent.service /etc/systemd/system/
+---
+
+## Configuration (`/etc/garuda/config.toml`)
+
+```toml
+axiom_host = "axiom.garuda-defense.org"
+agent_api_key = "GARUDA_SECURE_API_TOKEN"
+poll_hz = 1
+conflict_mode_hz = 10
+conflict_mode = false
+buffer_db_path = "/var/lib/garuda/buffer.db"
+agent_id_path = "/etc/garuda/agent_id"
+log_file = "/var/log/garuda-agent.log"
+```
+
+---
+
+## Running the Daemon
+
+```bash
+# Single test shot
+garuda-agent --dry-run --once
+
+# Verbose daemon run
+garuda-agent --config /etc/garuda/config.toml --verbose
+```
+
+---
+
+## Systemd Service Installation
+
+Generate and install the hardened systemd unit file:
+
+```bash
+sudo garuda-service --output /etc/systemd/system/garuda-agent.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now garuda-agent
-```
-
-### Mode 2: Standalone USB Live Triage (Incident Response Forensics)
-For plug-and-play forensic triage of compromised hosts without installing persistent dependencies.
-
-```bash
-# Run directly from mounted USB mount point:
-cd /media/usb/garuda-agent
-python3 -m garuda_agent.agent_main
-```
-
-### Mode 3: Air-Gapped Offline Collector (Classified / Non-Networked SCADA)
-For isolated networks. Telemetry is written directly to the local SQLite database buffer (`/media/usb/almanac.db`).
-
-```bash
-export LOCAL_DB_PATH="/media/usb/garuda_almanac.db"
-export AXIOM_URL="http://127.0.0.1:0" # Forces local offline buffering
-python3 -m garuda_agent.agent_main
-```
-When reconnected to an ingestion node, the buffered SQLite database is ingested directly by running:
-```bash
-python3 -m garuda_agent.agent_main --sync-offline
 ```

@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "trained_at": "2026-08-30T12:07:47.895170+00:00",
+  "classes": [
+    "IDLE",
+    "WEB_SERVER",
+    "DATABASE",
+    "BATCH"
+  ],
+  "sample_count": 40000,
+  "test_accuracy": 0.9974,
+  "data_hash": "d7db6778b07ec15e55efd1ede22e41a9f08cd8cb50b8e03890c5977ce770b087",
+  "features": [
+    "rapl_pkg_w",
+    "rapl_dram_w",
+    "perf_instructions",
+    "perf_cache_miss"
+  ]
+}

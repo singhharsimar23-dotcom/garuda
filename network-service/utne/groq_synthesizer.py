@@ -62,36 +62,44 @@ class UTNESynthesizer:
         pending_actions = evidence_bundle.get("pending_tier1_actions", 0)
         geopolitical_tension = evidence_bundle.get("geopolitical_tension", 0.35)
 
-        # 2. Rule 8 Honesty Check: Verify observation count & convergence
+        # 2. Rule 8 Honesty Check: Verify observation count & attribution status
         min_obs = 0
-        is_converged = False
+        attribution_status = "ACCUMULATING EVIDENCE (0/15 minimum)"
         actor_id = "UNATTRIBUTED"
-        confidence_val = 0.0
+        top_tactic = "UNKNOWN"
+        top_tactic_mass = 0.0
+        ist_overlap = "NO"
 
         if brahma_assessments:
             latest_assessment = brahma_assessments[0]
             min_obs = latest_assessment.get("observation_count", 0)
-            is_converged = latest_assessment.get("convergence_status") == "CONVERGED"
-            actor_id = latest_assessment.get("actor_id", "UNATTRIBUTED")
-            confidence_val = latest_assessment.get("confidence", 0.0)
+            attribution_status = latest_assessment.get("attribution_status", "ACCUMULATING EVIDENCE (0/15 minimum)")
+            actor_id = latest_assessment.get("actor", latest_assessment.get("actor_id", "UNATTRIBUTED"))
+            evidence_sum = latest_assessment.get("evidence_summary", {})
+            top_tactic = evidence_sum.get("top_tactic", "EXECUTION")
+            top_tactic_mass = evidence_sum.get("top_tactic_mass", 0.0)
+            ist_overlap = "YES" if evidence_sum.get("ist_active_hours") else "NO"
 
-        # Strict Rule 8 Attribution Formatting
-        if min_obs < 15 or not is_converged or actor_id == "UNATTRIBUTED":
-            attribution_prefix = "ATTRIBUTION UNCERTAIN (Insufficient Bayesian Observations)"
+        if min_obs < 15:
+            attribution_prefix = f"ACCUMULATING EVIDENCE ({min_obs}/15 minimum)"
             actor_attribution = "UNATTRIBUTED"
-            confidence_display = f"{confidence_val * 100:.1f}% (Pre-Convergence)"
-        else:
-            attribution_prefix = f"ATTRIBUTED TO {actor_id.upper()} (Confidence: {confidence_val * 100:.1f}%)"
+        elif "ATTRIBUTED" in attribution_status:
+            attribution_prefix = f"ATTRIBUTED — {actor_id}"
             actor_attribution = actor_id
-            confidence_display = f"{confidence_val * 100:.1f}%"
+        else:
+            attribution_prefix = "PARTIAL ATTRIBUTION (Monitoring for Corroborating Signals)"
+            actor_attribution = "MONITORING"
 
-        # 3. Construct deterministic verifiable narrative
+        # 3. Construct deterministic verifiable narrative without artificial percentages
         sitrep_lines = [
             f"=== GARUDA UTNE OPERATIONAL SITUATION REPORT — {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')} ===",
             f"1. ADVERSARY STATUS: {attribution_prefix}",
             f"   - Monitored Node Observations: {min_obs} events recorded across target infrastructure.",
-            f"   - Bayesian Convergence Status: {'CONVERGED' if is_converged else 'INSUFFICIENT_DATA'}.",
-            f"   - Attribution Confidence: {confidence_display}.",
+            f"   - Attribution Status: {attribution_status}.",
+            "   - Attribution Evidence:",
+            f"     * Physics Anomaly Events: {len(active_anomalies)}",
+            f"     * Top Tactic: {top_tactic} (posterior mass: {top_tactic_mass:.2f})",
+            f"     * IST Behavioral Overlap: {ist_overlap}",
             "",
             "2. PHYSICAL INFRASTRUCTURE TELEMETRY & IAS ALERTS:",
             f"   - Active Physical Microarchitectural Anomalies: {len(active_anomalies)}.",
@@ -122,12 +130,11 @@ class UTNESynthesizer:
         return {
             "status": "SUCCESS",
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "attribution_status": actor_attribution,
-            "convergence_status": "CONVERGED" if is_converged else "INSUFFICIENT_DATA",
-            "confidence": confidence_val,
+            "attribution_status": attribution_status,
             "observations_count": min_obs,
             "active_anomalies_count": len(active_anomalies),
             "pending_actions_count": pending_actions,
             "evidence_citations": citations,
             "sitrep_text": sitrep_text,
         }
+

@@ -55,9 +55,9 @@ def send_telegram_alert(bot_token: str, chat_id: str, message: str) -> None:
 def run_health_check() -> bool:
     """Runs health check over all 3 services."""
     services = {
-        "AXIOM (Service 1)": os.environ.get("NORTHFLANK_AXIOM_URL"),
-        "BRAHMA+DHARMA (Service 2)": os.environ.get("NORTHFLANK_BRAHMA_URL"),
-        "UTNE (Narrative Service)": os.environ.get("RENDER_UTNE_URL") or os.environ.get("KOYEB_UTNE_URL"),
+        "AXIOM (Service 1)": os.environ.get("AXIOM_SERVICE_URL") or "https://garuda-axiom-service.onrender.com",
+        "BRAHMA+DHARMA (Service 2)": os.environ.get("BRAHMA_SERVICE_URL") or "https://garuda-brahma-service.onrender.com",
+        "UTNE (Narrative Service)": os.environ.get("UTNE_SERVICE_URL") or "https://garuda-utne-service.onrender.com",
     }
 
     all_healthy = True

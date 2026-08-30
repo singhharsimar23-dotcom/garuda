@@ -1,0 +1,32 @@
+{
+  "domains": {
+    "package-0": {
+      "path": "/sys/class/powercap/intel-rapl/intel-rapl:0",
+      "name": "package-0",
+      "energy_uj": 48291048200,
+      "max_energy_range_uj": 262143328850,
+      "watts": 28.45
+    },
+    "core": {
+      "path": "/sys/class/powercap/intel-rapl/intel-rapl:0/intel-rapl:0:0",
+      "name": "core",
+      "energy_uj": 31290482000,
+      "max_energy_range_uj": 262143328850,
+      "watts": 18.30
+    },
+    "dram": {
+      "path": "/sys/class/powercap/intel-rapl/intel-rapl:0/intel-rapl:0:1",
+      "name": "dram",
+      "energy_uj": 7829104820,
+      "max_energy_range_uj": 262143328850,
+      "watts": 4.12
+    }
+  },
+  "summary": {
+    "pkg_w": 28.45,
+    "dram_w": 4.12,
+    "core_w": 18.30,
+    "unavailable": false
+  },
+  "flags": []
+}

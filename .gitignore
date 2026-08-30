@@ -15,14 +15,15 @@ dist/
 downloads/
 eggs/
 .eggs/
-# Python build lib dirs (root-level only, NOT frontend source)
-/lib/
+# Python build artifacts
+# (Do NOT ignore root lib/ directory where source modules like lib/resilient_llm.py reside)
 /lib64/
 parts/
 sdist/
 var/
 wheels/
 *.egg-info/
+
 .installed.cfg
 *.egg
 .pytest_cache/

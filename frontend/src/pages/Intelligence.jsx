@@ -497,9 +497,10 @@ export default function Intelligence() {
               </div>
             </div>
 
-            {/* Confidence Slider Toolbar */}
+            {/* Indicator Rating Slider Toolbar */}
             <div className="flex items-center gap-4 bg-void p-2.5 border border-border text-2xs">
-              <span className="text-secondary font-semibold uppercase">Min Confidence:</span>
+              <span className="text-secondary font-semibold uppercase">Min Indicator Rating:</span>
+
               <input
                 type="range"
                 min="0"

@@ -2,7 +2,7 @@ name: Keepalive — 24/7 Warm Pinger
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # Every 15 minutes — keeps Vercel serverless warm
+    - cron: "*/14 * * * *"   # Every 14 minutes — keeps Render.com free tier services and Vercel warm
   workflow_dispatch:
 
 jobs:
@@ -37,16 +37,18 @@ jobs:
           ping_endpoint "$BASE/api/attribution/clusters" "Attribution"
           ping_endpoint "$BASE/api/pdns/matches" "PDNS"
 
-          # Phase 3 Microservices (if configured in secrets/env)
-          if [ -n "$NORTHFLANK_AXIOM_URL" ]; then
-            ping_endpoint "$NORTHFLANK_AXIOM_URL/health" "AXIOM-Service-1"
-          fi
-          if [ -n "$NORTHFLANK_BRAHMA_URL" ]; then
-            ping_endpoint "$NORTHFLANK_BRAHMA_URL/health" "BRAHMA-Service-2"
+          # Render.com & Microservices Keepalive
+          AXIOM_URL="${RENDER_AXIOM_URL:-https://garuda-axiom-service.onrender.com}"
+          ping_endpoint "$AXIOM_URL/health" "AXIOM-Render-1"
+
+          if [ -n "$RENDER_BRAHMA_URL" ] || [ -n "$NORTHFLANK_BRAHMA_URL" ]; then
+            BRAHMA_URL="${RENDER_BRAHMA_URL:-$NORTHFLANK_BRAHMA_URL}"
+            ping_endpoint "$BRAHMA_URL/health" "BRAHMA-Service-2"
           fi
           if [ -n "$KOYEB_UTNE_URL" ]; then
             ping_endpoint "$KOYEB_UTNE_URL/health" "UTNE-Koyeb"
           fi
+
 
           exit $fail
 

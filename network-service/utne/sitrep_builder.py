@@ -24,8 +24,8 @@ class SitrepBuilder:
         supabase_url: Optional[str] = None,
         supabase_key: Optional[str] = None,
     ):
-        self.brahma_url = brahma_url or os.environ.get("NORTHFLANK_BRAHMA_URL", "http://localhost:8001")
-        self.axiom_url = axiom_url or os.environ.get("NORTHFLANK_AXIOM_URL", "http://localhost:8000")
+        self.brahma_url = brahma_url or os.environ.get("BRAHMA_SERVICE_URL") or "https://garuda-brahma-service.onrender.com"
+        self.axiom_url = axiom_url or os.environ.get("AXIOM_SERVICE_URL") or "https://garuda-axiom-service.onrender.com"
         self.supabase_url = supabase_url or os.environ.get("SUPABASE_URL")
         self.supabase_key = supabase_key or os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 

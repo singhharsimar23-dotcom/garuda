@@ -53,10 +53,12 @@ export default {
           timestamp: new Date().toISOString(),
           cert_data: body.data?.leaf_cert || null,
         }),
+        signal: AbortSignal.timeout(4000),
       });
     } catch (err) {
       // Edge worker swallows upstream error to maintain 200 OK webhook response
     }
+
 
     return new Response("OK", { status: 200 });
   },

@@ -18,8 +18,8 @@ class BrahmaSettings(BaseSettings):
     port: int = Field(default_factory=lambda: int(os.environ.get("PORT", "8001")))
 
     # Database Connection
-    northflank_db_url: Optional[str] = Field(
-        default_factory=lambda: os.environ.get("NORTHFLANK_DB_URL") or os.environ.get("DATABASE_URL")
+    database_url: Optional[str] = Field(
+        default_factory=lambda: os.environ.get("DATABASE_URL")
     )
     db_pool_min_size: int = Field(default_factory=lambda: int(os.environ.get("DB_POOL_MIN_SIZE", "2")))
     db_pool_max_size: int = Field(default_factory=lambda: int(os.environ.get("DB_POOL_MAX_SIZE", "10")))
@@ -32,7 +32,9 @@ class BrahmaSettings(BaseSettings):
 
     # Inter-Service Authentication (AXIOM <-> BRAHMA)
     inter_service_secret: str = Field(default_factory=lambda: os.environ.get("INTER_SERVICE_SECRET", ""))
-    northflank_axiom_url: Optional[str] = Field(default_factory=lambda: os.environ.get("NORTHFLANK_AXIOM_URL"))
+    axiom_service_url: Optional[str] = Field(
+        default_factory=lambda: os.environ.get("AXIOM_SERVICE_URL") or "https://garuda-axiom-service.onrender.com"
+    )
 
     # AI Threat Narrative & Grammar Expansion (Google Gemini & Groq)
     gemini_api_key: Optional[str] = Field(default_factory=lambda: os.environ.get("GEMINI_API_KEY"))

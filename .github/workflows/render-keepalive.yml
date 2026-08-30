@@ -1,0 +1,51 @@
+name: Render.com Services Keepalive
+
+on:
+  schedule:
+    # Run every 14 minutes to prevent Render free-tier instances from spinning down
+    - cron: '*/14 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-services:
+    name: Ping Microservices Health Endpoints
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping AXIOM-II, BRAHMA, and UTNE Services
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          echo "Starting 14-minute Render.com keepalive health check..."
+          
+          SERVICES=(
+            "https://garuda-axiom-service.onrender.com/health"
+            "https://garuda-brahma-service.onrender.com/health"
+            "https://garuda-utne-service.onrender.com/health"
+          )
+          
+          FAILED_SERVICES=()
+
+          for URL in "${SERVICES[@]}"; do
+            echo "Pinging: $URL"
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$URL" || echo "000")
+            if [ "$HTTP_CODE" -ne 200 ]; then
+              echo "WARNING: $URL returned HTTP $HTTP_CODE"
+              FAILED_SERVICES+=("$URL (HTTP $HTTP_CODE)")
+            else
+              echo "SUCCESS: $URL is healthy (HTTP 200)"
+            fi
+          done
+
+          if [ ${#FAILED_SERVICES[@]} -gt 0 ]; then
+            echo "Some services failed health check: ${FAILED_SERVICES[*]}"
+            if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+              MSG="⚠️ *[GARUDA KEEPALIVE ALERT]*%0A%0AThe following services failed health ping:%0A"
+              for S in "${FAILED_SERVICES[@]}"; do
+                MSG="${MSG}• \`$S\`%0A"
+              done
+              curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+                -d "chat_id=${TELEGRAM_CHAT_ID}&text=${MSG}&parse_mode=Markdown" || true
+            fi
+          fi
+          echo "Keepalive ping run complete."

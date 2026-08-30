@@ -1,5 +1,5 @@
--- Migration 004: BRAHMA Adversary Modeling & Program Grammars (Part 14.2)
--- Idempotent DDL for Northflank PostgreSQL
+-- Migration 004: BRAHMA Program Models & Kill Chain State
+-- Idempotent DDL for Production PostgreSQL
 
 CREATE TABLE IF NOT EXISTS brahma_program_models (
     agent_id TEXT PRIMARY KEY,

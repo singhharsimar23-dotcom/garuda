@@ -1,0 +1,7 @@
+{
+  "status": "success",
+  "message": "Telemetry accepted",
+  "batch_id": "batch_983517eb_20260830",
+  "received_timestamp": "2026-08-30T12:00:00.120000Z",
+  "ingested_channels": 6
+}

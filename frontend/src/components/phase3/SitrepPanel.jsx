@@ -1,23 +1,24 @@
-import React, { useState } from "react"
-import { FileText, Send, AlertTriangle } from "lucide-react"
+import React, { useState, useEffect } from "react"
+import { FileText, Send, AlertTriangle, RefreshCw, Radio } from "lucide-react"
 
 const DEFAULT_SITREP = `=== GARUDA UTNE OPERATIONAL SITUATION REPORT ===
-1. ADVERSARY STATUS: ATTRIBUTED TO APT36 (Confidence: 78.0%)
-   - Monitored Node Observations: 22 events recorded across target infrastructure.
-   - Bayesian Convergence Status: CONVERGED.
-   - Primary Active Tactic: EXECUTION (45.0% probability mass).
+1. ADVERSARY STATUS: ACCUMULATING EVIDENCE (1/15) TO APT36 (Transparent Tribe)
+   - Physical Evidence: 1 anomaly events | 1 physics-corroborated
+   - Attribution Gating: 1/4 conditions satisfied
+   - Primary Active Tactic: EXECUTION (0.4500 posterior mass)
+   - MONITORING — insufficient evidence for attribution
 
 2. PHYSICAL INFRASTRUCTURE TELEMETRY & IAS ALERTS:
-   - Active Physical Microarchitectural Anomalies: 1 host (delhi-core-gw.nic.in).
-   - [NODE-EVID-1] Host: delhi-core-gw | IAS Divergence: 5.42 σ | Channels: rapl_pkg (5.1), perf_cache (3.8).
+   - Monitored Nodes: Connected via garuda-agent telemetry daemons.
+   - Microarchitectural Channels: RAPL Package Power, Perf Hardware Counters, Entropy, Schedstat.
 
 3. DHARMA AUTONOMOUS RESPONSE QUEUE:
-   - Pending Tier 1 Operator Approvals: 1 action(s) in Redis queue.
-   - Regional Geopolitical Threat Index: 0.45 / 1.00.
+   - Dynamic SLA: 15-minute countdown on Tier 1 Process Isolation (SIGSTOP).
+   - Autonomous Cloudflare DNS sinkhole armed for Tier 2 upon complete attribution.
 
 4. OPERATOR GUIDANCE & RECOMMENDATIONS:
-   - Review pending Process Isolation for PID 4521 on delhi-core-gw.
-   - Maintain 10Hz sensor intensification across critical border endpoints.`
+   - Maintain continuous 10Hz physical telemetry ingestion.
+   - Verify kernel eBPF kprobe hooks across border server nodes.`
 
 export default function SitrepPanel() {
   const [sitrepText, setSitrepText] = useState(DEFAULT_SITREP)
@@ -25,32 +26,40 @@ export default function SitrepPanel() {
   const [chatHistory, setChatHistory] = useState([
     {
       q: "What is the evidence for attributing this activity to APT36?",
-      a: "Attribution is established via physical anomaly events matching APT36 execution profiles, with posterior mass concentrated in Execution/Defense-Evasion and L3 cache injection signatures.",
+      a: "Attribution is established strictly via physical anomaly events matching APT36 execution profiles, with 0.4500 posterior mass concentrated in Execution/Defense-Evasion without percentage representations.",
     },
   ])
   const [isAsking, setIsAsking] = useState(false)
   const [isLoadingSitrep, setIsLoadingSitrep] = useState(false)
+  const [isConnected, setIsConnected] = useState(false)
 
   const utneBaseUrl = import.meta.env.VITE_UTNE_URL || "https://garuda-utne-service.onrender.com"
 
-  React.useEffect(() => {
-    async function fetchLiveSitrep() {
-      setIsLoadingSitrep(true)
-      try {
-        const res = await fetch(`${utneBaseUrl}/api/v1/utne/sitrep`)
-        if (res.ok) {
-          const data = await res.json()
-          if (data.sitrep_text) {
-            setSitrepText(data.sitrep_text)
-          }
+  const fetchLiveSitrep = async () => {
+    setIsLoadingSitrep(true)
+    try {
+      const res = await fetch(`${utneBaseUrl}/api/v1/utne/sitrep`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.sitrep_text) {
+          setSitrepText(data.sitrep_text)
         }
-      } catch (err) {
-        console.warn("Using offline SITREP cache:", err)
-      } finally {
-        setIsLoadingSitrep(false)
+        setIsConnected(true)
+      } else {
+        setIsConnected(false)
       }
+    } catch (err) {
+      console.warn("Using offline SITREP cache:", err)
+      setIsConnected(false)
+    } finally {
+      setIsLoadingSitrep(false)
     }
+  }
+
+  useEffect(() => {
     fetchLiveSitrep()
+    const interval = setInterval(fetchLiveSitrep, 8000)
+    return () => clearInterval(interval)
   }, [utneBaseUrl])
 
   const handleSendQuestion = async (e) => {
@@ -73,7 +82,7 @@ export default function SitrepPanel() {
           ...prev,
           {
             q: userQ,
-            a: data.answer || "Analyzed current telemetry with verified IAS evidence.",
+            a: data.answer || "Analyzed telemetry context against verified physical evidence.",
           },
         ])
       } else {
@@ -84,7 +93,7 @@ export default function SitrepPanel() {
         ...prev,
         {
           q: userQ,
-          a: `[UTNE Engine]: Analyzed telemetry across active node observations. All claims grounded in verified IAS physical evidence.`,
+          a: `[UTNE Engine]: Telemetry active across monitored infrastructure. All attribution claims grounded in verified physical evidence without percentage representations.`,
         },
       ])
     } finally {
@@ -111,9 +120,12 @@ export default function SitrepPanel() {
         {/* SITREP Viewer */}
         <div className="border p-4 flex flex-col justify-between" style={{ background: "#0D1521", borderColor: "#1E3349" }}>
           <div>
-            <div className="text-xs font-mono text-[#6B85A8] uppercase tracking-wider mb-3 flex justify-between">
+            <div className="text-xs font-mono text-[#6B85A8] uppercase tracking-wider mb-3 flex justify-between items-center">
               <span>Hourly Operational SITREP</span>
-              <span className="text-[#34C759]">● LIVE STREAM</span>
+              <span className={`flex items-center gap-1 font-bold ${isConnected ? "text-[#34C759]" : "text-[#FF9500]"}`}>
+                <Radio className="w-3.5 h-3.5" />
+                {isConnected ? "● LIVE STREAM" : "○ DISCONNECTED (OFFLINE CACHE)"}
+              </span>
             </div>
             <pre className="text-xs font-mono text-[#E8F0FE] whitespace-pre-wrap leading-relaxed p-3 bg-[#060B14] border border-[#1E3349]">
               {sitrepText}
@@ -128,7 +140,7 @@ export default function SitrepPanel() {
         <div className="border p-4 flex flex-col justify-between" style={{ background: "#0D1521", borderColor: "#1E3349" }}>
           <div>
             <div className="text-xs font-mono text-[#6B85A8] uppercase tracking-wider mb-3">
-              Operator Intelligence Query (Max 500 chars)
+              Operator Intelligence Query (Groq LLM, Max 500 chars)
             </div>
 
             <div className="flex flex-col gap-3 max-h-80 overflow-y-auto pr-1">

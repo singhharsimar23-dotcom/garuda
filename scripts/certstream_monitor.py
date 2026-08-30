@@ -17,9 +17,10 @@ import certstream
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("certstream_monitor")
 
-GARUDA_API_URL = os.environ.get("GARUDA_API_URL", "https://garuda-ochre.vercel.app")
+GARUDA_API_URL = os.environ.get("GARUDA_API_URL", "https://garud-intel.vercel.app")
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
 RUN_DURATION_SECONDS = 300  # 5 minutes per GH Actions run
+
 
 TIER1_KEYWORDS = [
     "mod", "gov", "nic", "army", "navy", "airforce", "drdo", "isro",

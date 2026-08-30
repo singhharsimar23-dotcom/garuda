@@ -1,5 +1,5 @@
 """
-UTNE Service API (Koyeb Deployment)
+UTNE Service API (Render Production Deployment)
 FastAPI application serving real-time SITREPs, Operator Q&A, and CERT-In STIX Attribution Packages.
 """
 
@@ -20,7 +20,7 @@ logger = logging.getLogger("network.api")
 
 app = FastAPI(
     title="GARUDA UTNE Narrative Service",
-    description="Unified Threat Narrative Engine on Koyeb for Indian Cyber Defense Infrastructure",
+    description="Unified Threat Narrative Engine for Indian Cyber Defense Infrastructure",
     version="0.1.0",
 )
 

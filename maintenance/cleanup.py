@@ -13,9 +13,9 @@ logger = logging.getLogger("garuda.maintenance.cleanup")
 
 def run_cleanup(database_url: str = None) -> bool:
     """Executes retention cleanup on PostgreSQL."""
-    db_url = database_url or os.environ.get("NORTHFLANK_DB_URL") or os.environ.get("DATABASE_URL")
+    db_url = database_url or os.environ.get("DATABASE_URL")
     if not db_url:
-        logger.warning("No NORTHFLANK_DB_URL configured. Cleanup skipped.")
+        logger.warning("No DATABASE_URL configured. Cleanup skipped.")
         return True
 
     logger.info("Starting automated 90-day retention cleanup...")

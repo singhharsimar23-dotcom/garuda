@@ -6,9 +6,8 @@ const MOCK_ASSESSMENT = {
   actor_id: "APT36",
   map_tactic: "execution",
   predicted_next_tactic: "defense-evasion",
-  confidence: 0.78,
   observation_count: 22,
-  convergence_status: "CONVERGED",
+  attribution_status: "ATTRIBUTED — APT36 (Transparent Tribe)",
   entropy_bits: 1.42,
   posterior: {
     "reconnaissance": 0.02,
@@ -27,6 +26,7 @@ const MOCK_ASSESSMENT = {
     "impact": 0.005,
   },
 }
+
 
 export default function ThreatAssessment() {
   const [assessment] = useState(MOCK_ASSESSMENT)
@@ -57,7 +57,7 @@ export default function ThreatAssessment() {
         <div className="border p-4" style={{ background: "#0D1521", borderColor: "#1E3349" }}>
           <div className="text-[#6B85A8] mb-1">MAP CURRENT TACTIC</div>
           <div className="text-lg font-bold text-[#E8F0FE] uppercase">{assessment.map_tactic}</div>
-          <div className="text-[#6B85A8] mt-1">{(assessment.posterior[assessment.map_tactic] * 100).toFixed(1)}% Posterior Mass</div>
+          <div className="text-[#6B85A8] mt-1">{assessment.posterior[assessment.map_tactic]?.toFixed(4)} Posterior Mass</div>
         </div>
 
         <div className="border p-4" style={{ background: "#0D1521", borderColor: "#1E3349" }}>
@@ -67,10 +67,11 @@ export default function ThreatAssessment() {
         </div>
 
         <div className="border p-4" style={{ background: "#0D1521", borderColor: "#1E3349" }}>
-          <div className="text-[#6B85A8] mb-1">BAYESIAN CONVERGENCE</div>
-          <div className="text-lg font-bold text-[#34C759]">{assessment.convergence_status}</div>
+          <div className="text-[#6B85A8] mb-1">ATTRIBUTION STATUS</div>
+          <div className="text-lg font-bold text-[#34C759]">{assessment.attribution_status}</div>
           <div className="text-[#6B85A8] mt-1">{assessment.observation_count} Anomaly Events (Entropy: {assessment.entropy_bits} bits)</div>
         </div>
+
       </div>
 
       {/* Kill Chain 14-Tactic Distribution */}
@@ -84,7 +85,7 @@ export default function ThreatAssessment() {
           {Object.entries(assessment.posterior).map(([tactic, prob]) => {
             const isMap = tactic === assessment.map_tactic
             const isNext = tactic === assessment.predicted_next_tactic
-            const pct = (prob * 100).toFixed(1)
+            const massStr = prob.toFixed(4)
 
             return (
               <div key={tactic} className="flex items-center gap-4">
@@ -98,13 +99,14 @@ export default function ThreatAssessment() {
                   <div
                     className="h-full transition-all duration-300"
                     style={{
-                      width: `${pct}%`,
+                      width: `${(prob * 100).toFixed(1)}%`,
                       background: isMap ? "#FF6B00" : isNext ? "#FFD60A" : "#1E3349",
                     }}
                   />
-                  <span className="absolute right-2 top-0.5 text-[10px] text-[#6B85A8] font-bold">
-                    {pct}%
-                  </span>
+                </div>
+
+                <div className="w-24 font-data text-right text-[#6B85A8]">
+                  <span className={isMap ? "text-[#FF6B00] font-bold" : "text-[#E8F0FE]"}>{massStr} mass</span>
                 </div>
               </div>
             )

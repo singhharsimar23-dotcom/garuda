@@ -1,5 +1,5 @@
 -- Migration 001: Monitored Agents Schema
--- Idempotent DDL for Northflank PostgreSQL
+-- Idempotent DDL for Production PostgreSQL
 
 CREATE TABLE IF NOT EXISTS monitored_agents (
     agent_id TEXT PRIMARY KEY,

@@ -4,5 +4,6 @@ compatibility_date = "2024-01-01"
 
 [vars]
 TIER1_PATTERNS = "mod,gov,nic,army,drdo,isro,mil,defence,hal,bel,barc,ntro,dae,pmindia,meity,cert-in,bhel,sail,iit,aiims,uidai,incometax"
-GARUDA_API_URL = "https://garuda-ochre.vercel.app"
+GARUDA_API_URL = "https://garud-intel.vercel.app"
 CRON_SECRET = "90c66bfaa9468fa1c869e3cd3f0165db8ff37801b7d052e21c0d5afe1e758a21"
+

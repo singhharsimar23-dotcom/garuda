@@ -1,5 +1,5 @@
--- Migration 002: Physics Observations and Baselines
--- Idempotent DDL for Northflank PostgreSQL
+-- Migration 002: Physics Invariants Telemetry Schema
+-- Idempotent DDL for Production PostgreSQL
 
 CREATE TABLE IF NOT EXISTS physics_observations (
     id BIGSERIAL PRIMARY KEY,

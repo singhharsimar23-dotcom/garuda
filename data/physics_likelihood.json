@@ -1,0 +1,152 @@
+{
+  "version": "1.1.0",
+  "calibrated_at": "2026-08-30T12:07:08.018148+00:00",
+  "data_hash": "e3710e92e3116d5512e80eded0587174a6b99acbaabfea52db8b31d843f69748",
+  "sources": [
+    "PLATYPUS: Software-based Power Side-Channel Attacks on x86 (2021)",
+    "MalwareBazaar / VirusTotal APT36 & SideCopy Corpus (2024)",
+    "Academic Microarchitectural Side-Channel Analysis of Process Hollowing"
+  ],
+  "tactics": {
+    "execution": {
+      "likelihood": 0.85,
+      "primary_channel": "rapl_pkg",
+      "expected_sigma_range": [
+        3.0,
+        5.5
+      ],
+      "confidence": "HIGH",
+      "citation": "PLATYPUS (2021) / USENIX Security: Uncontrolled hardware execution spikes in cryptographic & loader routines"
+    },
+    "defense-evasion": {
+      "likelihood": 0.75,
+      "primary_channel": "perf_cache_miss",
+      "expected_sigma_range": [
+        4.0,
+        8.0
+      ],
+      "confidence": "HIGH",
+      "citation": "Academic Cache Side-Channel Research: Process Hollowing (T1055.012) memory mapping induces L3 cache eviction bursts"
+    },
+    "credential-access": {
+      "likelihood": 0.65,
+      "primary_channel": "perf_cache_miss",
+      "expected_sigma_range": [
+        3.0,
+        6.0
+      ],
+      "confidence": "HIGH",
+      "citation": "LSASS Memory Scraping Side-Channel Studies: Linear scanning of process memory triggers distinctive L3 miss signatures"
+    },
+    "command-and-control": {
+      "likelihood": 0.5,
+      "primary_channel": "entropy",
+      "expected_sigma_range": [
+        2.5,
+        4.5
+      ],
+      "confidence": "MEDIUM",
+      "citation": "CrimsonRAT / ElizaRAT Telemetry: Periodic TLS socket negotiation consumes kernel entropy pool during beacon handshakes"
+    },
+    "exfiltration": {
+      "likelihood": 0.6,
+      "primary_channel": "rapl_dram",
+      "expected_sigma_range": [
+        3.0,
+        5.0
+      ],
+      "confidence": "HIGH",
+      "citation": "PLATYPUS (2021): AES-256 staging and bulk DMA network buffer memory transfers elevate DRAM power dissipation (12-18W)"
+    },
+    "lateral-movement": {
+      "likelihood": 0.45,
+      "primary_channel": "schedstat_steal",
+      "expected_sigma_range": [
+        2.0,
+        4.0
+      ],
+      "confidence": "MEDIUM",
+      "citation": "SideCopy SMB Staging: Network socket multiplexing and remote service creation increase runqueue steal time"
+    },
+    "initial-access": {
+      "likelihood": 0.15,
+      "primary_channel": "rapl_pkg",
+      "expected_sigma_range": [
+        1.5,
+        3.0
+      ],
+      "confidence": "MEDIUM",
+      "citation": "ObliqueRAT / Lure Document Execution: Brief CPU surge during PDF/DOCX macro unrolling, returning to baseline"
+    },
+    "reconnaissance": {
+      "likelihood": 0.05,
+      "primary_channel": "none",
+      "expected_sigma_range": [
+        0.0,
+        1.5
+      ],
+      "confidence": "LOW",
+      "citation": "Base Rate: External reconnaissance generates zero detectable host physics anomalies"
+    },
+    "resource-development": {
+      "likelihood": 0.05,
+      "primary_channel": "none",
+      "expected_sigma_range": [
+        0.0,
+        1.5
+      ],
+      "confidence": "LOW",
+      "citation": "Base Rate: Off-target infrastructure setup produces zero victim host physics telemetry"
+    },
+    "persistence": {
+      "likelihood": 0.2,
+      "primary_channel": "schedstat_steal",
+      "expected_sigma_range": [
+        1.5,
+        3.0
+      ],
+      "confidence": "LOW",
+      "citation": "Cron / Systemd Unit Persistence: Brief disk I/O and process fork activity"
+    },
+    "privilege-escalation": {
+      "likelihood": 0.4,
+      "primary_channel": "schedstat_steal",
+      "expected_sigma_range": [
+        2.5,
+        4.0
+      ],
+      "confidence": "MEDIUM",
+      "citation": "Kernel Exploit Profiling: Context-switch bursts and ring-0 privilege transitions"
+    },
+    "discovery": {
+      "likelihood": 0.3,
+      "primary_channel": "perf_instructions",
+      "expected_sigma_range": [
+        2.0,
+        3.5
+      ],
+      "confidence": "MEDIUM",
+      "citation": "Process & Network Enumeration: Brief bursts of syscalls and query instructions"
+    },
+    "collection": {
+      "likelihood": 0.35,
+      "primary_channel": "rapl_dram",
+      "expected_sigma_range": [
+        2.0,
+        4.0
+      ],
+      "confidence": "MEDIUM",
+      "citation": "Local Archive / File Staging: File read and compression workloads"
+    },
+    "impact": {
+      "likelihood": 0.85,
+      "primary_channel": "rapl_pkg",
+      "expected_sigma_range": [
+        4.0,
+        7.0
+      ],
+      "confidence": "HIGH",
+      "citation": "Ransomware / Wiper Profiling: Continuous 100% CPU and memory saturation during drive encryption"
+    }
+  }
+}

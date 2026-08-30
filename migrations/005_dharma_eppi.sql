@@ -1,5 +1,5 @@
--- Migration 005: DHARMA Action Log & EPPI PROVDAG Tables (Parts 14.3 / 14.4 / 14.5)
--- Idempotent DDL for Northflank PostgreSQL
+-- Migration 005: DHARMA Autonomous Response & EPPI Provenance
+-- Idempotent DDL for Production PostgreSQL
 
 CREATE TABLE IF NOT EXISTS dharma_action_log (
     id BIGSERIAL PRIMARY KEY,

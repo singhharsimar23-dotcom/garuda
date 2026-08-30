@@ -1,6 +1,6 @@
 """
 Health Check Router
-Provides container readiness/liveness status for Northflank and orchestrator probes.
+Provides container readiness/liveness status for Render and orchestrator probes.
 """
 
 from fastapi import APIRouter
@@ -12,7 +12,7 @@ router = APIRouter(tags=["Health"])
 @router.get("/health")
 async def health_check():
     """
-    Health check endpoint for Northflank deployment.
+    Health check endpoint for production deployment.
     """
     db_pool = await get_db_pool()
     db_connected = db_pool is not None

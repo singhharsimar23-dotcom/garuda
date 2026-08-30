@@ -20,7 +20,7 @@ def push_candidate_rules_to_brahma(
     """
     Transmits candidate grammar rules to BRAHMA.
     """
-    brahma_url = brahma_url or os.environ.get("NORTHFLANK_BRAHMA_URL", "http://localhost:8001")
+    brahma_url = brahma_url or os.environ.get("BRAHMA_SERVICE_URL") or "https://garuda-brahma-service.onrender.com"
     secret = secret or os.environ.get("INTER_SERVICE_SECRET", "")
 
     url = f"{brahma_url}/api/v1/brahma/grammar/expand"

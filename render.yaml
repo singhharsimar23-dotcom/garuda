@@ -11,24 +11,28 @@ services:
     envVars:
       - key: SUPABASE_URL
         sync: false
-      - key: SUPABASE_SERVICE_KEY
-        sync: false
-      - key: GEMINI_API_KEY
-        sync: false
-      - key: UPSTASH_REDIS_REST_URL
-        sync: false
-      - key: UPSTASH_REDIS_REST_TOKEN
+      - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
       - key: AGENT_API_KEY
         sync: false
       - key: INTER_SERVICE_SECRET
+        sync: false
+      - key: BRAHMA_SERVICE_URL
+        value: https://garuda-brahma-service.onrender.com
+      - key: DHARMA_SERVICE_URL
+        value: https://garuda-brahma-service.onrender.com
+      - key: SENTINEL_SERVICE_URL
+        value: https://garuda-sentinel-service.onrender.com
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
         sync: false
       - key: TELEGRAM_BOT_TOKEN
         sync: false
       - key: TELEGRAM_CHAT_ID
         sync: false
 
-  # Service 2: BRAHMA Adversary & DHARMA Response Engine
+  # Service 2: BRAHMA Adversary, KALI Red-Team & DHARMA Autonomous Response Engine
   - type: web
     name: garuda-brahma-service
     runtime: docker
@@ -40,18 +44,36 @@ services:
     envVars:
       - key: SUPABASE_URL
         sync: false
-      - key: SUPABASE_SERVICE_KEY
+      - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
-      - key: GEMINI_API_KEY
+      - key: INTER_SERVICE_SECRET
         sync: false
+      - key: AXIOM_SERVICE_URL
+        value: https://garuda-axiom-service.onrender.com
+      - key: SENTINEL_SERVICE_URL
+        value: https://garuda-sentinel-service.onrender.com
       - key: UPSTASH_REDIS_REST_URL
         sync: false
       - key: UPSTASH_REDIS_REST_TOKEN
         sync: false
-      - key: INTER_SERVICE_SECRET
+      - key: TELEGRAM_BOT_TOKEN
         sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: CLOUDFLARE_API_TOKEN
+        sync: false
+      - key: CLOUDFLARE_ZONE_ID
+        sync: false
+      - key: DHARMA_SSH_HOST
+        sync: false
+      - key: DHARMA_SSH_USER
+        sync: false
+      - key: DHARMA_SSH_KEY
+        sync: false
+      - key: KALI_MCTS_SIMULATIONS
+        value: "500"
 
-  # Service 3: UTNE Executive Narrative Engine
+  # Service 3: UTNE Executive Threat Narrative Engine
   - type: web
     name: garuda-utne-service
     runtime: docker
@@ -63,11 +85,56 @@ services:
     envVars:
       - key: SUPABASE_URL
         sync: false
-      - key: SUPABASE_SERVICE_KEY
+      - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_PREFERRED_MODEL
+        value: llama-3.1-8b-instant
       - key: GEMINI_API_KEY
         sync: false
+      - key: BRAHMA_SERVICE_URL
+        value: https://garuda-brahma-service.onrender.com
+      - key: AXIOM_SERVICE_URL
+        value: https://garuda-axiom-service.onrender.com
       - key: UPSTASH_REDIS_REST_URL
         sync: false
       - key: UPSTASH_REDIS_REST_TOKEN
         sync: false
+
+  # Service 4: SENTINEL Autonomous Agent Brain Engine
+  - type: web
+    name: garuda-sentinel-service
+    runtime: docker
+    dockerfilePath: ./sentinel-service/Dockerfile
+    dockerContext: ./sentinel-service
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: INTER_SERVICE_SECRET
+        sync: false
+      - key: AXIOM_SERVICE_URL
+        value: https://garuda-axiom-service.onrender.com
+      - key: BRAHMA_SERVICE_URL
+        value: https://garuda-brahma-service.onrender.com
+      - key: DHARMA_SERVICE_URL
+        value: https://garuda-brahma-service.onrender.com
+      - key: MAYA_SERVICE_URL
+        value: https://garuda-brahma-service.onrender.com
+      - key: KALI_SERVICE_URL
+        value: https://garuda-brahma-service.onrender.com
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.1-8b-instant
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: CONFLICT_MODE
+        value: "false"

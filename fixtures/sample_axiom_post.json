@@ -1,0 +1,39 @@
+{
+  "agent_id": "550e8400-e29b-41d4-a716-446655440000",
+  "hostname": "drdo-secure-host-01",
+  "timestamp_utc": "2026-08-30T12:00:00.000000+00:00",
+  "rapl": {
+    "pkg_w": 28.45,
+    "dram_w": 4.12,
+    "core_w": 18.30,
+    "unavailable": false
+  },
+  "perf": {
+    "instructions_ps": 1250000.0,
+    "cache_misses_ps": 45000.0,
+    "cycles_ps": 2800000.0,
+    "unavailable": false
+  },
+  "entropy": {
+    "bits": 3840,
+    "depleting": false,
+    "sustained_low_s": 0
+  },
+  "schedstat": {
+    "steal_ratio": 0.012
+  },
+  "ias": {
+    "score": 0.42,
+    "uncalibrated": false,
+    "workload_class": "WEB_SERVER",
+    "channel_sigmas": {
+      "rapl_pkg": 2.15,
+      "rapl_dram": 0.45,
+      "perf_instructions": 120000.0,
+      "perf_cache_miss": 5400.0,
+      "entropy": 120.0,
+      "schedstat_steal": 0.005
+    }
+  },
+  "flags": []
+}

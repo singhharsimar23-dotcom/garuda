@@ -1,5 +1,5 @@
 """
-Idempotent Migration Runner for GARUDA Northflank & Supabase PostgreSQL
+Idempotent Migration Runner for GARUDA Production PostgreSQL & Supabase
 Executes SQL migration files in numerical order.
 """
 
@@ -16,9 +16,9 @@ def run_migrations(database_url: str = None, migrations_dir: str = None) -> bool
     """
     Executes all .sql files in migrations directory against the target database.
     """
-    db_url = database_url or os.environ.get("NORTHFLANK_DB_URL") or os.environ.get("DATABASE_URL")
+    db_url = database_url or os.environ.get("DATABASE_URL")
     if not db_url:
-        logger.error("No database URL provided (NORTHFLANK_DB_URL or DATABASE_URL not set).")
+        logger.error("No database URL provided (DATABASE_URL not set).")
         return False
 
     script_dir = migrations_dir or os.path.dirname(os.path.abspath(__file__))
