@@ -15,12 +15,15 @@ Sources cited per IOC. Zero invented IOCs.
 import asyncio
 import os
 import sys
-from datetime import timezone
-
+from datetime import datetime, timezone
+from dotenv import load_dotenv
 from supabase import create_client
 
+sys.stdout.reconfigure(encoding="utf-8")
+load_dotenv()
+
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_SERVICE_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     print("ERROR: Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in environment")
@@ -106,15 +109,37 @@ SEED_IOCs = [
 ]
 
 
+import uuid
+
 def seed():
     client = create_client(SUPABASE_URL, SUPABASE_KEY)
     success = 0
     failed = 0
 
+    now_iso = datetime.now(timezone.utc).isoformat()
     for ioc in SEED_IOCs:
         try:
+            stix_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"garuda-retro-{ioc['ioc_value']}"))
+            db_row = {
+                "id": stix_id,
+                "type": "indicator",
+                "spec_version": "2.1",
+                "collection_id": "a3c9736e-2a10-4659-842f-6d487d08779b",
+                "ioc_value": ioc["ioc_value"],
+                "ioc_type": ioc["ioc_type"],
+                "malware_family": ioc["malware_family"],
+                "source": ioc["source"],
+                "confidence": ioc["confidence"],
+                "name": f"{ioc['actor']} Indicator - {ioc['ioc_value']}",
+                "pattern": f"[{ioc['ioc_type']} = '{ioc['ioc_value']}']",
+                "created": ioc["first_seen"],
+                "modified": now_iso,
+                "created_at": ioc["first_seen"],
+                "raw": ioc,
+                "india_context": {"actor": ioc["actor"], "source": ioc["source"]},
+            }
             client.table("stix_objects").upsert(
-                ioc, on_conflict="ioc_value"
+                db_row, on_conflict="id"
             ).execute()
             print(f"  ✓ {ioc['ioc_value']} [{ioc['actor']}]")
             success += 1
