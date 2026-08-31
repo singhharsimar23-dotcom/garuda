@@ -304,15 +304,12 @@ sentinel_app.include_router(canary_router)
 
 
 @sentinel_app.get("/health", status_code=status.HTTP_200_OK)
-async def health_check():
-    obs_loop = get_observation_loop()
-    camp_mgr = get_campaign_manager()
+def health_check():
+    """Lightweight sync health check endpoint matching AXIOM/BRAHMA pattern."""
     return {
-        "status": "healthy",
+        "status": "HEALTHY",
         "service": "garuda-sentinel-service",
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "active_campaigns_count": len([c for c in camp_mgr.host_states.values() if c.campaign_id]),
-        "observation_queue_size": obs_loop.queue.qsize(),
     }
 
 

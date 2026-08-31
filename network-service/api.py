@@ -54,7 +54,7 @@ class STIXPackageRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "HEALTHY", "service": "utne-narrative-service", "budget": limiter.get_status()}
+    return {"status": "HEALTHY", "service": "utne-narrative-service"}
 
 
 @app.get("/api/v1/utne/sitrep")
