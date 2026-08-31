@@ -16,6 +16,7 @@ Timeout per source: 10 seconds. Total enrichment budget: 30 seconds.
 
 import asyncio
 import logging
+import os
 import socket
 from datetime import datetime, timezone
 from typing import Optional
@@ -109,6 +110,16 @@ class EnrichmentPipeline:
                 "ripe": ripe_stat,
                 "urlscan": urlscan,
             },
+        )
+
+        # Fire catch alert — Telegram message if convergence >= 7.5
+        await self._send_catch_alert(
+            domain=domain,
+            ip=ip,
+            convergence_score=convergence,
+            cert=cert,
+            asn_info=asn_info,
+            internetdb=internetdb,
         )
 
         # Register in domain lifecycle tracker
@@ -213,3 +224,63 @@ class EnrichmentPipeline:
                 if results:
                     return results[0]
         return None
+
+    async def _send_catch_alert(
+        self,
+        domain: str,
+        ip: str,
+        convergence_score: float,
+        cert: dict,
+        asn_info: dict,
+        internetdb: dict,
+    ) -> None:
+        """
+        Fires Telegram alert when convergence_score >= 7.5.
+        This is the live catch notification.
+        Threshold: 7.5 = high confidence, 1-3 per week maximum.
+        9.0+ = near-certain, extremely rare.
+        """
+        if convergence_score < 7.5:
+            return
+
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        chat_id = os.getenv("TELEGRAM_CHAT_ID")
+        if not bot_token or not chat_id:
+            return
+
+        issuer = cert.get("issuer_name", "unknown")
+        logged_at = cert.get("logged_at", "unknown")
+        asn_name = (asn_info or {}).get("asname", "unknown") if asn_info else "unknown"
+        ports = (internetdb or {}).get("ports", []) if internetdb else []
+        c2_ports = [p for p in ports if p in {4443, 8443, 8080, 8008}]
+
+        tier = "🚨 CRITICAL" if convergence_score >= 9.0 else "⚠️ HIGH"
+
+        message = (
+            f"{tier} GARUDA CATCH — {convergence_score:.1f}/10\n\n"
+            f"Domain: {domain}\n"
+            f"IP: {ip or 'unresolved'}\n"
+            f"ASN: {asn_name}\n"
+            f"Cert Issuer: {issuer}\n"
+            f"CT Logged: {logged_at}\n"
+            f"C2 Ports Detected: {c2_ports or 'none'}\n\n"
+            f"Verify now:\n"
+            f"https://crt.sh/?q={domain}\n"
+            f"https://urlscan.io/search/#{domain}\n"
+            f"https://www.virustotal.com/gui/domain/{domain}\n\n"
+            f"Dashboard: https://garuda-intel.vercel.app\n"
+            f"Timestamp: {datetime.now(timezone.utc).isoformat()}\n\n"
+            f"Screenshot this timestamp. It is your case study."
+        )
+
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                await client.post(
+                    f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                    json={
+                        "chat_id": chat_id,
+                        "text": message,
+                    },
+                )
+        except Exception as exc:
+            logger.error(f"Catch alert failed: {exc}")
