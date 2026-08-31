@@ -24,8 +24,13 @@ import httpx
 
 from .convergence import compute_convergence_score
 from .lifecycle import DomainLifecycleTracker
-from ..stix_writer import write_stix_indicator
-from ..brahma_relay import notify_brahma_observe
+
+try:
+    from ..stix_writer import write_stix_indicator
+    from ..brahma_relay import notify_brahma_observe
+except (ImportError, ValueError):
+    from stix_writer import write_stix_indicator
+    from brahma_relay import notify_brahma_observe
 
 logger = logging.getLogger(__name__)
 
