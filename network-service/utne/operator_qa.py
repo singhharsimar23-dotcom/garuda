@@ -14,11 +14,17 @@ from typing import Any, Dict, List, Optional
 
 from .rate_limiter import BudgetLimiter
 try:
-    from lib.resilient_llm import ResilientLLMClient, get_resilient_llm_client
+    from .resilient_llm import ResilientLLMClient, get_resilient_llm_client
 except ImportError:
-    import sys
-    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-    from lib.resilient_llm import ResilientLLMClient, get_resilient_llm_client
+    try:
+        from resilient_llm import ResilientLLMClient, get_resilient_llm_client
+    except ImportError:
+        try:
+            from lib.resilient_llm import ResilientLLMClient, get_resilient_llm_client
+        except ImportError:
+            import sys
+            sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+            from lib.resilient_llm import ResilientLLMClient, get_resilient_llm_client
 
 logger = logging.getLogger("network.utne.qa")
 

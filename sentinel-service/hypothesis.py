@@ -16,11 +16,17 @@ except ImportError:
     from config import get_settings
 
 try:
-    from lib.resilient_llm import ResilientLLMClient
+    from resilient_llm import ResilientLLMClient
 except ImportError:
-    import sys
-    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-    from lib.resilient_llm import ResilientLLMClient
+    try:
+        from .resilient_llm import ResilientLLMClient
+    except ImportError:
+        try:
+            from lib.resilient_llm import ResilientLLMClient
+        except ImportError:
+            import sys
+            sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+            from lib.resilient_llm import ResilientLLMClient
 
 logger = logging.getLogger("sentinel.hypothesis")
 
