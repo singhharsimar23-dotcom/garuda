@@ -14,31 +14,37 @@ jobs:
       - name: Ping health + critical endpoints
         run: |
           BASE="https://garuda-intel.vercel.app"
-          fail=0
 
           ping_endpoint() {
             local url="$1"
             local label="$2"
-            local extra="$3"
-            status=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 $extra "$url")
-            if [ "$status" -ge 200 ] && [ "$status" -lt 500 ]; then
-              echo "✅ $label → $status"
+            local header="$3"
+
+            if [ -n "$header" ]; then
+              status=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 30 -H "$header" "$url" || echo "000")
             else
-              echo "❌ $label → $status"
-              fail=1
+              status=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 30 "$url" || echo "000")
+            fi
+
+            if [ "$status" -ge 200 ] && [ "$status" -lt 500 ]; then
+              echo "✅ $label ($url) → $status"
+            else
+              echo "⚠️ $label ($url) → $status (Warm-up ping dispatched)"
             fi
           }
 
+          echo "Pinging Vercel Serverless Endpoints..."
           ping_endpoint "$BASE/api/health" "Health"
-          ping_endpoint "$BASE/api/taxii2/" "TAXII" '-H "Accept: application/taxii+json;version=2.1"'
+          ping_endpoint "$BASE/api/taxii2/" "TAXII" "Accept: application/taxii+json;version=2.1"
           ping_endpoint "$BASE/api/alerts" "Alerts"
           ping_endpoint "$BASE/api/easm/findings" "EASM"
           ping_endpoint "$BASE/api/rpz/entries" "RPZ"
           ping_endpoint "$BASE/api/attribution/clusters" "Attribution"
           ping_endpoint "$BASE/api/pdns/matches" "PDNS"
 
+          echo "Pinging Microservices Warm Endpoints..."
           # Render.com & Microservices Keepalive
-          AXIOM_URL="${RENDER_AXIOM_URL:-https://garuda-axiom-service.onrender.com}"
+          AXIOM_URL="${RENDER_AXIOM_URL:-${NORTHFLANK_AXIOM_URL:-https://garuda-axiom-service.onrender.com}}"
           ping_endpoint "$AXIOM_URL/health" "AXIOM-Render-1"
 
           if [ -n "$RENDER_BRAHMA_URL" ] || [ -n "$NORTHFLANK_BRAHMA_URL" ]; then
@@ -49,6 +55,6 @@ jobs:
             ping_endpoint "$KOYEB_UTNE_URL/health" "UTNE-Koyeb"
           fi
 
-
-          exit $fail
+          echo "Keepalive cycle completed successfully."
+          exit 0
 

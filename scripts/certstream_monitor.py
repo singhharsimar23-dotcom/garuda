@@ -14,13 +14,15 @@ import time
 import httpx
 import certstream
 
+import threading
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("certstream_monitor")
 
-GARUDA_API_URL = os.environ.get("GARUDA_API_URL", "https://garud-intel.vercel.app")
+GARUDA_API_URL = os.environ.get("GARUDA_API_URL", "https://garuda-intel.vercel.app")
 CF_WORKER_URL = os.environ.get("CF_WORKER_URL", "https://garuda-ct-worker.garuda-ct-worker.workers.dev")
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
-RUN_DURATION_SECONDS = 300  # 5 minutes per GH Actions run
+RUN_DURATION_SECONDS = int(os.environ.get("RUN_DURATION_SECONDS", "300"))  # Default 5 minutes
 
 
 TIER1_KEYWORDS = [
@@ -51,9 +53,9 @@ def domain_matches(domain: str) -> bool:
 def callback(message, context):
     global dispatched
 
-    if time.time() - start_time > RUN_DURATION_SECONDS:
+    if time.time() - start_time >= RUN_DURATION_SECONDS:
         logger.info(f"Monitor window complete. Dispatched {dispatched} candidates.")
-        sys.exit(0)
+        os._exit(0)
 
     if message.get("message_type") != "certificate_update":
         return
@@ -116,6 +118,14 @@ def on_error(instance, exception):
     logger.warning(f"CertStream error: {exception}")
 
 
+def _watchdog_timer():
+    time.sleep(RUN_DURATION_SECONDS)
+    logger.info(f"Watchdog: {RUN_DURATION_SECONDS}s elapsed. Exiting cleanly with {dispatched} dispatched.")
+    os._exit(0)
+
+
 if __name__ == "__main__":
     logger.info(f"Starting CertStream monitor for {RUN_DURATION_SECONDS}s -> {GARUDA_API_URL}")
+    watchdog = threading.Thread(target=_watchdog_timer, daemon=True)
+    watchdog.start()
     certstream.listen_for_events(callback, on_error=on_error, url="wss://certstream.calidog.io/")

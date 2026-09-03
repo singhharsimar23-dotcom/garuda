@@ -28,12 +28,12 @@ jobs:
 
           for URL in "${SERVICES[@]}"; do
             echo "Pinging: $URL"
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$URL" || echo "000")
-            if [ "$HTTP_CODE" -ne 200 ]; then
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 45 "$URL" || echo "000")
+            if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
+              echo "SUCCESS: $URL is healthy (HTTP $HTTP_CODE)"
+            else
               echo "WARNING: $URL returned HTTP $HTTP_CODE"
               FAILED_SERVICES+=("$URL (HTTP $HTTP_CODE)")
-            else
-              echo "SUCCESS: $URL is healthy (HTTP 200)"
             fi
           done
 

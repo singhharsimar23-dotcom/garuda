@@ -24,4 +24,5 @@ jobs:
         env:
           GARUDA_API_URL: ${{ secrets.GARUDA_API_URL || 'https://garuda-intel.vercel.app' }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          RUN_DURATION_SECONDS: "20400"
         run: python scripts/certstream_monitor.py

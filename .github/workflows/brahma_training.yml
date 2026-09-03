@@ -17,10 +17,10 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Kaggle API & Dependencies
+      - name: Install Kaggle API
         run: |
           pip install --upgrade pip
-          pip install kaggle learn2learn
+          pip install kaggle
 
       - name: Trigger Kaggle Kernel Execution
         env:

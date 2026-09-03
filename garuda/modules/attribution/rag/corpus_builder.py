@@ -216,7 +216,8 @@ async def ingest_cisa_advisories(
 async def ingest_all() -> int:
     """Run all corpus ingestors. Returns total vectors upserted."""
     if not settings.QDRANT_URL or not settings.QDRANT_API_KEY:
-        raise RuntimeError("QDRANT_URL and QDRANT_API_KEY must be set for corpus ingestion")
+        logger.warning("[corpus_builder] QDRANT_URL or QDRANT_API_KEY not configured. Skipping corpus ingestion.")
+        return 0
 
     from garuda.database import get_supabase_client
 
